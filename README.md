@@ -18,6 +18,6 @@ $ php bin/magento setup:static-content:deploy
 ```
 ## Configration
 
-* Login inside the Admin Panel and go to Stores -> Configuration -> Sales -> Payment Methods* Login inside the __Admin Panel__ and go to ```Stores``` -> ```Configuration``` -> ```Sales``` -> ```Payment Methods```
+* Login inside the __Admin Panel__ and go to ```Stores``` -> ```Configuration``` -> ```Sales``` -> ```Payment Methods```
 * Find ```Moyasar``` payment methods (Credit Cards or Sadad) in the list of modules.
 * Set ```Enabled``` to ```Yes``` and put your `publishable_key` then ```save config```.

@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+	<default>
+		<payment>
+			<moyasar_cc>
+				<active>1</active>
+				<model>Moyasar\Mysr\Model\Payment\MoyasarCc</model>
+				<order_status>pending</order_status>
+				<title>بطاقة ائتمانية: فيزا أو ماستر كارد</title>
+			</moyasar_cc>
+			<moyasar_sadad>
+				<active>1</active>
+				<model>Moyasar\Mysr\Model\Payment\MoyasarSadad</model>
+				<order_status>pending</order_status>
+				<title>سداد</title>
+			</moyasar_sadad>
+		</payment>
+	</default>
+</config>
