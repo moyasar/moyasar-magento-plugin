@@ -16,7 +16,10 @@
         <!-- ko foreach: getRegion('messages') -->
         <!-- ko template: getTemplate() --><!-- /ko -->
         <!--/ko-->
-        <form data-bind=" mageInit: {'validation': []}" class="form" action="https://api.moyasar.com/v1/payments.html" method="post" id="creditsForm">
+        <form data-bind="
+            attr: {'id': getCode() + '-form'},
+            mageInit: {'validation': []}"
+        class="form" action="https://api.moyasar.com/v1/payments.html" method="post">
             <fieldset class="fieldset payment items ccard">
                 <!-- ko if: (isShowLegend())-->
                 <legend class="legend">
@@ -38,10 +41,15 @@
                         <span>اسم حامل البطاقة</span>
                     </label>
                     <div class="control">
-                        <input class ="input-text" autocomplete="off" id="credit_card_name" name="source[name]" type="text" value="" data-validate="{
-                        'required':true,
-                        'min-words':2
-                        }"
+                        <input class ="input-text" autocomplete="off" id="credit_card_name" name="source[name]" type="text" value=""
+                        data-bind="attr: {
+                            'autocomplete': off,
+                            'data-validate': JSON.stringify({
+                                'required':true,
+                                'min-words':2
+                                })},
+                            enable: isActive($parents),
+                            valueUpdate: 'keyup'"
                         />
                     </div>
                 </div>
@@ -52,10 +60,16 @@
                         <span>رقم البطاقة</span>
                     </label>
                     <div class="control">
-                        <input class ="input-text" autocomplete="off" id="credit_card_number" name="source[number]" type="text" value="" data-validate="{
-                        'required':true,
-                        'validate-cc-number':true,
-                        'validate-number':true}"
+                        <input class ="input-text validate-number" id="credit_card_number" name="source[number]" type="text" value="" data-bind="attr: {
+                                    'autocomplete': off,
+                                    'data-validate': JSON.stringify({
+                                        'required-number':true,
+                                        'validate-cc-number':true,
+                                        'minlength':15,
+                                        'maxlength':19, }
+                                    )},
+                              enable: isActive($parents),
+                              valueUpdate: 'keyup'"
                         />
                     </div>  
                 </div>
@@ -66,10 +80,16 @@
                         <span>رمز الأمان (CVC)</span>
                     </label>
                     <div class="control">
-                        <input class="input-text cvv" autocomplete="off" id="credit_card_cvc" name="source[cvc]" type="text" value="" data-validate="
-                        {'required':true, 
-                        'validate-cc-cvv':true,
-                        'validate-number':true}"
+                        <input class="input-text cvv" autocomplete="off" id="credit_card_cvc" name="source[cvc]" type="text" value=""
+                        data-bind="attr: {
+                            'autocomplete': off,
+                            'data-validate':JSON.stringify({
+                                'required-number':true,
+                                'minlength':3,
+                                'maxlength':4, }
+                            )},
+                            enable: isActive($parents),
+                            valueUpdate: 'keyup'"
                         />
                     </div>
                 </div>
@@ -83,12 +103,30 @@
                         <div class ="fields group gruop-2">
                             <div class="field no-label month">
                                 <div class="control">
-                                    <input placeholder="مثل 01" autocomplete="off" id="credit_card_month" name="source[month]" type="text" value="" />
+                                    <input placeholder="مثل 01" id="credit_card_month" name="source[month]" type="text" value="" 
+                                    data-bind="attr: {
+                                        'autocomplete': off,
+                                        'data-validate':JSON.stringify({
+                                            'required-number':true,
+                                            'minlength':2,
+                                            'maxlength':2, }
+                                        )},
+                                        enable: isActive($parents),
+                                        valueUpdate: 'keyup'"/>
                                 </div>
                             </div>
                             <div class="field no-label year">
                                 <div class="control">
-                                    <input placeholder="مثل 2020" autocomplete="off"  id="credit_card_year" name="source[year]" type="text" value="" />
+                                    <input class="validate-number" placeholder="مثل 2020" id="credit_card_year" name="source[year]" type="text" value=""
+                                    data-bind="attr: {
+                                        'autocomplete': off,
+                                        'data-validate':JSON.stringify({
+                                            'required-number':true,
+                                            'minlength':4,
+                                            'maxlength':4,}
+                                        )},
+                                        enable: isActive($parents),
+                                        valueUpdate: 'keyup'" />
                                 </div>
                             </div>
                         </div>
@@ -115,4 +153,3 @@
         </div>
     </div>
 </div>
-        
