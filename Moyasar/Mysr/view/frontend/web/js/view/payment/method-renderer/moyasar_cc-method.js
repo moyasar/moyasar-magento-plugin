@@ -50,6 +50,19 @@ define(
             }
             return grand_total*100;
         },
+        validateName: function () {
+            var validator = $('#' + this.getCode() + '-form').validate();
+            validator.element('#credit_card_name');
+        },
+        validateNumber: function () {
+            var validator = $('#' + this.getCode() + '-form').validate();
+            validator.element('#credit_card_number');
+        },
+        validateExp: function () {
+            var validator = $('#' + this.getCode() + '-form').validate();
+            validator.element('#credit_card_year');
+            validator.element('#credit_card_month');
+        },
         validate: function () {
             var $form = $('#' + this.getCode() + '-form');
             return $form.validation() && $form.validation('isValid');

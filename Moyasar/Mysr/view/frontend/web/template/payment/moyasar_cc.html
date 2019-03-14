@@ -36,7 +36,7 @@
                 <input type="hidden" name="source[3ds]" value="true" />
 
                 <!-- Card Holder Name Input -->
-                <div class="field text required">
+                <div class="field number required">
                     <label class="label" for="credit_card_name">
                         <span>اسم حامل البطاقة</span>
                     </label>
@@ -46,10 +46,11 @@
                             'autocomplete': off,
                             'data-validate': JSON.stringify({
                                 'required':true,
-                                'min-words':2
+                                'min-words':2,
                                 })},
                             enable: isActive($parents),
-                            valueUpdate: 'keyup'"
+                            valueUpdate: 'keyup',
+                            event: { 'keyup': validateName },"
                         />
                     </div>
                 </div>
@@ -60,16 +61,16 @@
                         <span>رقم البطاقة</span>
                     </label>
                     <div class="control">
-                        <input class ="input-text validate-number" id="credit_card_number" name="source[number]" type="text" value="" data-bind="attr: {
+                        <input class ="input-text validate-number" maxlength="16" id="credit_card_number" name="source[number]" type="text" value="" data-bind="attr: {
                                     'autocomplete': off,
                                     'data-validate': JSON.stringify({
                                         'required-number':true,
                                         'validate-cc-number':true,
-                                        'minlength':15,
-                                        'maxlength':19, }
+                                        'minlength':16, }
                                     )},
                               enable: isActive($parents),
-                              valueUpdate: 'keyup'"
+                              valueUpdate: 'keyup',
+                              event: { 'keyup': validateNumber },"
                         />
                     </div>  
                 </div>
@@ -80,13 +81,12 @@
                         <span>رمز الأمان (CVC)</span>
                     </label>
                     <div class="control">
-                        <input class="input-text cvv" autocomplete="off" id="credit_card_cvc" name="source[cvc]" type="text" value=""
+                        <input class="input-text cvv" autocomplete="off" maxlength="3" id="credit_card_cvc" name="source[cvc]" type="text" value=""
                         data-bind="attr: {
                             'autocomplete': off,
                             'data-validate':JSON.stringify({
                                 'required-number':true,
-                                'minlength':3,
-                                'maxlength':4, }
+                                'minlength':3,}
                             )},
                             enable: isActive($parents),
                             valueUpdate: 'keyup'"
@@ -103,13 +103,13 @@
                         <div class ="fields group gruop-2">
                             <div class="field no-label month">
                                 <div class="control">
-                                    <input placeholder="مثل 01" id="credit_card_month" name="source[month]" type="text" value="" 
+                                    <input placeholder="مثل 01" id="credit_card_month" name="source[month]" type="text" maxlength="2" value="" 
                                     data-bind="attr: {
                                         'autocomplete': off,
                                         'data-validate':JSON.stringify({
                                             'required-number':true,
                                             'minlength':2,
-                                            'maxlength':2, }
+                                            'validate-cc-exp': '#credit_card_year'}
                                         )},
                                         enable: isActive($parents),
                                         valueUpdate: 'keyup'"/>
@@ -117,16 +117,16 @@
                             </div>
                             <div class="field no-label year">
                                 <div class="control">
-                                    <input class="validate-number" placeholder="مثل 2020" id="credit_card_year" name="source[year]" type="text" value=""
+                                    <input placeholder="مثل 2021" id="credit_card_year" name="source[year]" type="text" maxlength="4" value=""
                                     data-bind="attr: {
                                         'autocomplete': off,
                                         'data-validate':JSON.stringify({
                                             'required-number':true,
-                                            'minlength':4,
-                                            'maxlength':4,}
+                                            'minlength':4,}
                                         )},
                                         enable: isActive($parents),
-                                        valueUpdate: 'keyup'" />
+                                        valueUpdate: 'keyup',
+                                        event: { 'keyup': validateExp }," />
                                 </div>
                             </div>
                         </div>
