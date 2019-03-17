@@ -33,6 +33,9 @@ class PaymentConfigProvider implements ConfigProviderInterface
         foreach ($this->methodCodes as $code) {
             if ($this->methods[$code]->isAvailable()) {
                 $output[$code]['apiKey'] = $this->methods[$code]->getConfigData('api_key');
+                if($code == \Moyasar\Mysr\Model\Payment\MoyasarCc::CODE) {
+                    $output[$code]['cardsType'] = $this->methods[$code]->getConfigData('cards_type');
+                }
             }
         }
 		return $output;
