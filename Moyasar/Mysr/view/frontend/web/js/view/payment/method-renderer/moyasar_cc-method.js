@@ -37,6 +37,10 @@ define(
         getApiKey: function () {
             return window.checkoutConfig.moyasar_cc.apiKey;
         },
+        getCardsType: function () {
+            var methods = window.checkoutConfig.moyasar_cc.cardsType.split(',');
+            return methods;
+        },
         isShowLegend: function () {
             return true;
         },

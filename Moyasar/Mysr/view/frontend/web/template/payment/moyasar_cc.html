@@ -35,6 +35,23 @@
                 <input name="source[type]" type="hidden" value="creditcard" />
                 <input type="hidden" name="source[3ds]" value="true" />
 
+                <!-- Logos of enabeld methods -->
+                <div class="field type">
+                    <div class="control">
+                        <ul class="credit-card-types">
+                            <!-- ko foreach: {data: getCardsType(), as: 'item'} -->
+                            <li class="item _active">
+                                <img data-bind="attr: {
+                                    'src': require.toUrl('Moyasar_Mysr/images/'+item+'.png'),
+                                    'alt': item,
+                                    'height': 30
+                                    }">
+                            </li>
+                            <!--/ko-->
+                        </ul>
+                    </div>
+                </div>
+
                 <!-- Card Holder Name Input -->
                 <div class="field number required">
                     <label class="label" for="credit_card_name">
