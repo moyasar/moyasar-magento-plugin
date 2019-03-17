@@ -38,7 +38,7 @@
                 <!-- Card Holder Name Input -->
                 <div class="field number required">
                     <label class="label" for="credit_card_name">
-                        <span>اسم حامل البطاقة</span>
+                        <span><!-- ko i18n: 'Card Holder Name'--><!-- /ko --></span>
                     </label>
                     <div class="control">
                         <input class ="input-text" autocomplete="off" id="credit_card_name" name="source[name]" type="text" value=""
@@ -58,7 +58,7 @@
                 <!-- Card Number Input -->
                 <div class="field number required">
                     <label class="label" for="credit_card_number">
-                        <span>رقم البطاقة</span>
+                        <span><!-- ko i18n: 'Credit Card Number'--><!-- /ko --></span>
                     </label>
                     <div class="control">
                         <input class ="input-text validate-number" maxlength="16" id="credit_card_number" name="source[number]" type="text" value="" data-bind="attr: {
@@ -78,7 +78,7 @@
                 <!-- CVV Input -->
                 <div class="field cvv required">
                     <label class="label" for="credit_card_verification_value">
-                        <span>رمز الأمان (CVC)</span>
+                        <span><!-- ko i18n: 'Card Verification Number'--><!-- /ko --></span>
                     </label>
                     <div class="control">
                         <input class="input-text cvv" autocomplete="off" maxlength="3" id="credit_card_cvc" name="source[cvc]" type="text" value=""
@@ -97,13 +97,13 @@
                 <!-- Expiy Date Input -->
                 <div class="field date required">
                     <label class="label" for="credit_card_month">
-                        <span>تاريخ الانتهاء</span>
+                        <span><!-- ko i18n: 'Expiration Date'--><!-- /ko --></span>
                     </label>
                     <div class="control">
                         <div class ="fields group gruop-2">
                             <div class="field no-label month">
                                 <div class="control">
-                                    <input placeholder="مثل 01" id="credit_card_month" name="source[month]" type="text" maxlength="2" value="" 
+                                    <input placeholder="01" id="credit_card_month" name="source[month]" type="text" maxlength="2" value="" 
                                     data-bind="attr: {
                                         'autocomplete': off,
                                         'data-validate':JSON.stringify({
@@ -117,7 +117,7 @@
                             </div>
                             <div class="field no-label year">
                                 <div class="control">
-                                    <input placeholder="مثل 2021" id="credit_card_year" name="source[year]" type="text" maxlength="4" value=""
+                                    <input placeholder="2020" id="credit_card_year" name="source[year]" type="text" maxlength="4" value=""
                                     data-bind="attr: {
                                         'autocomplete': off,
                                         'data-validate':JSON.stringify({
