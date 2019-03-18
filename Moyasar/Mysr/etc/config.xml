@@ -6,7 +6,7 @@
 				<active>1</active>
 				<model>Moyasar\Mysr\Model\Payment\MoyasarCc</model>
 				<order_status>pending</order_status>
-				<title>بطاقة ائتمانية: فيزا أو ماستر كارد</title>
+				<title>Online Payment: Mada, Visa, MasterCard</title>
 			</moyasar_cc>
 			<moyasar_sadad>
 				<active>1</active>

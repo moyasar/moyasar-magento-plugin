@@ -37,6 +37,10 @@ define(
         getApiKey: function () {
             return window.checkoutConfig.moyasar_cc.apiKey;
         },
+        getCardsType: function () {
+            var methods = window.checkoutConfig.moyasar_cc.cardsType.split(',');
+            return methods;
+        },
         isShowLegend: function () {
             return true;
         },
@@ -49,6 +53,19 @@ define(
                 grand_total = quote.grand_total;
             }
             return grand_total*100;
+        },
+        validateName: function () {
+            var validator = $('#' + this.getCode() + '-form').validate();
+            validator.element('#credit_card_name');
+        },
+        validateNumber: function () {
+            var validator = $('#' + this.getCode() + '-form').validate();
+            validator.element('#credit_card_number');
+        },
+        validateExp: function () {
+            var validator = $('#' + this.getCode() + '-form').validate();
+            validator.element('#credit_card_year');
+            validator.element('#credit_card_month');
         },
         validate: function () {
             var $form = $('#' + this.getCode() + '-form');

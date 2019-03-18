@@ -27,7 +27,7 @@ class Response extends \Magento\Framework\App\Action\Action
       if($this->getHelper()->cancelCurrentOrder($order, $_GET['message']))
       {
         $this->_checkoutSession->restoreQuote();
-        $message = __('خطأ: فشلت عملية الدفع، الرجاء المحاولة مرة أخرى.');
+        $message = __('Error! Payment failed, please try again later.');
         $this->messageManager->addError( $message );
         $callbackUrl = $this->getHelper()->getUrl('checkout/cart');
       }

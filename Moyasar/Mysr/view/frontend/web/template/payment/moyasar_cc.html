@@ -35,10 +35,27 @@
                 <input name="source[type]" type="hidden" value="creditcard" />
                 <input type="hidden" name="source[3ds]" value="true" />
 
+                <!-- Logos of enabeld methods -->
+                <div class="field type">
+                    <div class="control">
+                        <ul class="credit-card-types">
+                            <!-- ko foreach: {data: getCardsType(), as: 'item'} -->
+                            <li class="item _active">
+                                <img data-bind="attr: {
+                                    'src': require.toUrl('Moyasar_Mysr/images/'+item+'.png'),
+                                    'alt': item,
+                                    }"
+                                    style="height:30px;"/>
+                            </li>
+                            <!--/ko-->
+                        </ul>
+                    </div>
+                </div>
+
                 <!-- Card Holder Name Input -->
-                <div class="field text required">
+                <div class="field number required">
                     <label class="label" for="credit_card_name">
-                        <span>اسم حامل البطاقة</span>
+                        <span><!-- ko i18n: 'Card Holder Name'--><!-- /ko --></span>
                     </label>
                     <div class="control">
                         <input class ="input-text" autocomplete="off" id="credit_card_name" name="source[name]" type="text" value=""
@@ -46,10 +63,11 @@
                             'autocomplete': off,
                             'data-validate': JSON.stringify({
                                 'required':true,
-                                'min-words':2
+                                'min-words':2,
                                 })},
                             enable: isActive($parents),
-                            valueUpdate: 'keyup'"
+                            valueUpdate: 'keyup',
+                            event: { 'keyup': validateName },"
                         />
                     </div>
                 </div>
@@ -57,19 +75,19 @@
                 <!-- Card Number Input -->
                 <div class="field number required">
                     <label class="label" for="credit_card_number">
-                        <span>رقم البطاقة</span>
+                        <span><!-- ko i18n: 'Credit Card Number'--><!-- /ko --></span>
                     </label>
                     <div class="control">
-                        <input class ="input-text validate-number" id="credit_card_number" name="source[number]" type="text" value="" data-bind="attr: {
+                        <input class ="input-text validate-number" maxlength="16" id="credit_card_number" name="source[number]" type="text" value="" data-bind="attr: {
                                     'autocomplete': off,
                                     'data-validate': JSON.stringify({
                                         'required-number':true,
                                         'validate-cc-number':true,
-                                        'minlength':15,
-                                        'maxlength':19, }
+                                        'minlength':16, }
                                     )},
                               enable: isActive($parents),
-                              valueUpdate: 'keyup'"
+                              valueUpdate: 'keyup',
+                              event: { 'keyup': validateNumber },"
                         />
                     </div>  
                 </div>
@@ -77,16 +95,15 @@
                 <!-- CVV Input -->
                 <div class="field cvv required">
                     <label class="label" for="credit_card_verification_value">
-                        <span>رمز الأمان (CVC)</span>
+                        <span><!-- ko i18n: 'Card Verification Number'--><!-- /ko --></span>
                     </label>
                     <div class="control">
-                        <input class="input-text cvv" autocomplete="off" id="credit_card_cvc" name="source[cvc]" type="text" value=""
+                        <input class="input-text cvv" autocomplete="off" maxlength="3" id="credit_card_cvc" name="source[cvc]" type="text" value=""
                         data-bind="attr: {
                             'autocomplete': off,
                             'data-validate':JSON.stringify({
                                 'required-number':true,
-                                'minlength':3,
-                                'maxlength':4, }
+                                'minlength':3,}
                             )},
                             enable: isActive($parents),
                             valueUpdate: 'keyup'"
@@ -97,19 +114,19 @@
                 <!-- Expiy Date Input -->
                 <div class="field date required">
                     <label class="label" for="credit_card_month">
-                        <span>تاريخ الانتهاء</span>
+                        <span><!-- ko i18n: 'Expiration Date'--><!-- /ko --></span>
                     </label>
                     <div class="control">
                         <div class ="fields group gruop-2">
                             <div class="field no-label month">
                                 <div class="control">
-                                    <input placeholder="مثل 01" id="credit_card_month" name="source[month]" type="text" value="" 
+                                    <input placeholder="01" id="credit_card_month" name="source[month]" type="text" maxlength="2" value="" 
                                     data-bind="attr: {
                                         'autocomplete': off,
                                         'data-validate':JSON.stringify({
                                             'required-number':true,
                                             'minlength':2,
-                                            'maxlength':2, }
+                                            'validate-cc-exp': '#credit_card_year'}
                                         )},
                                         enable: isActive($parents),
                                         valueUpdate: 'keyup'"/>
@@ -117,16 +134,16 @@
                             </div>
                             <div class="field no-label year">
                                 <div class="control">
-                                    <input class="validate-number" placeholder="مثل 2020" id="credit_card_year" name="source[year]" type="text" value=""
+                                    <input placeholder="2020" id="credit_card_year" name="source[year]" type="text" maxlength="4" value=""
                                     data-bind="attr: {
                                         'autocomplete': off,
                                         'data-validate':JSON.stringify({
                                             'required-number':true,
-                                            'minlength':4,
-                                            'maxlength':4,}
+                                            'minlength':4,}
                                         )},
                                         enable: isActive($parents),
-                                        valueUpdate: 'keyup'" />
+                                        valueUpdate: 'keyup',
+                                        event: { 'keyup': validateExp }," />
                                 </div>
                             </div>
                         </div>
