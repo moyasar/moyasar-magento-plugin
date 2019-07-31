@@ -48,9 +48,9 @@ define(
             var totals = quote.getTotals()();
             var grand_total;
             if (totals) {
-                grand_total = totals.grand_total;
+                grand_total = totals.base_grand_total;
             } else {
-                grand_total = quote.grand_total;
+                grand_total = quote.base_grand_total;
             }
             return grand_total*100;
         },
