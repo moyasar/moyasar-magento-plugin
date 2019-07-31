@@ -27,11 +27,10 @@
                 </legend><br />
                 <!-- /ko -->
                 <input name="callback_url" type="hidden" data-bind="value: getBaseUrl()"  />
-                <!-- <input type="hidden" name="order_id" data-bind="value: getOrderId()" /> -->
+                <input type="hidden" name="description" data-bind="value: getEmail()" />
                 <input name="publishable_api_key" type="hidden" data-bind="value: getApiKey()" />
                 <input name="amount" type="hidden" data-bind="value: getAmount()" />
-                <!-- TODO: get store currency as a value -->
-                <input name="currency" type="hidden" value="SAR" /> 
+                <input name="currency" type="hidden" data-bind="value: getCurrency()" /> 
                 <input name="source[type]" type="hidden" value="creditcard" />
                 <input type="hidden" name="source[3ds]" value="true" />
 
