@@ -22,17 +22,17 @@ define(
         ) {
         'use strict';
         return Component.extend({
-            defaults: {
-                template: 'Moyasar_Mysr/payment/moyasar_cc'
-            },
-            getCode: function() {
-               return 'moyasar_cc';
-           },
-           isActive: function() {
-               return true;
-           },
-           getBaseUrl: function() {
-            return url.build('moyasar_mysr/redirect/response');
+        defaults: {
+            template: 'Moyasar_Mysr/payment/moyasar_cc'
+        },
+        getCode: function() {
+           return 'moyasar_cc';
+        },
+        isActive: function() {
+           return true;
+        },
+        getBaseUrl: function() {
+          return url.build('moyasar_mysr/redirect/response');
         },
         getApiKey: function () {
             return window.checkoutConfig.moyasar_cc.apiKey;
@@ -45,14 +45,18 @@ define(
             return true;
         },
         getAmount: function () {
-            var totals = quote.getTotals()();
-            var grand_total;
-            if (totals) {
-                grand_total = totals.grand_total;
-            } else {
-                grand_total = quote.grand_total;
-            }
-            return grand_total*100;
+          var totals = quote.getTotals()();
+          if (totals) return totals.base_grand_total*100;
+          else return quote.base_grand_total*100;
+        },
+        getEmail: function () {
+            if (quote.guestEmail) return "Order By a guest : "+quote.guestEmail;
+            else return "Order By a customer : "+window.checkoutConfig.customerData.email;
+        },
+        getCurrency: function () {
+          var totals = quote.getTotals()();
+          if (totals) return totals.base_currency_code;
+          else return quote.base_currency_code;
         },
         validateName: function () {
             var validator = $('#' + this.getCode() + '-form').validate();

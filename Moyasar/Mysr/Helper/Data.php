@@ -11,12 +11,12 @@ class Data extends \Magento\Payment\Helper\Data
      * @param Orderobject $order to be saved
      * @return bool True if order saved, false otherwise
      */
-    public function processOrder($order) {
+    public function processOrder($order, $id) {
         if ($order->getState() != Order::STATE_PROCESSING) {
             $order->setStatus(Order::STATE_PROCESSING);
             $order->setState(Order::STATE_PROCESSING);
             $order->save();
-            $order->addStatusToHistory( Order::STATE_PROCESSING , 'Moyasar_Mysr :: Order has been paid.' );
+            $order->addStatusToHistory( Order::STATE_PROCESSING , 'Moyasar payment with ID - ' .$id.' - has been paid.');
             $order->save();
             return true;
         }

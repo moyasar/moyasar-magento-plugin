@@ -17,6 +17,7 @@ class PaymentConfigProvider implements ConfigProviderInterface
      * @var \Magento\Payment\Model\Method\AbstractMethod[]
      */
     protected $methods = [];
+    protected $output = [];
     /**
      * Payment ConfigProvider constructor.
      * @param \Magento\Payment\Helper\Data $paymentHelper
