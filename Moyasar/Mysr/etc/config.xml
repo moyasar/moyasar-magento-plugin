@@ -5,13 +5,13 @@
 			<moyasar_cc>
 				<active>1</active>
 				<model>Moyasar\Mysr\Model\Payment\MoyasarCc</model>
-				<order_status>pending</order_status>
+				<order_status>pending_payment</order_status>
 				<title>Online Payment: Mada, Visa, MasterCard</title>
 			</moyasar_cc>
 			<moyasar_sadad>
-				<active>1</active>
+				<active>0</active>
 				<model>Moyasar\Mysr\Model\Payment\MoyasarSadad</model>
-				<order_status>pending</order_status>
+				<order_status>pending_payment</order_status>
 				<title>سداد</title>
 			</moyasar_sadad>
 		</payment>
