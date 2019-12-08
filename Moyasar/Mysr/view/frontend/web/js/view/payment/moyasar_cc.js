@@ -11,7 +11,7 @@ define(
         rendererList.push(
             {
                 type: 'moyasar_cc',
-                component: 'moyasar_mysr/js/view/payment/method-renderer/moyasar_cc-method'
+                component: 'Moyasar_Mysr/js/view/payment/method-renderer/moyasar_cc-method'
             }
         );
         return Component.extend({});

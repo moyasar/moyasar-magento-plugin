@@ -9,7 +9,7 @@
 				<title>Online Payment: Mada, Visa, MasterCard</title>
 			</moyasar_cc>
 			<moyasar_sadad>
-				<active>1</active>
+				<active>0</active>
 				<model>Moyasar\Mysr\Model\Payment\MoyasarSadad</model>
 				<order_status>pending_payment</order_status>
 				<title>سداد</title>
