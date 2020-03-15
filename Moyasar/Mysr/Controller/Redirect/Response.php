@@ -21,8 +21,9 @@ class Response extends \Magento\Framework\App\Action\Action
     $callbackUrl = $this->getHelper()->getUrl('checkout/onepage/success');
 
     if($_GET['status'] == 'paid') {
+      if ($this->getHelper()->verifyAmount($order, $_GET['id'])) {
         $this->getHelper()->processOrder($order, $_GET['id']);
-        $callbackUrl = $this->getHelper()->getUrl('checkout/onepage/success');
+      }
     } else {
       if($this->getHelper()->cancelCurrentOrder($order, $_GET['message']))
       {
