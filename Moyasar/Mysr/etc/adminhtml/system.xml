@@ -15,6 +15,10 @@
             <label>Publishable API Key</label>
             <comment>Your Publishable API key from moyasar.com dashboard</comment>
         </field>
+        <field id="secret_api_key" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+            <label>Secret API Key</label>
+            <comment>Important for Payment Review and Verification</comment>
+        </field>
 				<field id="cards_type" translate="label" type="multiselect" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
 				    <label>Enable Methods: </label>
 				    <source_model>Moyasar\Mysr\Model\Cardstype</source_model>
