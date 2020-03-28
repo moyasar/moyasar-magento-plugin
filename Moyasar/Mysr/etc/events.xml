@@ -3,4 +3,7 @@
     <event name="sales_order_place_before">
         <observer name="order_before_place" instance="Moyasar\Mysr\Observer\BeforeOrderPlaceObserver" />
     </event>
+    <event name="payment_method_assign_data_moyasar_cc">
+        <observer name="moyasar_data_assign" instance="Moyasar\Mysr\Observer\DataAssignObserver" />
+    </event>
 </config>
