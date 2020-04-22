@@ -7,7 +7,6 @@ use Exception;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Cache\Frontend\Pool;
 use Magento\Framework\App\ObjectManager;
-use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderRepository;
 use Moyasar\Mysr\Helper\Data;
@@ -99,7 +98,7 @@ class CheckPendingPaymentsCommand extends Command
             $this->process($order);
         }
 
-        $output->writeln('Check ' . count($orders) . ' Order/s.');
+        $output->writeln('Moyasar Payments: Checked ' . count($orders) . ' Order/s.');
     }
 
     /**
@@ -119,14 +118,13 @@ class CheckPendingPaymentsCommand extends Command
         }
 
         // Cache order for 5 minutes
-        $this->cache()->save('checked', $cacheKey, [], 60 * 5);
+        $this->cache()->save('checked', $cacheKey, [], 60 * 3);
 
         $this->processPayment($order);
     }
 
     /**
      * @param Order $order
-     * @param OrderPaymentInterface $payment
      * @return void
      */
     private function processPayment($order)
