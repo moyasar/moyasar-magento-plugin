@@ -7,9 +7,12 @@ use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\HTTP\Client\Curl;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Sales\Api\OrderManagementInterface;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Spi\OrderResourceInterface;
+use Magento\Store\Model\ScopeInterface;
 
 class Data extends AbstractHelper
 {
@@ -17,8 +20,12 @@ class Data extends AbstractHelper
     protected $_objectManager;
     protected $_curl;
 
-    public function __construct(Context $context, OrderManagementInterface $orderManagement, ObjectManagerInterface $objectManager, Curl $curl)
-    {
+    public function __construct(
+        Context $context,
+        OrderManagementInterface $orderManagement,
+        ObjectManagerInterface $objectManager,
+        Curl $curl
+    ) {
         $this->orderManagement = $orderManagement;
         $this->_objectManager = $objectManager;
         $this->_curl = $curl;
@@ -31,7 +38,6 @@ class Data extends AbstractHelper
      *
      * @param Order $order to be saved
      * @return bool True if order saved, false otherwise
-     * @throws Exception
      */
     public function processOrder($order, $id)
     {
@@ -40,9 +46,9 @@ class Data extends AbstractHelper
             $order->setState(Order::STATE_PROCESSING);
             $customerNotified = $this->sendOrderEmail($order);
             $order->addStatusToHistory(Order::STATE_PROCESSING, 'Moyasar Payment Successfully completed. ID: ' . $id, $customerNotified);
-            $order->save();
-            // $invoice = $order->prepareInvoice()->register();
 
+            $this->saveOrder($order);
+            // $invoice = $order->prepareInvoice()->register();
             return true;
         }
         return false;
@@ -81,31 +87,35 @@ class Data extends AbstractHelper
     public function cancelCurrentOrder($order, $id)
     {
         if ($order->getId() && $order->getState() != Order::STATE_CANCELED) {
-            $order->registerCancellation('Moyasar Payment Failed. ID: ' . $id)->save();
+            $order->registerCancellation('Moyasar Payment Failed. ID: ' . $id);
+            $this->saveOrder($order);
             return true;
         }
+
         return false;
     }
 
     /**
      * @param $order Order
      * @param $payment_id
+     * @param array|null $response
      * @return bool
-     * @throws Exception
      */
-    public function verifyAmount($order, $payment_id)
+    public function verifyAmount($order, $payment_id, $response = null)
     {
-        $order_amount = $order->getGrandTotal()*100;
+        $order_amount = $order->getGrandTotal() * 100;
+
         if ($order->getId() && $order->getState() != Order::STATE_PAYMENT_REVIEW) {
             $order->setStatus(Order::STATE_PAYMENT_REVIEW);
             $order->setState(Order::STATE_PAYMENT_REVIEW);
-            $order->addStatusToHistory(Order::STATE_PAYMENT_REVIEW, 'Reviewing payment ID: ' . $payment_id)->save();
+            $order->addStatusToHistory(Order::STATE_PAYMENT_REVIEW, 'Reviewing payment ID: ' . $payment_id);
+            $this->saveOrder($order);
         }
+
         try {
-            $secretApiKey = $this->scopeConfig->getValue('payment/moyasar_cc/secret_api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-            $this->_curl->setCredentials($secretApiKey, '');
-            $this->_curl->get('https://api.moyasar.com/v1/payments/' . $payment_id);
-            $response = json_decode($this->_curl->getBody(), true);
+            if (is_null($response)) {
+                $response = $this->fetchMoyasarPayment($payment_id);
+            }
 
             if (isset($response['message'])) {
                 $this->_logger->addDebug($payment_id . ' Moyasar Payment Verification Failed: ' . $response['message']);
@@ -115,7 +125,8 @@ class Data extends AbstractHelper
             if (isset($response['amount']) && $response['amount'] == $order_amount) {
                 return true;
             } else {
-                $order->addStatusToHistory(Order::STATUS_FRAUD, 'Payment Review Failed: ***possible tampering** | Actual amount paid: ' . $response['amount_format'])->save();
+                $order->addStatusToHistory(Order::STATUS_FRAUD, 'Payment Review Failed: ***possible tampering** | Actual amount paid: ' . $response['amount_format']);
+                $this->saveOrder($order);
                 return false;
             }
         } catch (Exception $e) {
@@ -127,5 +138,33 @@ class Data extends AbstractHelper
     public function getUrl($route, $params = [])
     {
         return $this->_getUrl($route, $params);
+    }
+
+    public function saveOrder(Order $order)
+    {
+        // Save method is deprecated in new versions of Magento
+        if (! class_exists('\Magento\Sales\Model\Spi\OrderResourceInterface')) {
+            $order->save();
+        }
+
+        /** @var OrderResourceInterface $orderResource */
+        $orderResource = ObjectManager::getInstance()->get(OrderResourceInterface::class);
+
+        $orderResource->save($order);
+    }
+
+    public function fetchMoyasarPayment($paymentId)
+    {
+        $secretApiKey = $this->moyasarSecretApiKey();
+
+        $this->_curl->setCredentials($secretApiKey, '');
+        $this->_curl->get("https://api.moyasar.com/v1/payments/$paymentId");
+
+        return json_decode($this->_curl->getBody(), true);
+    }
+
+    public function moyasarSecretApiKey()
+    {
+        return $this->scopeConfig->getValue('payment/moyasar_cc/secret_api_key', ScopeInterface::SCOPE_STORE);
     }
 }
