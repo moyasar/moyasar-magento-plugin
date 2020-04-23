@@ -9,6 +9,7 @@ use Magento\Framework\App\Cache\Frontend\Pool;
 use Magento\Framework\App\ObjectManager;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderRepository;
+use Magento\Sales\Model\Spi\OrderResourceInterface;
 use Moyasar\Mysr\Helper\Data;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;

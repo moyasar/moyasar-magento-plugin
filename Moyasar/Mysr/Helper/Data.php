@@ -143,7 +143,7 @@ class Data extends AbstractHelper
     public function saveOrder(Order $order)
     {
         // Save method is deprecated in new versions of Magento
-        if (! class_exists('\Magento\Sales\Model\Spi\OrderResourceInterface')) {
+        if (! interface_exists('\Magento\Sales\Model\Spi\OrderResourceInterface')) {
             $order->save();
             return;
         }
