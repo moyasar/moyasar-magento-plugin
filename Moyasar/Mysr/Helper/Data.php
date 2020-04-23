@@ -145,6 +145,7 @@ class Data extends AbstractHelper
         // Save method is deprecated in new versions of Magento
         if (! class_exists('\Magento\Sales\Model\Spi\OrderResourceInterface')) {
             $order->save();
+            return;
         }
 
         /** @var OrderResourceInterface $orderResource */
