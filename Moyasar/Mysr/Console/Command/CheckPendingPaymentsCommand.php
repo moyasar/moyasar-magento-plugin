@@ -119,7 +119,7 @@ class CheckPendingPaymentsCommand extends Command
         }
 
         // Cache order for 5 minutes
-        $this->cache()->save('checked', $cacheKey, [], 60 * 3);
+        $this->cache()->save('checked', $cacheKey, [], 60 * 15);
 
         $this->processPayment($order);
     }

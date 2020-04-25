@@ -10,7 +10,9 @@ define(
         'Magento_Checkout/js/model/payment/additional-validators',
         'mage/url',
         'jquery/ui',
-        'Moyasar_Mysr/js/model/create-payment'
+        'Moyasar_Mysr/js/model/create-payment',
+        'Magento_Ui/js/model/messageList',
+        'mage/translate'
     ],
     function (
         Component,
@@ -21,7 +23,9 @@ define(
         additionalValidators,
         url,
         jqueryUi,
-        createMoyasarPayment
+        createMoyasarPayment,
+        globalMessageList,
+        mage
     ) {
         'use strict';
         return Component.extend({
@@ -109,7 +113,9 @@ define(
                     })
                     .fail(function (xhr, status, error) {
                         self.isPlaceOrderActionAllowed(true);
-                        console.log(xhr.responseJSON);
+                        globalMessageList.addErrorMessage({
+                            message: mage('Error! Payment failed, please try again later.')
+                        });
                     });
 
 
