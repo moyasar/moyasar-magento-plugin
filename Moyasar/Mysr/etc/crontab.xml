@@ -1,0 +1,7 @@
+<config>
+    <group id="default">
+        <job name="moyasar_mysr_check_pending_payment" instance="Moyasar\Mysr\Console\Command\CheckPendingPaymentsCommand" method="cron">
+            <schedule>* * * * *</schedule>
+        </job>
+    </group>
+</config>

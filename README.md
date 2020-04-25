@@ -1,6 +1,7 @@
 # moyasar-magento-plugin
 [Moyasar](https://moyasar.com) Payment Gateway plugin for Magento 2
 
+
 ## Installation
 
 1. Download the Payment Module archive, unpack it and upload Moyasar contents to <root>/app/code/Moyasar/Mysr of your Magento 2 installation.
@@ -16,6 +17,24 @@ $ php bin/magento setup:upgrade
 ```sh
 $ php bin/magento setup:static-content:deploy
 ```
+
+### Automatic Payment Check (Job Scheduling)
+In order to allow the system to automatically verify orders that was not
+redirected back the store, you have to make sure that cron jobs are configured correctly
+
+```bash
+bin/magento cron:install
+``` 
+
+If you have already configured cron jobs, there is no need to use the previous command
+
+#### How Automatic Payment Checking Work
+The cron job will run every minute scanning for `new` orders, if it finds
+any then it will fetch that order's payment from Moyasar to see if it's payed.
+
+If an order payment is `initiated` then it will be checked again after 3 minutes 
+
+
 ## Configration
 
 * Login inside the __Admin Panel__ and go to ```Stores``` -> ```Configuration``` -> ```Sales``` -> ```Payment Methods```
