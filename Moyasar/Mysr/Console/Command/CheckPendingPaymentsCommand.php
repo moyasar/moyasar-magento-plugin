@@ -90,7 +90,7 @@ class CheckPendingPaymentsCommand extends Command
      * @param OutputInterface $output
      * @return int|void|null
      */
-    protected function execute($input, $output)
+    protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->initServices();
         $orders = $this->getPendingOrders();
