@@ -104,6 +104,7 @@ class Data extends AbstractHelper
     public function verifyAmount($order, $payment_id, $response = null)
     {
         $order_amount = $order->getGrandTotal() * 100;
+        $order_currency = mb_strtoupper($order->getBaseCurrencyCode());
 
         if ($order->getId() && $order->getState() != Order::STATE_PAYMENT_REVIEW) {
             $order->setStatus(Order::STATE_PAYMENT_REVIEW);
@@ -122,13 +123,19 @@ class Data extends AbstractHelper
                 $order->addStatusHistoryComment('Payment Review Failed: check the transaction manualy in Moyasar Dashboard.');
             }
 
-            if (isset($response['amount']) && $response['amount'] == $order_amount) {
-                return true;
-            } else {
+            if (!(isset($response['amount']) && $response['amount'] == $order_amount)) {
                 $order->addStatusToHistory(Order::STATUS_FRAUD, 'Payment Review Failed: ***possible tampering** | Actual amount paid: ' . $response['amount_format']);
                 $this->saveOrder($order);
                 return false;
             }
+
+            if (!(isset($response['currency']) && mb_strtoupper($response['currency']) == $order_currency)) {
+                $order->addStatusToHistory(Order::STATUS_FRAUD, 'Payment Review Failed: ***possible tampering** | Payment currency: ' . $response['currency'] . ', order currency: ' . $order_currency);
+                $this->saveOrder($order);
+                return false;
+            }
+
+            return true;
         } catch (Exception $e) {
             $this->_logger->critical('Error: ', ['exception' => $e]);
             return false;
@@ -167,5 +174,10 @@ class Data extends AbstractHelper
     public function moyasarSecretApiKey()
     {
         return $this->scopeConfig->getValue('payment/moyasar_cc/secret_api_key', ScopeInterface::SCOPE_STORE);
+    }
+
+    public function authorizeApplePayPayment($paymentData)
+    {
+
     }
 }
