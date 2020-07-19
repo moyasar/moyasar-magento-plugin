@@ -45,4 +45,4 @@ If an order payment is `initiated` then it will be checked again after 3 minutes
 ## FAQ
 
 Question: I get "Invalid parameter given. A valid $fileId[tmp_name] is expected." when trying to upload certificate for Apple Pay
-Answer: This is because `sys_temp_dir` PHP setting is not configured, update `php.ini` and set `sys_temp_dir` to `/tmp`
+Answer: This is because `sys_temp_dir` PHP setting is not configured, update `php.ini` and set `sys_temp_dir` to `/tmp` or `/private/tmp` on macOS
