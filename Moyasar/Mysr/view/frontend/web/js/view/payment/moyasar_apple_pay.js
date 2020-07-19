@@ -10,8 +10,8 @@ define(
         'use strict';
         rendererList.push(
             {
-                type: 'moyasar_sadad',
-                component: 'Moyasar_Mysr/js/view/payment/method-renderer/moyasar_sadad-method'
+                type: 'moyasar_apple_pay',
+                component: 'Moyasar_Mysr/js/view/payment/method-renderer/moyasar_apple_pay'
             }
         );
         return Component.extend({});

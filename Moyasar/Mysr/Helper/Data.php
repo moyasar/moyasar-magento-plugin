@@ -3,6 +3,7 @@
 namespace Moyasar\Mysr\Helper;
 
 use Exception;
+use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Exception\LocalizedException;
@@ -13,22 +14,29 @@ use Magento\Sales\Api\OrderManagementInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Spi\OrderResourceInterface;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\StoreManager;
 
 class Data extends AbstractHelper
 {
     protected $orderManagement;
     protected $_objectManager;
     protected $_curl;
+    protected $storeManager;
+    protected $directoryList;
 
     public function __construct(
         Context $context,
         OrderManagementInterface $orderManagement,
         ObjectManagerInterface $objectManager,
-        Curl $curl
+        Curl $curl,
+        StoreManager $storeManager,
+        DirectoryList $directoryList
     ) {
         $this->orderManagement = $orderManagement;
         $this->_objectManager = $objectManager;
         $this->_curl = $curl;
+        $this->storeManager = $storeManager;
+        $this->directoryList = $directoryList;
 
         parent::__construct($context);
     }
@@ -174,6 +182,87 @@ class Data extends AbstractHelper
     public function moyasarSecretApiKey()
     {
         return $this->scopeConfig->getValue('payment/moyasar_cc/secret_api_key', ScopeInterface::SCOPE_STORE);
+    }
+
+    public function validateApplePayMerchant($validationUrl)
+    {
+        if (!$validationUrl) {
+            return null;
+        }
+
+        $body = [
+            'merchantIdentifier' => $this->getMerchantApplePayIdentifier(),
+            'displayName' => $this->getCurrentStoreName(),
+            'initiative' => 'web',
+            'initiativeContext' => $this->getInitiativeContext()
+        ];
+
+        $this->_curl->setOptions([
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSLCERT => $this->getMerchantCertificatePath(),
+            CURLOPT_SSLKEY => $this->getMerchantCertificateKeyPath(),
+            CURLOPT_SSLKEYPASSWD => $this->getMerchantCertificateKeyPassword(),
+            CURLOPT_RETURNTRANSFER => true
+        ]);
+
+        try {
+            $this->_curl->post($validationUrl, json_encode($body));
+        } catch (Exception $e) {
+            $this->_logger->warning('Could not validate merchant with Apple, error: ' . $e->getMessage());
+            return null;
+        }
+
+        return json_decode($this->_curl->getBody());
+    }
+
+    public function getMerchantCertificatePath()
+    {
+        return $this->getFilePath('payment/moyasar_apple_pay/validate_merchant_cert');
+    }
+
+    public function getMerchantCertificateKeyPath()
+    {
+        return $this->getFilePath('payment/moyasar_apple_pay/validate_merchant_pk');
+    }
+
+    protected function getFilePath($key)
+    {
+        $varDir = $this->directoryList->getPath(DirectoryList::VAR_DIR);
+        $moyasarUploadDir = 'moyasar/apple-pay/certificates';
+        $path = $this->scopeConfig->getValue($key, ScopeInterface::SCOPE_STORE);
+
+        return "$varDir/$moyasarUploadDir/$path";
+    }
+
+    public function getMerchantCertificateKeyPassword()
+    {
+        $password = $this->scopeConfig->getValue('payment/moyasar_apple_pay/validate_merchant_pk_password', ScopeInterface::SCOPE_STORE);
+
+        if (!is_string($password)) {
+            return '';
+        }
+
+        return $password;
+    }
+
+    public function getMerchantApplePayIdentifier()
+    {
+        return $this->scopeConfig->getValue('payment/moyasar_apple_pay/merchant_id', ScopeInterface::SCOPE_STORE);
+    }
+
+    protected function getCurrentStoreName()
+    {
+        return $this->storeManager->getStore()->getName();
+    }
+
+    protected function getInitiativeContext()
+    {
+        $baseUrl = $this->storeManager->getStore()->getBaseUrl();
+        if (preg_match('/^.+:\/\/([A-Za-z0-9\-\.]+)\/?.*$/', $baseUrl, $matches) !== 1) {
+            return $this->getMerchantApplePayIdentifier();
+        }
+
+        return $matches[1];
     }
 
     public function authorizeApplePayPayment($paymentData)
