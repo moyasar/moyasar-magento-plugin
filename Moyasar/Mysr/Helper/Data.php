@@ -265,8 +265,42 @@ class Data extends AbstractHelper
         return $matches[1];
     }
 
-    public function authorizeApplePayPayment($paymentData)
+    public function authorizeApplePayPayment($amount, $description, $currency, $paymentData)
     {
+        $data = [
+            'amount' => $amount,
+            'description' => $description,
+            'currency' => $currency,
+            'source' => [
+                'type' => 'applepay',
+                'token' => $paymentData
+            ]
+        ];
 
+        $this->_curl->setCredentials($this->moyasarApplePaySecretApiKey(), '');
+        $this->_curl->setHeaders([
+            'Content-Type' => 'application/json'
+        ]);
+
+        try {
+            $this->_curl->post('https://api.stg.moyasar.com/v1/payments', json_encode($data));
+        } catch (Exception $e) {
+            $this->_logger->warning('Error while trying to authorize Apple Pay payment', ['error' => $e]);
+            return null;
+        }
+
+        if ($this->_curl->getStatus() != 201) {
+            $this->_logger->warning('Error while trying to authorize Apple Pay payment, didn\'t get 201 from Moyasar, instead got ' . $this->_curl->getStatus());
+            return null;
+        }
+
+        return json_decode($this->_curl->getBody(), true);
+    }
+
+    private function moyasarApplePaySecretApiKey()
+    {
+        return $this
+            ->scopeConfig
+            ->getValue('payment/moyasar_apple_pay/secret_api_key', ScopeInterface::SCOPE_STORE);
     }
 }

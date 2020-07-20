@@ -69,6 +69,8 @@ define(
                     return true;
                 }
 
+                var self = this;
+
                 this.applePayManager = new ApplePayManager('.apple-pay-button-area');
                 this.applePayManager.initiate({
                     version: 6,
@@ -79,7 +81,22 @@ define(
                     validateMerchantEndpoint: this.getValidationUrl(),
                     authorizePaymentEndpoint: this.getAuthorizationUrl(),
                     onPaymentSuccess: event => {
-                        console.log(event);
+                        var paymentId = event.payment_id;
+                        var status = event.status;
+                        var redirect = event.redirect_url;
+
+                        this.isPlaceOrderActionAllowed(false);
+
+                        self.placeMagentoOrder(paymentId)
+                            .done(function () {
+                                window.location.href = redirect + '?status=' + status + '&id=' + paymentId;
+                            })
+                            .fail(function () {
+                                self.isPlaceOrderActionAllowed(true);
+                                globalMessageList.addErrorMessage({
+                                    message: mage('Error! Could not place order.')
+                                });
+                            });
                     },
                     translations: {
                         not_configured: mage('Apple Pay is not properly configured'),
@@ -88,7 +105,15 @@ define(
                 });
 
                 return true;
-            }
+            },
+            placeMagentoOrder: function (paymentId) {
+                var paymentData = this.getData();
+                paymentData.additional_data = {
+                    'moyasar_payment_id': paymentId
+                };
+
+                return $.when(placeOrderAction(paymentData, this.messageContainer));
+            },
         });
     }
 );

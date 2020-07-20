@@ -2,6 +2,7 @@
 
 namespace Moyasar\Mysr\Controller\ApplePay;
 
+use Exception;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
@@ -9,7 +10,7 @@ use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\ResultFactory;
-use Magento\Sales\Model\Order;
+use Magento\Quote\Model\Quote;
 use Moyasar\Mysr\Helper\Data;
 
 class Authorize extends Action implements CsrfAwareActionInterface
@@ -35,25 +36,51 @@ class Authorize extends Action implements CsrfAwareActionInterface
             return $this->errorJson('Payment data is required');
         }
 
-        $payment = $this->getHelper()->authorizeApplePayPayment($paymentData);
+        if (!is_string($paymentData)) {
+            return $this->errorJson('Payment data must be a stringifier JSON object (must be string)');
+        }
 
-        $order = $this->getOrder();
+        try {
+            $quote = $this->getQuote();
+        } catch (Exception $e) {
+            return $this->errorJson('Could not get quote for current session');
+        }
+
+        $amount = (int) $quote->getBaseGrandTotal() * 100;
+        $currency = mb_strtoupper($quote->getBaseCurrencyCode());
+
+        if (!$amount || $amount <= 0 || !$currency || strlen($currency) != 3) {
+            return $this->errorJson('Could not get correct quote information');
+        }
+
+        $description = "Order for " . $quote->getCustomerEmail();
+        $payment = $this->getHelper()->authorizeApplePayPayment($amount, $description, $currency, $paymentData);
+
+        if (!$payment) {
+            return $this->errorJson('Payment failed');
+        }
+
+        $paid = $this->isPaymentPaid($payment);
+        $status = $this->paymentStatus($payment);
+        $paymentId = $this->paymentId($payment);
         $redirectUrl = $this->getHelper()->getUrl('checkout/onepage/success');
 
         return [
-            'success' => true,
+            'success' => $paid,
+            'status' => $status,
+            'payment_id' => $paymentId,
             'redirect_url' => $redirectUrl
         ];
     }
 
     /**
-     * Get order object
-     *
-     * @return Order
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @return Quote
      */
-    protected function getOrder()
+    protected function getQuote()
     {
-        return $this->_checkoutSession->getLastRealOrder();
+        return $this->_checkoutSession->getQuote();
     }
 
     /**
@@ -114,6 +141,24 @@ class Authorize extends Action implements CsrfAwareActionInterface
 
     protected function isPaymentPaid($payment)
     {
+        return is_array($payment) && isset($payment['status']) && mb_strtolower($payment['status']) == 'paid';
+    }
 
+    protected function paymentId($payment)
+    {
+        if (is_array($payment) && isset($payment['id'])) {
+            return $payment['id'];
+        }
+
+        return null;
+    }
+
+    protected function paymentStatus($payment)
+    {
+        if (is_array($payment) && isset($payment['status'])) {
+            return $payment['status'];
+        }
+
+        return null;
     }
 }

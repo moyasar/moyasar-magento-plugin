@@ -248,7 +248,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                         case 4: return [4 /*yield*/, response.json()];
                         case 5:
                             appleResponse = _a.sent();
-                            console.log(appleResponse);
                             try {
                                 this.session.completeMerchantValidation(appleResponse);
                             }
