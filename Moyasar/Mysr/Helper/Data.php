@@ -278,19 +278,19 @@ class Data extends AbstractHelper
         ];
 
         $this->_curl->setCredentials($this->moyasarApplePaySecretApiKey(), '');
-        $this->_curl->setHeaders([
-            'Content-Type' => 'application/json'
-        ]);
+        $this->_curl->addHeader('Content-Type', 'application/json');
 
         try {
-            $this->_curl->post('https://api.stg.moyasar.com/v1/payments', json_encode($data));
+            $this->_curl->post('https://api.moyasar.com/v1/payments', json_encode($data));
         } catch (Exception $e) {
             $this->_logger->warning('Error while trying to authorize Apple Pay payment', ['error' => $e]);
             return null;
         }
 
         if ($this->_curl->getStatus() != 201) {
-            $this->_logger->warning('Error while trying to authorize Apple Pay payment, didn\'t get 201 from Moyasar, instead got ' . $this->_curl->getStatus());
+            $this->_logger->warning('Error while trying to authorize Apple Pay payment, didn\'t get 201 from Moyasar, instead got ' . $this->_curl->getStatus(), [
+                'response' => @json_decode($this->_curl->getBody(), true)
+            ]);
             return null;
         }
 

@@ -63,14 +63,16 @@ class Authorize extends Action implements CsrfAwareActionInterface
         $paid = $this->isPaymentPaid($payment);
         $status = $this->paymentStatus($payment);
         $paymentId = $this->paymentId($payment);
-        $redirectUrl = $this->getHelper()->getUrl('checkout/onepage/success');
+        $redirectUrl = $this->getHelper()->getUrl('moyasar_mysr/redirect/response');
 
-        return [
-            'success' => $paid,
-            'status' => $status,
-            'payment_id' => $paymentId,
-            'redirect_url' => $redirectUrl
-        ];
+        return $this->resultFactory
+            ->create(ResultFactory::TYPE_JSON)
+            ->setData([
+                'success' => $paid,
+                'status' => $status,
+                'payment_id' => $paymentId,
+                'redirect_url' => $redirectUrl
+            ]);
     }
 
     /**
