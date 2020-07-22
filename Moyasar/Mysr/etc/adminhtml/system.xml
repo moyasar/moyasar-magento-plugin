@@ -27,13 +27,13 @@
                 <field id="validate_merchant_cert" translate="label" type="Magento\Config\Block\System\Config\Form\Field\File" sortOrder="39" showInDefault="1" showInWebsite="0" >
                     <label>Upload Merchant Validation Certificate</label>
                     <backend_model>Moyasar\Mysr\Model\Config\ApplePayCertificateFile</backend_model>
-                    <upload_dir config="system" scope_info="1">moyasar/apple-pay/certificates</upload_dir>
+                    <upload_dir config="system" scope_info="1">moyasar/applepay/certificates</upload_dir>
                     <comment>Used for initiating Apple Pay Sessions</comment>
                 </field>
                 <field id="validate_merchant_pk" translate="label" type="Magento\Config\Block\System\Config\Form\Field\File" sortOrder="40" showInDefault="1" showInWebsite="0" >
                     <label>Upload Merchant Validation Certificate Private Key</label>
                     <backend_model>Moyasar\Mysr\Model\Config\ApplePayCertificateFile</backend_model>
-                    <upload_dir config="system" scope_info="1">moyasar/apple-pay/certificates</upload_dir>
+                    <upload_dir config="system" scope_info="1">moyasar/applepay/certificates</upload_dir>
                     <comment>Used for initiating Apple Pay Sessions</comment>
                 </field>
                 <field id="validate_merchant_pk_password" translate="label" type="text" sortOrder="30" showInDefault="1"
