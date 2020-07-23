@@ -1,2 +1,6 @@
-"Card Holder Name","Name on card"
 "Error! Payment failed, please try again later.","Error! Payment failed, please try again later."
+"Error! Could not place order.","Error! Could not place order."
+"Apple Pay is not properly configured","Apple Pay is not properly configured"
+"Apple Pay is not supported on your browser","Apple Pay is not supported on your browser"
+"Visa and MasterCard","Visa and MasterCard"
+"Mada Online","Mada Online"
