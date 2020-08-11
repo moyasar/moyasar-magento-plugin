@@ -10,7 +10,7 @@ use Magento\Payment\Model\Method\AbstractMethod;
 use Magento\Store\Model\StoreManager;
 use Moyasar\Mysr\Model\Payment\MoyasarApplePay;
 use Moyasar\Mysr\Model\Payment\MoyasarCc;
-use Moyasar\Mysr\Model\Payment\MoyasarSadad;
+use Moyasar\Mysr\Model\Payment\MoyasarSTCPay;
 
 class PaymentConfigProvider implements ConfigProviderInterface
 {
@@ -20,7 +20,7 @@ class PaymentConfigProvider implements ConfigProviderInterface
     protected $methodCodes = [
         MoyasarApplePay::CODE,
         MoyasarCc::CODE,
-        MoyasarSadad::CODE,
+        MoyasarSTCPay::CODE,
     ];
 
     /**
