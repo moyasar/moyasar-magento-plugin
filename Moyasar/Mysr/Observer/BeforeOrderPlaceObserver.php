@@ -19,8 +19,13 @@ class BeforeOrderPlaceObserver implements ObserverInterface
         ];
 
         $order = $observer->getOrder();
+        if (!$order) {
+            return;
+        }
 
-        if (in_array($order->getPayment()->getMethod(), $methods)) {
+        $payment = $order->getPayment();
+
+        if ($payment && in_array($payment->getMethod(), $methods)) {
             $order->setCanSendNewEmailFlag(false);
         }
     }
