@@ -212,6 +212,13 @@ class Data extends AbstractHelper
             return null;
         }
 
+        if ($this->_curl->getStatus() > 299) {
+            $this->_logger->warning('Error while trying to validate merchant ' . $this->_curl->getStatus(), [
+                'response' => @json_decode($this->_curl->getBody(), true)
+            ]);
+            return null;
+        }
+
         return json_decode($this->_curl->getBody());
     }
 
@@ -228,7 +235,7 @@ class Data extends AbstractHelper
     protected function getFilePath($key)
     {
         $varDir = $this->directoryList->getPath(DirectoryList::VAR_DIR);
-        $moyasarUploadDir = 'moyasar/apple-pay/certificates';
+        $moyasarUploadDir = 'moyasar/applepay/certificates';
         $path = $this->scopeConfig->getValue($key, ScopeInterface::SCOPE_STORE);
 
         return "$varDir/$moyasarUploadDir/$path";
