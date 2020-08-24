@@ -294,7 +294,7 @@ class Data extends AbstractHelper
             return null;
         }
 
-        if ($this->_curl->getStatus() != 201) {
+        if ($this->_curl->getStatus() > 299) {
             $this->_logger->warning('Error while trying to authorize Apple Pay payment, didn\'t get 201 from Moyasar, instead got ' . $this->_curl->getStatus(), [
                 'response' => @json_decode($this->_curl->getBody(), true)
             ]);
