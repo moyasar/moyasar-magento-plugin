@@ -141,7 +141,6 @@ class CheckPendingPaymentsCommand extends Command
         if (! isset($additionalInfo['moyasar_payment_id'])) {
             $paymentId = $payment->getEntityId();
             $orderId = $order->getId();
-            $this->logger->warning("Payment ($paymentId) of Order ($orderId) does not have Moyasar payment ID");
             return;
         }
 
