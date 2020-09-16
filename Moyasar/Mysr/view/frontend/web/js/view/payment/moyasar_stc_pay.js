@@ -11,7 +11,7 @@ define(
         rendererList.push(
             {
                 type: 'moyasar_stcpay',
-                component: 'Moyasar_Mysr/js/view/payment/method-renderer/moyasar_stcpay_method'
+                component: 'Moyasar_Mysr/js/view/payment/method-renderer/moyasar_stc_pay_method'
             }
         );
         return Component.extend({});

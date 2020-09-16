@@ -77,7 +77,7 @@
                     <label>Sort Order</label>
                 </field>
             </group>
-            <group id="moyasar_stcpay" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="12"
+            <group id="moyasar_stc_pay" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="12"
                    translate="label">
                 <label>Moyasar STC Pay</label>
                 <field id="active" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label"

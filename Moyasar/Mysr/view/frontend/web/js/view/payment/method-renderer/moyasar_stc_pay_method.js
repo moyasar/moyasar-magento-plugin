@@ -8,10 +8,10 @@ define(
         'use strict';
         return Component.extend({
             defaults: {
-                template: 'Moyasar_Mysr/payment/moyasar_stcpay'
+                template: 'Moyasar_Mysr/payment/moyasar_stc_pay'
             },
             getCode: function() {
-               return 'moyasar_stcpay';
+               return 'moyasar_stc_pay';
             },
             isActive: function() {
                return true;

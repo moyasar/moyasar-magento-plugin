@@ -16,13 +16,13 @@
 				<title>Online Payment: Mada, Visa, MasterCard</title>
 				<sort_order>1</sort_order>
 			</moyasar_cc>
-			<moyasar_stcpay>
+			<moyasar_stc_pay>
 				<active>0</active>
-				<model>Moyasar\Mysr\Model\Payment\MoyasarSTCPay</model>
+				<model>Moyasar\Mysr\Model\Payment\MoyasarStcPay</model>
 				<order_status>pending_payment</order_status>
 				<title>STC Pay</title>
 				<sort_order>2</sort_order>
-			</moyasar_stcpay>
+			</moyasar_stc_pay>
 		</payment>
 	</default>
 </config>
