@@ -27,18 +27,18 @@
 																		</item>
 																	</item>
 																</item>
-																<item name="moyasar_cc" xsi:type="array">
-																	<item name="component" xsi:type="string">Moyasar_Mysr/js/view/payment/moyasar_cc</item>
+																<item name="moyasar_credit_card" xsi:type="array">
+																	<item name="component" xsi:type="string">Moyasar_Mysr/js/view/payment/moyasar_credit_card</item>
 																	<item name="methods" xsi:type="array">
-																		<item name="moyasar_cc" xsi:type="array">
+																		<item name="moyasar_credit_card" xsi:type="array">
 																			<item name="isBillingAddressRequired" xsi:type="boolean">true</item>
 																		</item>
 																	</item>
 																</item>
-																<item name="moyasar_sadad" xsi:type="array">
-																	<item name="component" xsi:type="string">Moyasar_Mysr/js/view/payment/moyasar_sadad</item>
+																<item name="moyasar_stc_pay" xsi:type="array">
+																	<item name="component" xsi:type="string">Moyasar_Mysr/js/view/payment/moyasar_stc_pay</item>
 																	<item name="methods" xsi:type="array">
-																		<item name="moyasar_sadad" xsi:type="array">
+																		<item name="moyasar_stc_pay" xsi:type="array">
 																			<item name="isBillingAddressRequired" xsi:type="boolean">true</item>
 																		</item>
 																	</item>

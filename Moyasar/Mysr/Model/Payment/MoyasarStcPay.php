@@ -5,9 +5,9 @@ namespace Moyasar\Mysr\Model\Payment;
 use Magento\Payment\Model\Method\AbstractMethod;
 use Magento\Quote\Api\Data\CartInterface;
 
-class MoyasarApplePay extends AbstractMethod
+class MoyasarStcPay extends AbstractMethod
 {
-    const CODE = 'moyasar_apple_pay';
+    const CODE = 'moyasar_stc_pay';
 
     protected $_code = self::CODE;
      

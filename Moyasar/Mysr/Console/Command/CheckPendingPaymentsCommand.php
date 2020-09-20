@@ -3,14 +3,12 @@
 namespace Moyasar\Mysr\Console\Command;
 
 use DateTime;
-use Exception;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Cache\Frontend\Pool;
 use Magento\Framework\App\ObjectManager;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderRepository;
-use Magento\Sales\Model\Spi\OrderResourceInterface;
-use Moyasar\Mysr\Helper\Data;
+use Moyasar\Mysr\Helper\MoyasarHelper;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArgvInput;
@@ -36,14 +34,9 @@ class CheckPendingPaymentsCommand extends Command
     protected $orderRepository;
 
     /**
-     * @var SearchCriteriaBuilder
+     * @var MoyasarHelper
      */
-    protected $searchCriteriaBuilder;
-
-    /**
-     * @var Data
-     */
-    protected $dataHelper;
+    protected $moyasarHelper;
 
     /**
      * @var Pool
@@ -79,8 +72,7 @@ class CheckPendingPaymentsCommand extends Command
         $objectManager = ObjectManager::getInstance();
 
         $this->orderRepository = $objectManager->get(OrderRepository::class);
-        $this->searchCriteriaBuilder = $objectManager->get(SearchCriteriaBuilder::class);
-        $this->dataHelper = $objectManager->get(Data::class);
+        $this->moyasarHelper = $objectManager->get(MoyasarHelper::class);
         $this->cachePool = $objectManager->get(Pool::class);
         $this->logger = $objectManager->get(LoggerInterface::class);
     }
@@ -99,7 +91,7 @@ class CheckPendingPaymentsCommand extends Command
             $this->process($order);
         }
 
-        $output->writeln('Moyasar Payments: Checked ' . count($orders) . ' Order/s.');
+        $this->logger->debug('Moyasar Payments: Checked ' . count($orders) . ' Order/s.');
     }
 
     /**
@@ -107,7 +99,11 @@ class CheckPendingPaymentsCommand extends Command
      */
     private function process($order)
     {
-        if ($order->getState() != Order::STATE_NEW) {
+        if (
+            $order->getState() != Order::STATE_NEW &&
+            $order->getState() != Order::STATE_PENDING_PAYMENT &&
+            $order->getState() != Order::STATE_PAYMENT_REVIEW
+        ) {
             return;
         }
 
@@ -139,69 +135,17 @@ class CheckPendingPaymentsCommand extends Command
         $additionalInfo = $payment->getAdditionalInformation();
 
         if (! isset($additionalInfo['moyasar_payment_id'])) {
-            $paymentId = $payment->getEntityId();
-            $orderId = $order->getId();
             return;
         }
 
         $moyasarPaymentId = $additionalInfo['moyasar_payment_id'];
 
-        $response = null;
-        try {
-            $response = $this->dataHelper->fetchMoyasarPayment($moyasarPaymentId);
-        } catch (Exception $e) {
-            $this->logger->error('Could not fetch Moyasar payment', ['exception' => $e]);
-            return;
-        }
+        $this->moyasarHelper->verifyAndProcess($order, $moyasarPaymentId);
+    }
 
-        if (isset($response['type']) && $response['type'] == 'api_error') {
-            $this->logger->error('Could not fetch Moyasar payment ' . $moyasarPaymentId);
-            return;
-        }
-
-        if (! isset($response['status'])) {
-            $this->logger->warning('Unrecognized response from Moyasar', ['response' => $response]);
-            return;
-        }
-
-        $paymentStatus = trim(mb_strtolower($response['status']));
-
-        if ($paymentStatus == 'paid') {
-            if ($this->dataHelper->verifyAmount($order, $moyasarPaymentId, $response)) {
-                $order->addStatusToHistory(Order::STATE_PAYMENT_REVIEW, 'Automated Check: Payment is successful. ID: ' . $moyasarPaymentId);
-                $this->dataHelper->processOrder($order, $moyasarPaymentId);
-            }
-        } elseif ($paymentStatus == 'initiated') {
-            $this->logger->debug('Payment is still new, passing order ' . $order->getId());
-
-            $order->addStatusToHistory(Order::STATE_PAYMENT_REVIEW, 'Automated Check: Payment is still initiated. ID: ' . $moyasarPaymentId);
-            $this->dataHelper->saveOrder($order);
-
-            // The customer still did not pay yet, so we will wait
-            return;
-        } else {
-            // Something is wrong with the payment, cancel the order
-            $message = $moyasarPaymentId;
-
-            if (isset($response['source']['message'])) {
-                $message = $message . '. Moyasar Says: ' . $response['source']['message'];
-            }
-
-            try {
-                if ($this->dataHelper->cancelCurrentOrder($order, $message)) {
-                    $this->logger->info('Order was canceled by automated job', [
-                        'payment_status' => $paymentStatus,
-                        'payment_id' => $moyasarPaymentId,
-                        'order_id' => $order->getId()
-                    ]);
-                }
-            } catch (Exception $e) {
-                $this->logger->error('Could not cancel order automatically', [
-                    'exception' => $e,
-                    'order_id' => $order->getId()
-                ]);
-            }
-        }
+    private function criteriaBuilder()
+    {
+        return ObjectManager::getInstance()->get(SearchCriteriaBuilder::class);
     }
 
     private function getPendingOrders()
@@ -212,13 +156,29 @@ class CheckPendingPaymentsCommand extends Command
         $dateEnd = new DateTime();
         $dateEnd->modify('-2 minute');
 
-        $search = $this->searchCriteriaBuilder
+        $search = $this->criteriaBuilder()
             ->addFilter('state', Order::STATE_NEW)
             ->addFilter('created_at', $dateStart->format('Y-m-d H:i:s'), 'gteq')
             ->addFilter('created_at', $dateEnd->format('Y-m-d H:i:s'), 'lteq')
             ->create();
 
-        return $this->orderRepository->getList($search)->getItems();
+        $pendingPaymentSearch = $this->criteriaBuilder()
+            ->addFilter('state', Order::STATE_PENDING_PAYMENT)
+            ->addFilter('created_at', $dateStart->format('Y-m-d H:i:s'), 'gteq')
+            ->addFilter('created_at', $dateEnd->format('Y-m-d H:i:s'), 'lteq')
+            ->create();
+
+        $reviewPaymentSearch = $this->criteriaBuilder()
+            ->addFilter('state', Order::STATE_PAYMENT_REVIEW)
+            ->addFilter('created_at', $dateStart->format('Y-m-d H:i:s'), 'gteq')
+            ->addFilter('created_at', $dateEnd->format('Y-m-d H:i:s'), 'lteq')
+            ->create();
+
+        return array_merge(
+            $this->orderRepository->getList($search)->getItems(),
+            $this->orderRepository->getList($pendingPaymentSearch)->getItems(),
+            $this->orderRepository->getList($reviewPaymentSearch)->getItems()
+        );
     }
 
     private function cache()

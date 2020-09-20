@@ -5,61 +5,76 @@ namespace Moyasar\Mysr\Controller\Redirect;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\UrlInterface;
 use Magento\Sales\Model\Order;
-use Moyasar\Mysr\Helper\Data;
+use Moyasar\Mysr\Helper\MoyasarHelper;
 
 class Response extends Action
 {
-    protected $_checkoutSession;
-    protected $_helper;
+    protected $checkoutSession;
+    protected $moyasarHelper;
+    protected $urlBuilder;
 
-    public function __construct(Context $context, Session $checkoutSession, Data $helper)
+    public function __construct(Context $context, Session $checkoutSession, MoyasarHelper $helper, UrlInterface $urlBuilder)
     {
         parent::__construct($context);
-        $this->_checkoutSession = $checkoutSession;
-        $this->_helper = $helper;
+
+        $this->checkoutSession = $checkoutSession;
+        $this->moyasarHelper = $helper;
+        $this->urlBuilder = $urlBuilder;
     }
 
     public function execute()
     {
-        $order = $this->getOrder();
-        $callbackUrl = $this->getHelper()->getUrl('checkout/onepage/success');
+        $order = $this->currentOrder();
 
-        if ($_GET['status'] == 'paid') {
-            if ($this->getHelper()->verifyAmount($order, $_GET['id'])) {
-                $this->getHelper()->processOrder($order, $_GET['id']);
-            }
-        } else {
-            if ($this->getHelper()->cancelCurrentOrder($order, $_GET['message'])) {
-                $this->_checkoutSession->restoreQuote();
-                $message = __('Error! Payment failed, please try again later.');
-                $this->messageManager->addError($message);
-                $callbackUrl = $this->getHelper()->getUrl('checkout/cart');
-            } else {
-                $callbackUrl = $this->getHelper()->getUrl('checkout/cart');
-            }
+        $paymentId = $this->orderPaymentId($order);
+        if (!$paymentId) {
+            $paymentId = isset($_GET['id']) ? $_GET['id'] : null;
+        }
+
+        $callbackUrl = $this->successPath();
+        $status = $this->moyasarHelper->verifyAndProcess($order, $paymentId);
+
+        if ($status != 'paid') {
+            $this->checkoutSession->restoreQuote();
+            $this->messageManager->addError(__('Error! Payment failed, please try again later.'));
+            $callbackUrl = $this->cartPath();
         }
 
         $this->getResponse()->setRedirect($callbackUrl);
     }
 
     /**
-     * Get order object
+     * Get current order object
      *
      * @return Order
      */
-    protected function getOrder()
+    protected function currentOrder()
     {
-        return $this->_checkoutSession->getLastRealOrder();
+        return $this->checkoutSession->getLastRealOrder();
     }
 
-    /**
-     * Get moyasar helper
-     *
-     * @return Data
-     */
-    protected function getHelper()
+    protected function successPath()
     {
-        return $this->_helper;
+        return $this->urlBuilder->getUrl('checkout/onepage/success');
+    }
+
+    protected function cartPath()
+    {
+        return $this->urlBuilder->getUrl('checkout/cart');
+    }
+
+    protected function orderPaymentId($order)
+    {
+        $payment = $order->getPayment();
+
+        if (is_null($payment)) {
+            return null;
+        }
+
+        $additionalInfo = $payment->getAdditionalInformation();
+
+        return isset($additionalInfo['moyasar_payment_id']) ? $additionalInfo['moyasar_payment_id'] : null;
     }
 }

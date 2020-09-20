@@ -52,6 +52,18 @@ openssl x509 -inform der -in merchant_id.cer -out merchant_id.pem
 openssl pkcs12 -nocerts -nodes -in merchant_id.p12 -out merchant_id.key
 ```
 
+To create a certificate signing request using OpenSSL, use the following:
+
+```sh
+openssl req -new -newkey rsa:2048 -nodes -keyout merchant.key -out merchant.csr
+```
+
+Now convert the certificate from Apple to PEM format
+
+```sh
+openssl x509 -inform der -in merchant_id.cer -out merchant_id.pem
+```
+
 Also, you need to setup you secret and publishable key in both Apple Pay configuration section and Credit Card section (This is important)
 
 

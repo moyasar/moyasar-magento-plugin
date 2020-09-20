@@ -4,22 +4,28 @@ namespace Moyasar\Mysr\Model\Config;
 
 use Magento\Config\Model\Config\Backend\File;
 use Magento\Config\Model\Config\Backend\File\RequestData\RequestDataInterface;
+use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\Data\Collection\AbstractDb;
 use Magento\Framework\Filesystem;
+use Magento\Framework\Model\Context;
+use Magento\Framework\Model\ResourceModel\AbstractResource;
+use Magento\Framework\Registry;
+use Magento\MediaStorage\Model\File\UploaderFactory;
 
 class ApplePayCertificateFile extends File
 {
     public function __construct(
-        \Magento\Framework\Model\Context $context,
-        \Magento\Framework\Registry $registry,
+        Context $context,
+        Registry $registry,
         ScopeConfigInterface $config,
-        \Magento\Framework\App\Cache\TypeListInterface $cacheTypeList,
-        \Magento\MediaStorage\Model\File\UploaderFactory $uploaderFactory,
+        TypeListInterface $cacheTypeList,
+        UploaderFactory $uploaderFactory,
         RequestDataInterface $requestData,
         Filesystem $filesystem,
-        \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
-        \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
+        AbstractResource $resource = null,
+        AbstractDb $resourceCollection = null,
         array $data = []
     ) {
         parent::__construct($context, $registry, $config, $cacheTypeList, $uploaderFactory, $requestData, $filesystem,

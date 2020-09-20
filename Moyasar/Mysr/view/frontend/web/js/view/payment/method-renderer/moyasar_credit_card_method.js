@@ -30,10 +30,10 @@ define(
         'use strict';
         return Component.extend({
             defaults: {
-                template: 'Moyasar_Mysr/payment/moyasar_cc'
+                template: 'Moyasar_Mysr/payment/moyasar_credit_card'
             },
             getCode: function () {
-                return 'moyasar_cc';
+                return 'moyasar_credit_card';
             },
             isActive: function () {
                 return true;
@@ -42,28 +42,48 @@ define(
                 return url.build('moyasar_mysr/redirect/response');
             },
             getApiKey: function () {
-                return window.checkoutConfig.moyasar_cc.apiKey;
+                return window.checkoutConfig.moyasar_credit_card.api_key;
             },
             getCardsType: function () {
-                var methods = window.checkoutConfig.moyasar_cc.cardsType.split(',');
-                return methods;
+                return window.checkoutConfig.moyasar_credit_card.supported_cards.split(',');
             },
             isShowLegend: function () {
                 return true;
             },
             getAmount: function () {
                 var totals = quote.getTotals()();
-                if (totals) return totals.base_grand_total * 100;
-                else return quote.base_grand_total * 100;
-            },
-            getEmail: function () {
-                if (quote.guestEmail) return "Order By a guest : " + quote.guestEmail;
-                else return "Order By a customer : " + window.checkoutConfig.customerData.email;
+
+                if (totals) {
+                    return totals.base_grand_total;
+                }
+
+                return quote.base_grand_total;
             },
             getCurrency: function () {
                 var totals = quote.getTotals()();
-                if (totals) return totals.base_currency_code;
-                else return quote.base_currency_code;
+
+                if (totals) {
+                    return totals.base_currency_code;
+                }
+
+                return quote.base_currency_code;
+            },
+            getAmountSmallUnit: function () {
+                var currency = this.getCurrency();
+                var fractionSize = window.checkoutConfig.moyasar_credit_card.currencies_fractions[currency];
+
+                if (!fractionSize) {
+                    fractionSize = window.checkoutConfig.moyasar_credit_card.currencies_fractions['DEFAULT'];
+                }
+
+                return this.getAmount() * (10 ** fractionSize);
+            },
+            getEmail: function () {
+                if (quote.guestEmail) {
+                    return "Order By a guest : " + quote.guestEmail;
+                }
+
+                return "Order By a customer : " + window.checkoutConfig.customerData.email;
             },
             validateName: function () {
                 var validator = $('#' + this.getCode() + '-form').validate();
@@ -82,6 +102,9 @@ define(
                 var $form = $('#' + this.getCode() + '-form');
                 return $form.validation() && $form.validation('isValid');
             },
+            moyasarPaymentUrl: function () {
+                return window.checkoutConfig.moyasar_credit_card.payment_url;
+            },
             redirectAfterPlaceOrder: false,
             placeOrder: function (data, event) {
                 var self = this;
@@ -99,7 +122,7 @@ define(
                 var $form = $('#' + this.getCode() + '-form');
                 var formData = $form.serialize();
 
-                var mPaymentResult = createMoyasarPayment(formData);
+                var mPaymentResult = createMoyasarPayment(formData, this.moyasarPaymentUrl());
 
                 mPaymentResult
                     .done(function (data) {
@@ -113,12 +136,11 @@ define(
                     })
                     .fail(function (xhr, status, error) {
                         self.isPlaceOrderActionAllowed(true);
-                        globalMessageList.addErrorMessage({
-                            message: mage('Error! Payment failed, please try again later.')
-                        });
+                        globalMessageList.addErrorMessage({ message: mage('Error! Payment failed, please try again later.') });
+                        if (xhr.responseJSON.message) {
+                            globalMessageList.addErrorMessage({ message: xhr.responseJSON.message });
+                        }
                     });
-
-
 
                 return true;
             },
@@ -134,4 +156,5 @@ define(
                 window.location.href = redirectUrl;
             }
         });
-    });
+    }
+);

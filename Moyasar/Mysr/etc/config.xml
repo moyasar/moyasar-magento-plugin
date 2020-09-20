@@ -2,6 +2,14 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
 	<default>
 		<payment>
+			<moyasar_credit_card>
+				<active>1</active>
+				<model>Moyasar\Mysr\Model\Payment\MoyasarCreditCard</model>
+				<order_status>pending_payment</order_status>
+				<title>Credit Card: Mada, Visa, MasterCard</title>
+				<sort_order>1</sort_order>
+			</moyasar_credit_card>
+
 			<moyasar_apple_pay>
 				<active>0</active>
 				<model>Moyasar\Mysr\Model\Payment\MoyasarApplePay</model>
@@ -9,20 +17,14 @@
 				<title>Apple Pay</title>
 				<sort_order>0</sort_order>
 			</moyasar_apple_pay>
-			<moyasar_cc>
-				<active>1</active>
-				<model>Moyasar\Mysr\Model\Payment\MoyasarCc</model>
-				<order_status>pending_payment</order_status>
-				<title>Online Payment: Mada, Visa, MasterCard</title>
-				<sort_order>1</sort_order>
-			</moyasar_cc>
-			<moyasar_sadad>
+
+			<moyasar_stc_pay>
 				<active>0</active>
-				<model>Moyasar\Mysr\Model\Payment\MoyasarSadad</model>
+				<model>Moyasar\Mysr\Model\Payment\MoyasarStcPay</model>
 				<order_status>pending_payment</order_status>
-				<title>Sadad</title>
+				<title>stc pay</title>
 				<sort_order>2</sort_order>
-			</moyasar_sadad>
+			</moyasar_stc_pay>
 		</payment>
 	</default>
 </config>

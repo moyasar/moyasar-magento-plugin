@@ -42,3 +42,8 @@
 !/var/package/*.xml
 
 .idea/
+
+merchant_id.key
+merchant_id.cer
+merchant_id.pem
+merchant_id.csr

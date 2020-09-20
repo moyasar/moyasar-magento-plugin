@@ -40,13 +40,21 @@ define(
             },
             getAmount: function () {
                 var totals = quote.getTotals()();
-                if (totals) return totals.base_grand_total * 100;
-                else return quote.base_grand_total * 100;
+
+                if (totals) {
+                    return totals.base_grand_total;
+                }
+
+                return quote.base_grand_total;
             },
             getCurrency: function () {
                 var totals = quote.getTotals()();
-                if (totals) return totals.base_currency_code;
-                else return quote.base_currency_code;
+
+                if (totals) {
+                    return totals.base_currency_code;
+                }
+
+                return quote.base_currency_code;
             },
             getCountry: function () {
                 return window.checkoutConfig.moyasar_apple_pay.country;

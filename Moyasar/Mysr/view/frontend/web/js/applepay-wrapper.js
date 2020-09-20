@@ -124,13 +124,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             return this.applePayVersion > 5;
         };
         ApplePayManager.prototype._parseAmount = function (configuration) {
-            try {
-                this.amount = parseInt(configuration.amount);
-            }
-            catch (e) {
-                return false;
-            }
-            return this.amount > 0;
+            return (this.amount = configuration.amount) != undefined;
         };
         ApplePayManager.prototype._parseCurrency = function (configuration) {
             this.currency = configuration.currency;
@@ -210,12 +204,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                 merchantCapabilities: this.merchantCapabilities,
                 total: {
                     label: this.label,
-                    amount: this._decimalAmount()
+                    amount: this.amount
                 },
             });
-        };
-        ApplePayManager.prototype._decimalAmount = function () {
-            return (this.amount / 100.0).toFixed(2);
         };
         ApplePayManager.prototype._hookupHandlers = function () {
             var _this = this;

@@ -12,7 +12,7 @@ define(
         'use strict';
         return Component.extend({
             defaults: {
-                template: 'Moyasar_Mysr/payment/moyasar_sadad'
+                template: 'Moyasar_Mysr/payment/moyasar_stc_pay'
             },
             getCode: function() {
                return 'moyasar_sadad';
@@ -24,17 +24,38 @@ define(
                 return url.build('moyasar_mysr/redirect/response');
             },
             getApiKey: function () {
-                return window.checkoutConfig.moyasar_sadad.apiKey;
+                return window.checkoutConfig.moyasar_stc_pay.api_key;
             },
             getAmount: function () {
                 var totals = quote.getTotals()();
-                var grand_total;
+
                 if (totals) {
-                    grand_total = totals.grand_total;
-                } else {
-                    grand_total = quote.grand_total;
+                    return totals.base_grand_total;
                 }
-                return grand_total*100;
+
+                return quote.base_grand_total;
+            },
+            getCurrency: function () {
+                var totals = quote.getTotals()();
+
+                if (totals) {
+                    return totals.base_currency_code;
+                }
+
+                return quote.base_currency_code;
+            },
+            getAmountSmallUnit: function () {
+                var currency = this.getCurrency();
+                var fractionSize = window.checkoutConfig.moyasar_stc_pay.currencies_fractions[currency];
+
+                if (!fractionSize) {
+                    fractionSize = window.checkoutConfig.moyasar_stc_pay.currencies_fractions['DEFAULT'];
+                }
+
+                return this.getAmount() * (10 ** fractionSize);
+            },
+            moyasarPaymentUrl: function () {
+                return window.checkoutConfig.moyasar_stc_pay.payment_url;
             },
             redirectAfterPlaceOrder : false,
             afterPlaceOrder: function () {
