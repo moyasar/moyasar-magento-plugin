@@ -2,6 +2,7 @@
 <page layout="1column" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
 	<head>
 		<css src="Moyasar_Mysr/css/applepay.css" rel="stylesheet" type="text/css" />
+		<css src="Moyasar_Mysr/css/stc-pay.css" rel="stylesheet" type="text/css" />
 		<script src="Moyasar_Mysr/js/applepay-wrapper.js" />
 	</head>
 	<body>

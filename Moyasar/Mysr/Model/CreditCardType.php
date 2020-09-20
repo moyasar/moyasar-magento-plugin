@@ -6,7 +6,8 @@ use Magento\Framework\Option\ArrayInterface;
 
 class CreditCardType implements ArrayInterface
 {
-    const VISA_MASTERCARD = 'viMc';
+    const VISA = 'visa';
+    const MASTERCARD = 'mastercard';
     const MADA = 'mada';
 
     /**
@@ -16,12 +17,16 @@ class CreditCardType implements ArrayInterface
     {
         return [
             [
-                'value' => static::VISA_MASTERCARD,
-                'label' => __('Visa and MasterCard')
+                'value' => static::VISA,
+                'label' => __('Visa')
+            ],
+            [
+                'value' => static::MASTERCARD,
+                'label' => __('Mastercard')
             ],
             [
                 'value' => static::MADA,
-                'label' => __('Mada Online')
+                'label' => __('Mada')
             ]
         ];
     }
