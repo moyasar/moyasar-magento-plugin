@@ -10,8 +10,8 @@ define(
         'use strict';
         rendererList.push(
             {
-                type: 'moyasar_cc',
-                component: 'Moyasar_Mysr/js/view/payment/method-renderer/moyasar_cc-method'
+                type: 'moyasar_credit_card',
+                component: 'Moyasar_Mysr/js/view/payment/method-renderer/moyasar_credit_card_method'
             }
         );
         return Component.extend({});

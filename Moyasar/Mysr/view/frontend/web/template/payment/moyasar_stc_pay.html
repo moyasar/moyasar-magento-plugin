@@ -1,0 +1,92 @@
+<div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked())}">
+    <div class="payment-method-title field choice">
+        <input type="radio"
+               name="payment[method]"
+               class="radio"
+               data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()"/>
+        <label data-bind="attr: {'for': getCode()}" class="label"><span data-bind="text: getTitle()"></span></label>
+    </div>
+    <div class="payment-method-content">
+        <!-- ko foreach: getRegion('messages') -->
+        <!-- ko template: getTemplate() --><!-- /ko -->
+        <!--/ko-->
+        <form data-bind="attr: {'id': getCode() + '-form'}, mageInit: {'validation': []}"
+              class="form"
+              method="post">
+            <fieldset class="fieldset payment items ccard">
+                <input name="amount" type="hidden" data-bind="value: getAmountSmallUnit()" />
+                <input name="currency" type="hidden" data-bind="value: getCurrency()" />
+                <input name="publishable_api_key" type="hidden" data-bind="value: getApiKey()" />
+                <input name="source[type]" type="hidden" value="stcpay" />
+
+                <div class="field type">
+                    <div class="control">
+                        <ul class="credit-card-types">
+                            <li class="item _active">
+                                <img data-bind="attr: {
+                                    'src': require.toUrl('Moyasar_Mysr/images/stcpay.png'),
+                                    'alt': item,
+                                    }"
+                                     style="height: 30px;"/>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="field number required" data-bind="css: {'hide-input': showingOtp()}">
+                    <label class="label" for="stc_pay_mobile">
+                        <span><!-- ko i18n: 'Account Mobile Number'--><!-- /ko --></span>
+                    </label>
+                    <div class="control">
+                        <input class="input-text"
+                               autocomplete="off"
+                               id="stc_pay_mobile"
+                               name="source[mobile]"
+                               type="text"
+                               data-bind="attr: {
+                                            'data-validate': JSON.stringify({'required': true, 'digits': true, 'maxlength': 10, 'minlength': 10, 'saudi_mobile': true})
+                                        },
+                                        enable: isActive($parents),
+                                        valueUpdate: 'keyup',
+                                        event: { 'keyup': validateMobile }"
+                        />
+                    </div>
+                </div>
+
+                <div class="field number required" data-bind="css: {'hide-input': !showingOtp()}">
+                    <label class="label" for="stc_pay_otp">
+                        <span><!-- ko i18n: 'One-Time Password'--><!-- /ko --></span>
+                    </label>
+                    <div class="control">
+                        <input class="input-text"
+                               autocomplete="off"
+                               id="stc_pay_otp"
+                               type="text"
+                               data-bind="attr: {
+                                            'data-validate': JSON.stringify({'required': true, 'digits': true})
+                                        },
+                                        enable: isActive($parents),
+                                        valueUpdate: 'keyup',
+                                        event: { 'keyup': validateMobile }"
+                        />
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+
+        <div class="actions-toolbar">
+            <div class="primary">
+                <button
+                        type="submit"
+                        data-bind="
+                            attr: {title: $t('Place Order'), 'form': getCode() + '-form'},
+                            enable: (getCode() == isChecked()),
+                            click: placeOrder,
+                            css: {disabled: !isPlaceOrderActionAllowed()}"
+                        class="action primary checkout">
+                    <span data-bind="i18n: 'Place Order'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

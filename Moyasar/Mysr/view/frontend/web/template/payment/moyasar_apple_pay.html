@@ -7,6 +7,20 @@
         <label data-bind="attr: {'for': getCode()}" class="label"><span data-bind="text: getTitle()"></span></label>
     </div>
     <div class="payment-method-content">
+        <div class="field type">
+            <div class="control">
+                <ul class="credit-card-types">
+                    <li class="item _active">
+                        <img data-bind="attr: {
+                                    'src': require.toUrl('Moyasar_Mysr/images/applepay.png'),
+                                    'alt': item,
+                                    }"
+                             style="height: 30px;"/>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
         <div class="apple-pay-button-area" data-bind="attr: {'initialized': initiateApplePay()}"></div>
     </div>
 </div>

@@ -10,19 +10,29 @@ use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\UrlInterface;
 use Magento\Quote\Model\Quote;
-use Moyasar\Mysr\Helper\Data;
+use Moyasar\Mysr\Helper\MoyasarHelper;
 
 class Authorize extends Action implements CsrfAwareActionInterface
 {
     protected $_checkoutSession;
     protected $_helper;
+    protected $urlBuilder;
 
-    public function __construct(Context $context, Session $checkoutSession, Data $helper)
+    /**
+     * Authorize constructor.
+     * @param Context $context
+     * @param Session $checkoutSession
+     * @param MoyasarHelper $helper
+     * @param UrlInterface $urlBuilder
+     */
+    public function __construct(Context $context, Session $checkoutSession, MoyasarHelper $helper, UrlInterface $urlBuilder)
     {
         parent::__construct($context);
         $this->_checkoutSession = $checkoutSession;
         $this->_helper = $helper;
+        $this->urlBuilder = $urlBuilder;
     }
 
     public function execute()
@@ -46,13 +56,14 @@ class Authorize extends Action implements CsrfAwareActionInterface
             return $this->errorJson('Could not get quote for current session');
         }
 
-        $amount = (int) $quote->getBaseGrandTotal() * 100;
         $currency = mb_strtoupper($quote->getBaseCurrencyCode());
+        $amount = $quote->getBaseGrandTotal();
 
         if (!$amount || $amount <= 0 || !$currency || strlen($currency) != 3) {
             return $this->errorJson('Could not get correct quote information');
         }
 
+        $amount = $this->getHelper()->amountSmallUnit($quote->getBaseGrandTotal(), $currency);
         $description = "Order for " . $quote->getCustomerEmail();
         $payment = $this->getHelper()->authorizeApplePayPayment($amount, $description, $currency, $paymentData);
 
@@ -63,7 +74,7 @@ class Authorize extends Action implements CsrfAwareActionInterface
         $paid = $this->isPaymentPaid($payment);
         $status = $this->paymentStatus($payment);
         $paymentId = $this->paymentId($payment);
-        $redirectUrl = $this->getHelper()->getUrl('moyasar_mysr/redirect/response');
+        $redirectUrl = $this->urlBuilder->getUrl('moyasar_mysr/redirect/response');
 
         return $this->resultFactory
             ->create(ResultFactory::TYPE_JSON)
@@ -88,7 +99,7 @@ class Authorize extends Action implements CsrfAwareActionInterface
     /**
      * Get moyasar helper
      *
-     * @return Data
+     * @return MoyasarHelper
      */
     protected function getHelper()
     {

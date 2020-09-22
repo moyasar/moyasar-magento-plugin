@@ -5,9 +5,9 @@ define(
     function ($) {
         'use strict';
 
-        return function (formData) {
+        return function (formData, url) {
             return $.ajax({
-                url: 'https://api.moyasar.com/v1/payments',
+                url: url,
                 type: 'POST',
                 data: formData,
                 dataType: 'json',

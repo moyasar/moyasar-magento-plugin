@@ -8,7 +8,7 @@ use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\ResultFactory;
-use Moyasar\Mysr\Helper\Data;
+use Moyasar\Mysr\Helper\MoyasarHelper;
 
 /**
  * Class Validate
@@ -21,7 +21,7 @@ class Validate extends Action implements CsrfAwareActionInterface
     protected $moyasarHelper;
     protected $resultFactory;
 
-    public function __construct(Context $context, Data $helper, ResultFactory $resultFactory)
+    public function __construct(Context $context, MoyasarHelper $helper, ResultFactory $resultFactory)
     {
         parent::__construct($context);
         $this->moyasarHelper = $helper;
@@ -86,7 +86,7 @@ class Validate extends Action implements CsrfAwareActionInterface
     /**
      * Get moyasar helper
      *
-     * @return Data
+     * @return MoyasarHelper
      */
     protected function getHelper()
     {
