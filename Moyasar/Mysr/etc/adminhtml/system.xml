@@ -30,7 +30,7 @@
                     <label>Title</label>
                 </field>
                 <field id="cards_type" translate="label" type="multiselect" sortOrder="50" showInDefault="1"
-                       showInWebsite="1" showInStore="1">
+                       showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Enable Credit Cards:</label>
                     <source_model>Moyasar\Mysr\Model\CreditCardType</source_model>
                 </field>
