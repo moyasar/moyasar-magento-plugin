@@ -7,6 +7,7 @@
 				<model>Moyasar\Mysr\Model\Payment\MoyasarCreditCard</model>
 				<order_status>pending_payment</order_status>
 				<title>Credit Card: Mada, Visa, MasterCard</title>
+				<cards_type>visa,mada,mastercard</cards_type>
 				<sort_order>1</sort_order>
 			</moyasar_credit_card>
 
