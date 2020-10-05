@@ -160,7 +160,7 @@ class MoyasarHelper extends AbstractHelper
 
     public function amountSmallUnit($amount, $currency)
     {
-        return (int) $amount * (10 ** $this->currencyHelper->fractionDigits($currency));
+        return (int) ($amount * (10 ** $this->currencyHelper->fractionDigits($currency)));
     }
 
     /**
