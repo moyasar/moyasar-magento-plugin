@@ -138,7 +138,9 @@ define(
                         self.isPlaceOrderActionAllowed(true);
                         globalMessageList.addErrorMessage({ message: mage('Error! Payment failed, please try again later.') });
                         if (xhr.responseJSON.message) {
-                            globalMessageList.addErrorMessage({ message: xhr.responseJSON.message });
+                            globalMessageList.addErrorMessage({
+                                message: xhr.responseJSON.message + ' : ' + JSON.stringify(xhr.responseJSON.errors)
+                            });
                         }
                     });
 
