@@ -16,8 +16,13 @@
                     <label>Secret API Key</label>
                     <comment>Your Secret API key from Moyasar's dashboard; required to verify payments.</comment>
                 </field>
+                <field id="is_invoice_generating_enabled" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label"
+                       type="select">
+                    <label>Enabled Automatic Invoice Generator</label>
+                    <comment>Generating invoice of completed order automatically.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
             </group>
-
             <group id="moyasar_credit_card" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="2" translate="label">
                 <label>Moyasar Credit Card</label>
                 <field id="active" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label"
@@ -81,7 +86,7 @@
             </group>
 
             <group id="moyasar_stc_pay" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="4" translate="label">
-                <label>Moyasar stc pay</label>
+                <label>Moyasar STC Pay</label>
                 <field id="active" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label" type="select">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

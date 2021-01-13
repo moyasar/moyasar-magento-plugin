@@ -2,6 +2,11 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
 	<default>
 		<payment>
+			<moyasar_api_conf>
+				<is_invoice_generating_enabled>1</is_invoice_generating_enabled>
+				<!-- It isn't needed to add the following line -model tag- but payment tag requires model tag, so I add MoyasarCreditCard model-->
+				<model>Moyasar\Mysr\Model\Payment\MoyasarCreditCard</model>
+			</moyasar_api_conf>
 			<moyasar_credit_card>
 				<active>1</active>
 				<model>Moyasar\Mysr\Model\Payment\MoyasarCreditCard</model>
@@ -23,7 +28,7 @@
 				<active>0</active>
 				<model>Moyasar\Mysr\Model\Payment\MoyasarStcPay</model>
 				<order_status>pending_payment</order_status>
-				<title>stc pay</title>
+				<title>STC Pay</title>
 				<sort_order>2</sort_order>
 			</moyasar_stc_pay>
 		</payment>

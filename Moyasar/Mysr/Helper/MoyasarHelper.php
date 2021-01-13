@@ -15,6 +15,7 @@ use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Spi\OrderResourceInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManager;
+use Magento\Sales\Model\Service\InvoiceService;
 
 class MoyasarHelper extends AbstractHelper
 {
@@ -24,6 +25,7 @@ class MoyasarHelper extends AbstractHelper
     protected $storeManager;
     protected $directoryList;
     private $currencyHelper;
+    protected $invoiceService;
 
     /**
      * MoyasarHelper constructor.
@@ -34,6 +36,7 @@ class MoyasarHelper extends AbstractHelper
      * @param StoreManager $storeManager
      * @param DirectoryList $directoryList
      * @param CurrencyHelper $currencyHelper
+     * @param InvoiceService $invoiceService
      */
     public function __construct(
         Context $context,
@@ -42,7 +45,8 @@ class MoyasarHelper extends AbstractHelper
         Curl $curl,
         StoreManager $storeManager,
         DirectoryList $directoryList,
-        CurrencyHelper $currencyHelper
+        CurrencyHelper $currencyHelper,
+        InvoiceService $invoiceService
     ) {
         $this->orderManagement = $orderManagement;
         $this->_objectManager = $objectManager;
@@ -52,6 +56,7 @@ class MoyasarHelper extends AbstractHelper
 
         parent::__construct($context);
         $this->currencyHelper = $currencyHelper;
+        $this->invoiceService = $invoiceService;
     }
 
     public function saveOrder(Order $order)
@@ -113,6 +118,20 @@ class MoyasarHelper extends AbstractHelper
         $this->saveOrder($order);
 
         return true;
+    }
+
+     /**
+     * Generate invoice for the completed order
+     *
+     * @param $order Order
+     */
+    public function generateInvoice($order)
+    {
+        if ($this->isInvoiceGeneratingEnabled() && $order->canInvoice()) {
+            $invoice =  $this->invoiceService->prepareInvoice($order);
+            $invoice->register();
+            $invoice->save();
+        }
     }
 
     /**
@@ -242,6 +261,7 @@ class MoyasarHelper extends AbstractHelper
             }
 
             $this->processOrder($order, "Payment is successful, ID: $moyasarPaymentId");
+            $this->generateInvoice($order);
 
             return $result;
         } catch (Exception $e) {
@@ -280,6 +300,13 @@ class MoyasarHelper extends AbstractHelper
         $this->_curl->get($this->buildMoyasarUrl("payments/$paymentId"));
 
         return @json_decode($this->_curl->getBody(), true);
+    }
+
+    public function isInvoiceGeneratingEnabled()
+    {
+        $isEnabled = $this->scopeConfig->getValue('payment/moyasar_api_conf/is_invoice_generating_enabled', ScopeInterface::SCOPE_STORE);
+
+        return $isEnabled;
     }
 
     public function getMerchantCertificatePath()
