@@ -16,6 +16,7 @@ use Magento\Sales\Model\Spi\OrderResourceInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManager;
 use Magento\Sales\Model\Service\InvoiceService;
+use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 
 class MoyasarHelper extends AbstractHelper
 {
@@ -26,6 +27,7 @@ class MoyasarHelper extends AbstractHelper
     protected $directoryList;
     private $currencyHelper;
     protected $invoiceService;
+    protected $invoiceSender;
 
     /**
      * MoyasarHelper constructor.
@@ -37,6 +39,7 @@ class MoyasarHelper extends AbstractHelper
      * @param DirectoryList $directoryList
      * @param CurrencyHelper $currencyHelper
      * @param InvoiceService $invoiceService
+     * @param InvoiceSender $invoiceSender
      */
     public function __construct(
         Context $context,
@@ -46,7 +49,8 @@ class MoyasarHelper extends AbstractHelper
         StoreManager $storeManager,
         DirectoryList $directoryList,
         CurrencyHelper $currencyHelper,
-        InvoiceService $invoiceService
+        InvoiceService $invoiceService,
+        InvoiceSender $invoiceSender
     ) {
         $this->orderManagement = $orderManagement;
         $this->_objectManager = $objectManager;
@@ -57,6 +61,7 @@ class MoyasarHelper extends AbstractHelper
         parent::__construct($context);
         $this->currencyHelper = $currencyHelper;
         $this->invoiceService = $invoiceService;
+        $this->invoiceSender = $invoiceSender;
     }
 
     public function saveOrder(Order $order)
@@ -132,6 +137,11 @@ class MoyasarHelper extends AbstractHelper
             $invoice->register();
             $invoice->save();
         }
+
+        // Send Invoice mail to customer
+        $this->invoiceSender->send($invoice);
+        $order->addStatusHistoryComment(__('Notified customer about invoice creation #%1.', $invoice->getId()))
+        ->setIsCustomerNotified(true)->save();
     }
 
     /**
