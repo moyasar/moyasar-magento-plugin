@@ -79,11 +79,12 @@ define(
                 return this.getAmount() * (10 ** fractionSize);
             },
             getEmail: function () {
+                // TODO: It return a guest even it is a customer, we need to check
                 if (quote.guestEmail) {
-                    return "Order By a guest : " + quote.guestEmail;
+                    return "Order By a guest: " + quote.guestEmail;
                 }
 
-                return "Order By a customer : " + window.checkoutConfig.customerData.email;
+                return "Order By a customer: " + window.checkoutConfig.customerData.email;
             },
             validateName: function () {
                 var validator = $('#' + this.getCode() + '-form').validate();
@@ -105,6 +106,9 @@ define(
             moyasarPaymentUrl: function () {
                 return window.checkoutConfig.moyasar_credit_card.payment_url;
             },
+            fetchOrderID: function () {
+                return $.when(placeOrderAction(this.getData(), this.messageContainer));
+            },
             redirectAfterPlaceOrder: false,
             placeOrder: function (data, event) {
                 var self = this;
@@ -120,39 +124,50 @@ define(
                 this.isPlaceOrderActionAllowed(false);
 
                 var $form = $('#' + this.getCode() + '-form');
-                var formData = $form.serialize();
 
-                var mPaymentResult = createMoyasarPayment(formData, this.moyasarPaymentUrl());
-
-                mPaymentResult
+                // place an order and get the orderID
+                var fetchOrder = this.fetchOrderID();
+                fetchOrder
                     .done(function (data) {
-                        self.placeMagentoOrder(data.id)
-                            .done(function () {
-                                self.afterPlaceOrder(data.source.transaction_url);
+                        // the data here is OrderID
+                        $form.find('input[name="description"]').val("Order ID: #" + data + ". " + self.getEmail());
+                        var formData = $form.serialize();
+
+                        var mPaymentResult = createMoyasarPayment(formData, self.moyasarPaymentUrl());
+                        mPaymentResult
+                            .done(function (data) {
+                                // the data.id is a moyasar_payment_id 
+                                self.addMoyasarPaymentID(data.id)
+                                    .done(function () {
+                                        self.afterPlaceOrder(data.source.transaction_url);
+                                    })
+                                    .fail(function (xhr, status, error) {
+                                        self.isPlaceOrderActionAllowed(true);
+                                    });
                             })
-                            .fail(function () {
+                            .fail(function (xhr, status, error) {
                                 self.isPlaceOrderActionAllowed(true);
+                                globalMessageList.addErrorMessage({ message: mage('Error! Payment failed, please try again later.') });
+                                if (xhr.responseJSON.message) {
+                                    globalMessageList.addErrorMessage({
+                                        message: xhr.responseJSON.message + ' : ' + JSON.stringify(xhr.responseJSON.errors)
+                                    });
+                                }
                             });
                     })
-                    .fail(function (xhr, status, error) {
+                    .fail(function () {
                         self.isPlaceOrderActionAllowed(true);
-                        globalMessageList.addErrorMessage({ message: mage('Error! Payment failed, please try again later.') });
-                        if (xhr.responseJSON.message) {
-                            globalMessageList.addErrorMessage({
-                                message: xhr.responseJSON.message + ' : ' + JSON.stringify(xhr.responseJSON.errors)
-                            });
-                        }
                     });
 
                 return true;
             },
-            placeMagentoOrder: function (paymentId) {
-                var paymentData = this.getData();
-                paymentData.additional_data = {
-                    'moyasar_payment_id': paymentId
-                };
-
-                return $.when(placeOrderAction(paymentData, this.messageContainer));
+            addMoyasarPaymentID: function (paymentId) {
+                return $.ajax({
+                    url: url.build('moyasar_mysr/afterpayment/update'),
+                    method: "POST",
+                    data: { paymentId: paymentId },
+                    dataType: "json"
+                });
             },
             afterPlaceOrder: function (redirectUrl) {
                 window.location.href = redirectUrl;
