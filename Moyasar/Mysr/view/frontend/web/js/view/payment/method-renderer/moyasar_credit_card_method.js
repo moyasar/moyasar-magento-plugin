@@ -79,12 +79,11 @@ define(
                 return this.getAmount() * (10 ** fractionSize);
             },
             getEmail: function () {
-                // TODO: It return a guest even it is a customer, we need to check
                 if (quote.guestEmail) {
-                    return "Order By a guest: " + quote.guestEmail;
+                    return "By: " + quote.guestEmail;
                 }
 
-                return "Order By a customer: " + window.checkoutConfig.customerData.email;
+                return "By: " + window.checkoutConfig.customerData.email;
             },
             validateName: function () {
                 var validator = $('#' + this.getCode() + '-form').validate();
