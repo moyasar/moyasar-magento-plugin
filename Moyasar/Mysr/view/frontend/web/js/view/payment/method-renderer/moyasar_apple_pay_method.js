@@ -47,6 +47,22 @@ define(
 
                 return quote.base_grand_total;
             },
+            getFormattedAmount: function (amount) {
+                var currency = this.getCurrency(),
+                    i, n, x;
+                var precision = window.checkoutConfig.moyasar_credit_card.currencies_fractions[currency]
+                if (!precision) {
+                    precision = window.checkoutConfig.moyasar_credit_card.currencies_fractions['DEFAULT'];
+                }
+
+                i = parseInt(
+                    amount = Number(Math.round(Math.abs(+amount || 0) + 'e+' + precision) + ('e-' + precision)),
+                    10
+                ) + '';
+                n = Number(Math.round(Math.abs(amount - i) + 'e+' + precision) + ('e-' + precision));
+                x = n.toFixed(precision).replace(/-/, 0).slice(2);
+                return i + '.' + x;
+            },
             getCurrency: function () {
                 var totals = quote.getTotals()();
 
@@ -82,7 +98,7 @@ define(
                 this.applePayManager = new ApplePayManager('.apple-pay-button-area');
                 this.applePayManager.initiate({
                     version: 6,
-                    amount: this.getAmount(),
+                    amount: this.getFormattedAmount(this.getAmount()),
                     currency: this.getCurrency(),
                     country: this.getCountry(),
                     label: this.getStoreName(),
