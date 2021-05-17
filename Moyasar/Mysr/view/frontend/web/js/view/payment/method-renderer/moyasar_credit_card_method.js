@@ -121,8 +121,9 @@ define(
 
                 var $form = $('#' + this.getCode() + '-form');
                 var formData = $form.serialize();
+                var paymentData = formData.concat(`&amount=${this.getAmountSmallUnit()}`);
 
-                var mPaymentResult = createMoyasarPayment(formData, this.moyasarPaymentUrl());
+                var mPaymentResult = createMoyasarPayment(paymentData, this.moyasarPaymentUrl());
 
                 mPaymentResult
                     .done(function (data) {

@@ -122,11 +122,12 @@ define(
 
                 var $form = $('#' + this.getCode() + '-form');
                 var formData = $form.serialize();
+                var paymentData = formData.concat(`&amount=${this.getAmountSmallUnit()}`);
 
                 var request = $.ajax({
                     url: this.moyasarPaymentUrl(),
                     type: 'POST',
-                    data: formData,
+                    data: paymentData,
                     dataType: 'json',
                 });
 
