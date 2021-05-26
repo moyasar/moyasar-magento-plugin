@@ -41,6 +41,13 @@ define(
             getBaseUrl: function () {
                 return url.build('moyasar_mysr/redirect/response');
             },
+            getOrderId: function () {
+                return $.ajax({
+                    url: url.build('moyasar_mysr/order/data'),
+                    method: 'GET',
+                    dataType: 'json'
+                });
+            },
             getApiKey: function () {
                 return window.checkoutConfig.moyasar_credit_card.api_key;
             },
@@ -51,13 +58,7 @@ define(
                 return true;
             },
             getAmount: function () {
-                var totals = quote.getTotals()();
-
-                if (totals) {
-                    return totals.base_grand_total;
-                }
-
-                return quote.base_grand_total;
+                return parseFloat(quote.totals()['base_grand_total']).toFixed(2);
             },
             getCurrency: function () {
                 var totals = quote.getTotals()();
@@ -68,7 +69,7 @@ define(
 
                 return quote.base_currency_code;
             },
-            getAmountSmallUnit: function () {
+            getAmountSmallUnit: function (amount) {
                 var currency = this.getCurrency();
                 var fractionSize = window.checkoutConfig.moyasar_credit_card.currencies_fractions[currency];
 
@@ -76,7 +77,9 @@ define(
                     fractionSize = window.checkoutConfig.moyasar_credit_card.currencies_fractions['DEFAULT'];
                 }
 
-                return this.getAmount() * (10 ** fractionSize);
+                var total = amount ? amount : getAmount();
+
+                return total * (10 ** fractionSize);
             },
             getEmail: function () {
                 if (quote.guestEmail) {
@@ -121,39 +124,50 @@ define(
 
                 var $form = $('#' + this.getCode() + '-form');
                 var formData = $form.serialize();
-                var paymentData = formData.concat(`&amount=${this.getAmountSmallUnit()}`);
 
-                var mPaymentResult = createMoyasarPayment(paymentData, this.moyasarPaymentUrl());
-
-                mPaymentResult
+                this.placeMagentoOrder()
                     .done(function (data) {
-                        self.placeMagentoOrder(data.id)
-                            .done(function () {
-                                self.afterPlaceOrder(data.source.transaction_url);
-                            })
-                            .fail(function () {
-                                self.isPlaceOrderActionAllowed(true);
-                            });
+                        // Hopefuly thid will fix missing orders issue.
+                        self.getOrderId().done(function (orderData) {
+                            var paymentData = formData.concat(
+                                `&amount=${self.getAmountSmallUnit(orderData['total'])}`+
+                                `&currency=${self.getCurrency()}`+
+                                `&description=${self.getEmail()}`+
+                                `&metadata[order_id]=${orderData['orderId']}`+
+                                `&metadata[quote_id]=${quote.getQuoteId()}`
+                            );
+
+                            var mPaymentResult = createMoyasarPayment(paymentData, self.moyasarPaymentUrl());
+
+                            mPaymentResult
+                                .done(function (paymentResponse) {
+                                    // TODO: 1. Verify amount
+                                    //       2. Update order with payment_id
+                                    self.afterPlaceOrder(paymentResponse.source.transaction_url);
+                                })
+                                .fail(function (xhr, status, error) {
+                                    self.isPlaceOrderActionAllowed(true);
+                                    globalMessageList.addErrorMessage({ message: mage('Error! Payment failed, please try again later.') });
+                                    if (xhr.responseJSON.message) {
+                                        globalMessageList.addErrorMessage({
+                                            message: xhr.responseJSON.message + ' : ' + JSON.stringify(xhr.responseJSON.errors)
+                                        });
+                                    }
+                                });
+                        }).fail(function () {
+                            //TODO: call failure controller
+                            console.log('Bye');
+                        });
                     })
-                    .fail(function (xhr, status, error) {
+                    .fail(function () {
+                        // TODO: cancel order
                         self.isPlaceOrderActionAllowed(true);
-                        globalMessageList.addErrorMessage({ message: mage('Error! Payment failed, please try again later.') });
-                        if (xhr.responseJSON.message) {
-                            globalMessageList.addErrorMessage({
-                                message: xhr.responseJSON.message + ' : ' + JSON.stringify(xhr.responseJSON.errors)
-                            });
-                        }
                     });
 
                 return true;
             },
-            placeMagentoOrder: function (paymentId) {
-                var paymentData = this.getData();
-                paymentData.additional_data = {
-                    'moyasar_payment_id': paymentId
-                };
-
-                return $.when(placeOrderAction(paymentData, this.messageContainer));
+            placeMagentoOrder: function () {
+                return $.when(placeOrderAction(this.getData(), this.messageContainer));
             },
             afterPlaceOrder: function (redirectUrl) {
                 window.location.href = redirectUrl;
