@@ -4,6 +4,7 @@
 		<payment>
 			<moyasar_api_conf>
 				<is_invoice_generating_enabled>1</is_invoice_generating_enabled>
+				<is_amount_verification_enabled>0</is_amount_verification_enabled>
 				<!-- It isn't needed to add the following line -model tag- but payment tag requires model tag, so I add MoyasarCreditCard model-->
 				<model>Moyasar\Mysr\Model\Payment\MoyasarCreditCard</model>
 			</moyasar_api_conf>

@@ -121,6 +121,7 @@ class MoyasarHelper extends AbstractHelper
         $order->setEmailSent((int) ($notified && true));
         $order->addStatusToHistory(Order::STATE_PROCESSING, $comment, $notified);
         $this->saveOrder($order);
+        $this->generateInvoice($order);
 
         return true;
     }
@@ -168,6 +169,12 @@ class MoyasarHelper extends AbstractHelper
         return true;
     }
 
+    public function rejectFraudPayment($order, $response)
+    {
+        $order->addStatusToHistory(Order::STATUS_FRAUD, 'Payment Review Failed: ***possible tampering** | Actual payment: ' . $response['amount_format']);
+        $this->cancelCurrentOrder($order, "Order canceled, payment with ID ". $response['id'] . " may be fraudulent");
+    }
+
     public function orderCurrency($order)
     {
         return $order_currency = mb_strtoupper($order->getBaseCurrencyCode());
@@ -197,7 +204,7 @@ class MoyasarHelper extends AbstractHelper
      * @param $moyasarPaymentId
      * @return string
      */
-    public function verifyAndProcess($order, $moyasarPaymentId)
+    public function verifyAndProcess($order, $moyasarPaymentId, $returnedStatus)
     {
         if (!$order) {
             return 'failed';
@@ -208,6 +215,18 @@ class MoyasarHelper extends AbstractHelper
         }
 
         if (!$order->getId()) {
+            return 'failed';
+        }
+
+        // ALOOOT of cleaning needed here.
+        if (!$this->isAmountVerificationEnabled() && $returnedStatus == 'paid') {
+            $this->processOrder($order, "Payment is successful, ID: $moyasarPaymentId");
+            return 'paid';
+        }
+
+        if (!$this->isAmountVerificationEnabled() && $returnedStatus == 'failed') {
+            $order->addStatusToHistory(Order::STATE_CANCELED, "Moyasar payment with ID $moyasarPaymentId has status $returnedStatus, order will be canceled");
+            $this->cancelCurrentOrder($order, "Order canceled, payment with ID $moyasarPaymentId has status $returnedStatus");
             return 'failed';
         }
 
@@ -255,14 +274,12 @@ class MoyasarHelper extends AbstractHelper
             }
 
             if ($response['amount'] != $amount) {
-                $order->addStatusToHistory(Order::STATUS_FRAUD, 'Payment Review Failed: ***possible tampering** | Actual amount paid: ' . $response['amount_format']);
-                $this->cancelCurrentOrder($order, "Order canceled, payment with ID $moyasarPaymentId may be fraudulent");
+                $this->rejectFraudPayment($order, $response);
                 $result = 'failed';
             }
 
             if (mb_strtoupper($response['currency']) != $currency) {
-                $order->addStatusToHistory(Order::STATUS_FRAUD, 'Payment Review Failed: ***possible tampering** | Payment currency: ' . $response['currency'] . ', order currency: ' . $currency);
-                $this->cancelCurrentOrder($order, "Order canceled, payment with ID $moyasarPaymentId may be fraudulent");
+                $this->rejectFraudPayment($order, $response);
                 $result = 'failed';
             }
 
@@ -271,13 +288,24 @@ class MoyasarHelper extends AbstractHelper
             }
 
             $this->processOrder($order, "Payment is successful, ID: $moyasarPaymentId");
-            $this->generateInvoice($order);
 
             return $result;
         } catch (Exception $e) {
             $this->_logger->critical('Error: ', ['exception' => $e]);
             return 'failed';
         }
+    }
+
+    public function isAmountVerificationEnabled()
+    {
+        return $this->scopeConfig->getValue('payment/moyasar_api_conf/is_amount_verification_enabled', ScopeInterface::SCOPE_STORE);
+    }
+
+    public function isInvoiceGeneratingEnabled()
+    {
+        $isEnabled = $this->scopeConfig->getValue('payment/moyasar_api_conf/is_invoice_generating_enabled', ScopeInterface::SCOPE_STORE);
+
+        return $isEnabled;
     }
 
     public function moyasarPublishableApiKey()
@@ -310,13 +338,6 @@ class MoyasarHelper extends AbstractHelper
         $this->_curl->get($this->buildMoyasarUrl("payments/$paymentId"));
 
         return @json_decode($this->_curl->getBody(), true);
-    }
-
-    public function isInvoiceGeneratingEnabled()
-    {
-        $isEnabled = $this->scopeConfig->getValue('payment/moyasar_api_conf/is_invoice_generating_enabled', ScopeInterface::SCOPE_STORE);
-
-        return $isEnabled;
     }
 
     public function getMerchantCertificatePath()

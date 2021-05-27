@@ -34,7 +34,7 @@ class Response extends Action
         }
 
         $callbackUrl = $this->successPath();
-        $status = $this->moyasarHelper->verifyAndProcess($order, $paymentId);
+        $status = $this->moyasarHelper->verifyAndProcess($order, $paymentId, $_GET['status']);
 
         if ($status != 'paid') {
             $this->checkoutSession->restoreQuote();
