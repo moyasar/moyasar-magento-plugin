@@ -222,7 +222,9 @@ class MoyasarHelper extends AbstractHelper
         if (!$this->isAmountVerificationEnabled() && $returnedStatus == 'paid') {
             $this->processOrder($order, "Payment is successful, ID: $moyasarPaymentId");
             return 'paid';
-        } else {
+        }
+
+        if (!$this->isAmountVerificationEnabled() && $returnedStatus == 'failed') {
             $order->addStatusToHistory(Order::STATE_CANCELED, "Moyasar payment with ID $moyasarPaymentId has status $returnedStatus, order will be canceled");
             $this->cancelCurrentOrder($order, "Order canceled, payment with ID $moyasarPaymentId has status $returnedStatus");
             return 'failed';
@@ -296,7 +298,7 @@ class MoyasarHelper extends AbstractHelper
 
     public function isAmountVerificationEnabled()
     {
-        return $this->scopeConfig->getValue('payment/moyasar_general_config/is_amount_verification_enabled', ScopeInterface::SCOPE_STORE);
+        return $this->scopeConfig->getValue('payment/moyasar_api_conf/is_amount_verification_enabled', ScopeInterface::SCOPE_STORE);
     }
 
     public function isInvoiceGeneratingEnabled()
