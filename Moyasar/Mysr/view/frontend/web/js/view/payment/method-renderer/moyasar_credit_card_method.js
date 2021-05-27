@@ -77,7 +77,7 @@ define(
                     fractionSize = window.checkoutConfig.moyasar_credit_card.currencies_fractions['DEFAULT'];
                 }
 
-                var total = amount ? amount : getAmount();
+                var total = amount ? amount : this.getAmount();
 
                 return total * (10 ** fractionSize);
             },
@@ -125,49 +125,54 @@ define(
                 var $form = $('#' + this.getCode() + '-form');
                 var formData = $form.serialize();
 
-                this.placeMagentoOrder()
-                    .done(function (data) {
-                        // Hopefuly thid will fix missing orders issue.
-                        self.getOrderId().done(function (orderData) {
-                            var paymentData = formData.concat(
-                                `&amount=${self.getAmountSmallUnit(orderData['total'])}`+
-                                `&currency=${self.getCurrency()}`+
-                                `&description=${self.getEmail()}`+
-                                `&metadata[order_id]=${orderData['orderId']}`+
-                                `&metadata[quote_id]=${quote.getQuoteId()}`
-                            );
+                this.placeMagentoOrder().done(function (orderId) {
+                    self.getOrderId().done(function (orderData) {
 
-                            var mPaymentResult = createMoyasarPayment(paymentData, self.moyasarPaymentUrl());
+                        var paymentData = formData.concat(
+                            `&amount=${self.getAmountSmallUnit(orderData['total'])}`+
+                            `&currency=${self.getCurrency()}`+
+                            `&description=${self.getEmail()}`+
+                            `&metadata[order_id]=${orderData['orderId']}`
+                        );
 
-                            mPaymentResult
-                                .done(function (paymentResponse) {
-                                    // TODO: 1. Verify amount
-                                    //       2. Update order with payment_id
-                                    self.afterPlaceOrder(paymentResponse.source.transaction_url);
+                        var mPaymentResult = createMoyasarPayment(paymentData, self.moyasarPaymentUrl());
+
+                        mPaymentResult
+                            .done(function (paymentObject) {
+                                self.updateOrderPayment(paymentObject).done(function (){
+                                    self.afterPlaceOrder(paymentObject.source.transaction_url);
                                 })
-                                .fail(function (xhr, status, error) {
+                                .fail(function (){
                                     self.isPlaceOrderActionAllowed(true);
-                                    globalMessageList.addErrorMessage({ message: mage('Error! Payment failed, please try again later.') });
-                                    if (xhr.responseJSON.message) {
-                                        globalMessageList.addErrorMessage({
-                                            message: xhr.responseJSON.message + ' : ' + JSON.stringify(xhr.responseJSON.errors)
-                                        });
-                                    }
+                                    globalMessageList.addErrorMessage({
+                                        message: mage('Error! Could not place order.')
+                                    });
                                 });
-                        }).fail(function () {
-                            //TODO: call failure controller
-                            console.log('Bye');
-                        });
-                    })
-                    .fail(function () {
-                        // TODO: cancel order
-                        self.isPlaceOrderActionAllowed(true);
-                    });
+                            })
+                            .fail(function (xhr, status, error) {
+                                self.isPlaceOrderActionAllowed(true);
+                                globalMessageList.addErrorMessage({ message: mage('Error! Payment failed, please try again later.') });
+                                if (xhr.responseJSON.message) {
+                                    globalMessageList.addErrorMessage({
+                                        message: xhr.responseJSON.message + ' : ' + JSON.stringify(xhr.responseJSON.errors)
+                                    });
+                                }
+                            });
+                        }).fail(function () { self.isPlaceOrderActionAllowed(true); })
+                    }).fail(function () { self.isPlaceOrderActionAllowed(true); });
 
                 return true;
             },
             placeMagentoOrder: function () {
                 return $.when(placeOrderAction(this.getData(), this.messageContainer));
+            },
+            updateOrderPayment: function (payment) {
+                return $.ajax({
+                    url: url.build('moyasar_mysr/order/update'),
+                    method: 'POST',
+                    data: payment,
+                    dataType: 'json'
+                });
             },
             afterPlaceOrder: function (redirectUrl) {
                 window.location.href = redirectUrl;

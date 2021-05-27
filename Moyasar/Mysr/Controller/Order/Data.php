@@ -23,7 +23,7 @@ class Data extends Action
         $order   = $this->currentOrder();
 
         $orderId = $order->getIncrementId();
-        $total   = $order->getGrandTotal();
+        $total   = $order->getBaseGrandTotal();
 
         return $this->resultFactory->create(ResultFactory::TYPE_JSON)
             ->setData([
