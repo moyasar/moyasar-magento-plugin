@@ -232,6 +232,8 @@ define(
                     dataType: 'json',
                 });
 
+                fullScreenLoader.startLoader();
+
                 request
                     .done(function (data) {
                         if (data.status !== 'paid') {
@@ -244,7 +246,6 @@ define(
 
                             self.showingOtp(false);
                             self.transactionUrl = null;
-                            return;
                         }
 
                         self.afterPlaceOrder(self.getRedirectUrl() + '?status=' + data.status + '&id=' + data.id);

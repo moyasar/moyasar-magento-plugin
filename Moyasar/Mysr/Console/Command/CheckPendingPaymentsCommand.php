@@ -140,7 +140,7 @@ class CheckPendingPaymentsCommand extends Command
 
         $moyasarPaymentId = $additionalInfo['moyasar_payment_id'];
 
-        $this->moyasarHelper->verifyAndProcess($order, $moyasarPaymentId);
+        $this->moyasarHelper->verifyAndProcess($order, $moyasarPaymentId, null);
     }
 
     private function criteriaBuilder()
