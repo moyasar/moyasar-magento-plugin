@@ -2,7 +2,7 @@
     "name": "moyasar/module-mysr",
     "description": "Magento 2 payment module that integrate with https:\\moyasar.com Gateway",
     "type": "magento2-module",
-    "version": "2.5.0",
+    "version": "2.5.6",
     "authors": [
         {
             "email": "support@moyasar.com",
