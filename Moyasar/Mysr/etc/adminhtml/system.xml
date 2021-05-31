@@ -3,112 +3,109 @@
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
         <section id="payment" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="1000" translate="label">
-            <group id="moyasar_configuration" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="1" translate="label">
-                <label>Moyasar</label>
-                <group id="moyasar_api_conf" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="1" translate="label">
-                    <label>General Configuration</label>
-                    <field id="publishable_api_key" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1"
-                           showInStore="0">
-                        <label>Publishable API Key</label>
-                        <comment>Your Publishable API key from Moyasar's dashboard; required to initiate payments.</comment>
-                    </field>
-                    <field id="secret_api_key" translate="label" type="text" sortOrder="30" showInDefault="1"
-                           showInWebsite="1" showInStore="0">
-                        <label>Secret API Key</label>
-                        <comment>Your Secret API key from Moyasar's dashboard; required to verify payments.</comment>
-                    </field>
-                    <field id="is_amount_verification_enabled" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label"
-                           type="select">
-                        <label>Enable Automatic Verification of Amount Tampering</label>
-                        <comment>A double-check system of completed payment after the redirection to verify its status and amount paid before placing the order.</comment>
-                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    </field>
-                    <field id="is_invoice_generating_enabled" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="50" translate="label"
-                           type="select">
-                        <label>Enable Automatic Invoice Generator</label>
-                        <comment>Generating invoice of completed order automatically.</comment>
-                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    </field>
-                </group>
+            <group id="moyasar_api_conf" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="1" translate="label">
+                <label>Moyasar General Configuration</label>
+                <field id="publishable_api_key" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1"
+                       showInStore="0">
+                    <label>Publishable API Key</label>
+                    <comment>Your Publishable API key from Moyasar's dashboard; required to initiate payments.</comment>
+                </field>
+                <field id="secret_api_key" translate="label" type="text" sortOrder="30" showInDefault="1"
+                       showInWebsite="1" showInStore="0">
+                    <label>Secret API Key</label>
+                    <comment>Your Secret API key from Moyasar's dashboard; required to verify payments.</comment>
+                </field>
+                <field id="is_amount_verification_enabled" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label"
+                       type="select">
+                    <label>Enable Automatic Verification of Amount Tampering</label>
+                    <comment>A double-check system of completed payment after the redirection to verify its status and amount paid before placing the order.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="is_invoice_generating_enabled" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="50" translate="label"
+                       type="select">
+                    <label>Enable Automatic Invoice Generator</label>
+                    <comment>Generating invoice of completed order automatically.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
 
-                <group id="moyasar_credit_card" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="2" translate="label">
-                    <label>Credit Card</label>
-                    <field id="active" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label"
-                           type="select">
-                        <label>Enabled</label>
-                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    </field>
-                    <field id="title" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" canRestore="1"
-                           translate="label" type="text">
-                        <label>Title</label>
-                    </field>
-                    <field id="cards_type" translate="label" type="multiselect" sortOrder="50" showInDefault="1"
-                           showInWebsite="1" showInStore="1" canRestore="1">
-                        <label>Enable Credit Cards:</label>
-                        <source_model>Moyasar\Mysr\Model\CreditCardType</source_model>
-                    </field>
-                    <field id="sort_order" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="60"
-                           translate="label" type="text">
-                        <label>Sort Order</label>
-                    </field>
-                </group>
+            <group id="moyasar_credit_card" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="2" translate="label">
+                <label>Moyasar Credit Card</label>
+                <field id="active" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label"
+                       type="select">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="title" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" canRestore="1"
+                       translate="label" type="text">
+                    <label>Title</label>
+                </field>
+                <field id="cards_type" translate="label" type="multiselect" sortOrder="50" showInDefault="1"
+                       showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enable Credit Cards:</label>
+                    <source_model>Moyasar\Mysr\Model\CreditCardType</source_model>
+                </field>
+                <field id="sort_order" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="60"
+                       translate="label" type="text">
+                    <label>Sort Order</label>
+                </field>
+            </group>
 
-                <group id="moyasar_apple_pay" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="3" translate="label">
-                    <label>Apple Pay</label>
-                    <field id="active" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label"
-                           type="select">
-                        <label>Enabled</label>
-                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                        <comment>Please set both Moyasar publishable API key and secret API key in Credit Card configurations</comment>
-                    </field>
-                    <field id="title" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" canRestore="1"
-                           translate="label" type="text">
-                        <label>Title</label>
-                    </field>
-                    <field id="merchant_id" translate="label" type="text" sortOrder="30" showInDefault="1"
-                           showInWebsite="1" showInStore="0">
-                        <label>Apple Pay Merchant ID</label>
-                        <comment>Used for initiating Apple Pay Sessions</comment>
-                    </field>
-                    <field id="validate_merchant_cert" translate="label" type="Magento\Config\Block\System\Config\Form\Field\File" sortOrder="39" showInDefault="1" showInWebsite="0" >
-                        <label>Upload Merchant Validation Certificate</label>
-                        <backend_model>Moyasar\Mysr\Model\Config\ApplePayCertificateFile</backend_model>
-                        <upload_dir config="system" scope_info="1">moyasar/applepay/certificates</upload_dir>
-                        <comment>Used for initiating Apple Pay Sessions</comment>
-                    </field>
-                    <field id="validate_merchant_pk" translate="label" type="Magento\Config\Block\System\Config\Form\Field\File" sortOrder="40" showInDefault="1" showInWebsite="0" >
-                        <label>Upload Merchant Validation Certificate Private Key</label>
-                        <backend_model>Moyasar\Mysr\Model\Config\ApplePayCertificateFile</backend_model>
-                        <upload_dir config="system" scope_info="1">moyasar/applepay/certificates</upload_dir>
-                        <comment>Used for initiating Apple Pay Sessions</comment>
-                    </field>
-                    <field id="validate_merchant_pk_password" translate="label" type="text" sortOrder="30" showInDefault="1"
-                           showInWebsite="1" showInStore="0">
-                        <label>Private Key Password</label>
-                        <comment>Used for initiating Apple Pay Sessions, Only set if there is a password for your private key</comment>
-                    </field>
-                    <field id="sort_order" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="60"
-                           translate="label" type="text">
-                        <label>Sort Order</label>
-                    </field>
-                </group>
+            <group id="moyasar_apple_pay" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="3" translate="label">
+                <label>Moyasar Apple Pay</label>
+                <field id="active" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label"
+                       type="select">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Please set both Moyasar publishable API key and secret API key in Credit Card configurations</comment>
+                </field>
+                <field id="title" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" canRestore="1"
+                       translate="label" type="text">
+                    <label>Title</label>
+                </field>
+                <field id="merchant_id" translate="label" type="text" sortOrder="30" showInDefault="1"
+                       showInWebsite="1" showInStore="0">
+                    <label>Apple Pay Merchant ID</label>
+                    <comment>Used for initiating Apple Pay Sessions</comment>
+                </field>
+                <field id="validate_merchant_cert" translate="label" type="Magento\Config\Block\System\Config\Form\Field\File" sortOrder="39" showInDefault="1" showInWebsite="0" >
+                    <label>Upload Merchant Validation Certificate</label>
+                    <backend_model>Moyasar\Mysr\Model\Config\ApplePayCertificateFile</backend_model>
+                    <upload_dir config="system" scope_info="1">moyasar/applepay/certificates</upload_dir>
+                    <comment>Used for initiating Apple Pay Sessions</comment>
+                </field>
+                <field id="validate_merchant_pk" translate="label" type="Magento\Config\Block\System\Config\Form\Field\File" sortOrder="40" showInDefault="1" showInWebsite="0" >
+                    <label>Upload Merchant Validation Certificate Private Key</label>
+                    <backend_model>Moyasar\Mysr\Model\Config\ApplePayCertificateFile</backend_model>
+                    <upload_dir config="system" scope_info="1">moyasar/applepay/certificates</upload_dir>
+                    <comment>Used for initiating Apple Pay Sessions</comment>
+                </field>
+                <field id="validate_merchant_pk_password" translate="label" type="text" sortOrder="30" showInDefault="1"
+                       showInWebsite="1" showInStore="0">
+                    <label>Private Key Password</label>
+                    <comment>Used for initiating Apple Pay Sessions, Only set if there is a password for your private key</comment>
+                </field>
+                <field id="sort_order" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="60"
+                       translate="label" type="text">
+                    <label>Sort Order</label>
+                </field>
+            </group>
 
-                <group id="moyasar_stc_pay" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="4" translate="label">
-                    <label>STC Pay</label>
-                    <field id="active" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label" type="select">
-                        <label>Enabled</label>
-                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                        <comment>Please set both Moyasar publishable API key and secret API key in Credit Card configurations</comment>
-                    </field>
-                    <field id="title" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" canRestore="1"
-                           translate="label" type="text">
-                        <label>Title</label>
-                    </field>
-                    <field id="sort_order" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="60"
-                           translate="label" type="text">
-                        <label>Sort Order</label>
-                    </field>
-                </group>
+            <group id="moyasar_stc_pay" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="4" translate="label">
+                <label>Moyasar STC Pay</label>
+                <field id="active" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label" type="select">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Please set both Moyasar publishable API key and secret API key in Credit Card configurations</comment>
+                </field>
+                <field id="title" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" canRestore="1"
+                       translate="label" type="text">
+                    <label>Title</label>
+                </field>
+                <field id="sort_order" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="60"
+                       translate="label" type="text">
+                    <label>Sort Order</label>
+                </field>
             </group>
         </section>
     </system>
