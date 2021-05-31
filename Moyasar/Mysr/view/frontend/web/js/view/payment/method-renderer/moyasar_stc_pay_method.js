@@ -48,6 +48,16 @@ define(
             getRedirectUrl: function() {
                 return url.build('moyasar_mysr/redirect/response');
             },
+            getCancelOrderUrl: function () {
+                return url.build('moyasar_mysr/order/cancel');
+            },
+            getOrderId: function () {
+                return $.ajax({
+                    url: url.build('moyasar_mysr/order/data'),
+                    method: 'GET',
+                    dataType: 'json'
+                });
+            },
             getApiKey: function () {
                 return window.checkoutConfig.moyasar_stc_pay.api_key;
             },
@@ -69,7 +79,7 @@ define(
 
                 return quote.base_currency_code;
             },
-            getAmountSmallUnit: function () {
+            getAmountSmallUnit: function (amount) {
                 var currency = this.getCurrency();
                 var fractionSize = window.checkoutConfig.moyasar_stc_pay.currencies_fractions[currency];
 
@@ -77,7 +87,9 @@ define(
                     fractionSize = window.checkoutConfig.moyasar_stc_pay.currencies_fractions['DEFAULT'];
                 }
 
-                return this.getAmount() * (10 ** fractionSize);
+                var total = amount ? amount : this.getAmount();
+
+                return total * (10 ** fractionSize);
             },
             moyasarPaymentUrl: function () {
                 return window.checkoutConfig.moyasar_stc_pay.payment_url;
@@ -122,34 +134,78 @@ define(
 
                 var $form = $('#' + this.getCode() + '-form');
                 var formData = $form.serialize();
-                var paymentData = formData.concat(`&amount=${this.getAmountSmallUnit()}`);
 
-                var request = $.ajax({
-                    url: this.moyasarPaymentUrl(),
-                    type: 'POST',
-                    data: paymentData,
-                    dataType: 'json',
-                });
+                fullScreenLoader.startLoader();
 
-                request
-                    .done(function (data) {
+                this.placeMagentoOrder().done(function (orderId) {
+                    self.getOrderId().done(function (orderData) {
+
+                        var paymentData = formData.concat(
+                            `&amount=${self.getAmountSmallUnit(orderData['total'])}`+
+                            `&currency=${self.getCurrency()}`+
+                            `&metadata[order_id]=${orderData['orderId']}`
+                        );
+
+                        var request = $.ajax({
+                            url: self.moyasarPaymentUrl(),
+                            type: 'POST',
+                            data: paymentData,
+                            dataType: 'json',
+                        });
+
+                        request
+                            .done(function (data) {
+                                self.updateOrderPayment(data).done(function (){
+                                    self.isPlaceOrderActionAllowed(true);
+                                    if (data.source.transaction_url) {
+                                        fullScreenLoader.stopLoader();
+                                        self.showingOtp(true);
+                                        self.transactionUrl = data.source.transaction_url;
+                                    } else {
+                                        self.afterPlaceOrder(
+                                            self.getCancelOrderUrl() +
+                                            '?id=' + data.id +
+                                            '&message=' + data.source.message,
+                                            true
+                                        );
+                                    }
+                                })
+                                .fail(function (){
+                                    self.isPlaceOrderActionAllowed(true);
+                                    globalMessageList.addErrorMessage({
+                                        message: mage('Error! Could not place order.')
+                                    });
+                                    self.afterPlaceOrder(self.getCancelOrderUrl(), true);
+                                });
+                            })
+                            .fail(function (xhr, status, error) {
+                                self.transactionUrl = null;
+                                self.isPlaceOrderActionAllowed(true);
+                                globalMessageList.addErrorMessage({ message: mage('Error! Payment failed, please try again later.') });
+                                if (xhr.responseJSON.message) {
+                                    globalMessageList.addErrorMessage({ message: xhr.responseJSON.message });
+                                }
+                                self.afterPlaceOrder(self.getCancelOrderUrl(), true);
+                            });
+                        })
+                    .fail(function () {
                         self.isPlaceOrderActionAllowed(true);
-                        self.showingOtp(true);
-                        self.transactionUrl = data.source.transaction_url;
+                        self.afterPlaceOrder(self.getCancelOrderUrl(), true);
                     })
-                    .fail(function (xhr, status, error) {
-                        self.transactionUrl = null;
-                        self.isPlaceOrderActionAllowed(true);
-                        globalMessageList.addErrorMessage({ message: mage('Error! Payment failed, please try again later.') });
-                        if (xhr.responseJSON.message) {
-                            globalMessageList.addErrorMessage({ message: xhr.responseJSON.message });
-                        }
-                    });
+                })
+                .fail(function () {
+                    self.isPlaceOrderActionAllowed(true);
+                    self.afterPlaceOrder(self.getCancelOrderUrl(), true);
+                });
 
                 return true;
             },
             submitToken: function (data, event) {
                 if (!this.showingOtp()) {
+                    return false;
+                }
+
+                if (!this.transactionUrl) {
                     return false;
                 }
 
@@ -191,15 +247,7 @@ define(
                             return;
                         }
 
-                        self.placeMagentoOrder(data.id)
-                            .done(function () {
-                                self.afterPlaceOrder(self.getRedirectUrl() + '?status=' + data.status + '&id=' + data.id);
-                            })
-                            .fail(function () {
-                                self.isPlaceOrderActionAllowed(true);
-                                self.showingOtp(false);
-                                self.transactionUrl = null;
-                            });
+                        self.afterPlaceOrder(self.getRedirectUrl() + '?status=' + data.status + '&id=' + data.id);
                     })
                     .fail(function (xhr, status, error) {
                         self.isPlaceOrderActionAllowed(true);
@@ -209,19 +257,27 @@ define(
                         if (xhr.responseJSON.message) {
                             globalMessageList.addErrorMessage({ message: xhr.responseJSON.message });
                         }
+                        self.afterPlaceOrder(self.getCancelOrderUrl(), true);
                     });
 
                 return true;
             },
             placeMagentoOrder: function (paymentId) {
-                var paymentData = this.getData();
-                paymentData.additional_data = {
-                    'moyasar_payment_id': paymentId
-                };
-
-                return $.when(placeOrderAction(paymentData, this.messageContainer));
+                return $.when(placeOrderAction(this.getData(), this.messageContainer));
             },
-            afterPlaceOrder: function (url) {
+            updateOrderPayment: function (payment) {
+                return $.ajax({
+                    url: url.build('moyasar_mysr/order/update'),
+                    method: 'POST',
+                    data: payment,
+                    dataType: 'json'
+                });
+            },
+            afterPlaceOrder: function (url, failed) {
+                if (failed) {
+                    globalMessageList.addErrorMessage({ message: mage('Error! Payment failed, please try again later.') });
+                }
+                fullScreenLoader.stopLoader();
                 window.location.href = url;
             }
         });

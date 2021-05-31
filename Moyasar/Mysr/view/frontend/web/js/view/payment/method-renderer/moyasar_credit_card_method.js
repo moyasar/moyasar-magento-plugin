@@ -41,6 +41,9 @@ define(
             getBaseUrl: function () {
                 return url.build('moyasar_mysr/redirect/response');
             },
+            getCancelOrderUrl: function () {
+                return url.build('moyasar_mysr/order/cancel');
+            },
             getOrderId: function () {
                 return $.ajax({
                     url: url.build('moyasar_mysr/order/data'),
@@ -125,6 +128,8 @@ define(
                 var $form = $('#' + this.getCode() + '-form');
                 var formData = $form.serialize();
 
+                fullScreenLoader.startLoader();
+
                 this.placeMagentoOrder().done(function (orderId) {
                     self.getOrderId().done(function (orderData) {
 
@@ -140,13 +145,24 @@ define(
                         mPaymentResult
                             .done(function (paymentObject) {
                                 self.updateOrderPayment(paymentObject).done(function (){
-                                    self.afterPlaceOrder(paymentObject.source.transaction_url);
+                                    if (paymentObject.source.transaction_url) {
+                                        self.afterPlaceOrder(paymentObject.source.transaction_url) 
+                                    } else {
+                                        self.afterPlaceOrder(
+                                            self.getCancelOrderUrl() +
+                                            '?id=' + paymentObject.id +
+                                            '&message=' + paymentObject.source.message ,
+                                            true
+                                        );
+                                    }
+                                    
                                 })
                                 .fail(function (){
                                     self.isPlaceOrderActionAllowed(true);
                                     globalMessageList.addErrorMessage({
                                         message: mage('Error! Could not place order.')
                                     });
+                                    self.afterPlaceOrder(self.getCancelOrderUrl(), true);
                                 });
                             })
                             .fail(function (xhr, status, error) {
@@ -157,9 +173,18 @@ define(
                                         message: xhr.responseJSON.message + ' : ' + JSON.stringify(xhr.responseJSON.errors)
                                     });
                                 }
+                                self.afterPlaceOrder(self.getCancelOrderUrl(), true);
                             });
-                        }).fail(function () { self.isPlaceOrderActionAllowed(true); })
-                    }).fail(function () { self.isPlaceOrderActionAllowed(true); });
+                        })
+                        .fail(function () {
+                            self.isPlaceOrderActionAllowed(true);
+                            self.afterPlaceOrder(self.getCancelOrderUrl(), true);
+                        })
+                    })
+                    .fail(function () {
+                        self.isPlaceOrderActionAllowed(true);
+                        self.afterPlaceOrder(self.getCancelOrderUrl(), true);
+                    });
 
                 return true;
             },
@@ -174,7 +199,11 @@ define(
                     dataType: 'json'
                 });
             },
-            afterPlaceOrder: function (redirectUrl) {
+            afterPlaceOrder: function (redirectUrl, failed) {
+                if (failed) {
+                    globalMessageList.addErrorMessage({ message: mage('Error! Payment failed, please try again later.') });
+                }
+                fullScreenLoader.stopLoader();
                 window.location.href = redirectUrl;
             }
         });
