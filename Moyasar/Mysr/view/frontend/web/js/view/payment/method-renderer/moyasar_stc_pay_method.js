@@ -165,7 +165,8 @@ define(
                                         self.afterPlaceOrder(
                                             self.getCancelOrderUrl() +
                                             '?id=' + data.id +
-                                            '&message=' + data.source.message
+                                            '&message=' + data.source.message,
+                                            true
                                         );
                                     }
                                 })
@@ -174,7 +175,7 @@ define(
                                     globalMessageList.addErrorMessage({
                                         message: mage('Error! Could not place order.')
                                     });
-                                    self.afterPlaceOrder(self.getCancelOrderUrl());
+                                    self.afterPlaceOrder(self.getCancelOrderUrl(), true);
                                 });
                             })
                             .fail(function (xhr, status, error) {
@@ -184,17 +185,17 @@ define(
                                 if (xhr.responseJSON.message) {
                                     globalMessageList.addErrorMessage({ message: xhr.responseJSON.message });
                                 }
-                                self.afterPlaceOrder(self.getCancelOrderUrl());
+                                self.afterPlaceOrder(self.getCancelOrderUrl(), true);
                             });
                         })
                     .fail(function () {
                         self.isPlaceOrderActionAllowed(true);
-                        self.afterPlaceOrder(self.getCancelOrderUrl());
+                        self.afterPlaceOrder(self.getCancelOrderUrl(), true);
                     })
                 })
                 .fail(function () {
                     self.isPlaceOrderActionAllowed(true);
-                    self.afterPlaceOrder(self.getCancelOrderUrl());
+                    self.afterPlaceOrder(self.getCancelOrderUrl(), true);
                 });
 
                 return true;
@@ -256,7 +257,7 @@ define(
                         if (xhr.responseJSON.message) {
                             globalMessageList.addErrorMessage({ message: xhr.responseJSON.message });
                         }
-                        self.afterPlaceOrder(self.getCancelOrderUrl());
+                        self.afterPlaceOrder(self.getCancelOrderUrl(), true);
                     });
 
                 return true;
@@ -272,7 +273,10 @@ define(
                     dataType: 'json'
                 });
             },
-            afterPlaceOrder: function (url) {
+            afterPlaceOrder: function (url, failed) {
+                if (failed) {
+                    globalMessageList.addErrorMessage({ message: mage('Error! Payment failed, please try again later.') });
+                }
                 fullScreenLoader.stopLoader();
                 window.location.href = url;
             }

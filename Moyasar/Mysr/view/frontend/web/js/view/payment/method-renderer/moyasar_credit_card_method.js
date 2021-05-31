@@ -151,7 +151,8 @@ define(
                                         self.afterPlaceOrder(
                                             self.getCancelOrderUrl() +
                                             '?id=' + paymentObject.id +
-                                            '&message=' + paymentObject.source.message
+                                            '&message=' + paymentObject.source.message ,
+                                            true
                                         );
                                     }
                                     
@@ -161,7 +162,7 @@ define(
                                     globalMessageList.addErrorMessage({
                                         message: mage('Error! Could not place order.')
                                     });
-                                    self.afterPlaceOrder(self.getCancelOrderUrl());
+                                    self.afterPlaceOrder(self.getCancelOrderUrl(), true);
                                 });
                             })
                             .fail(function (xhr, status, error) {
@@ -172,17 +173,17 @@ define(
                                         message: xhr.responseJSON.message + ' : ' + JSON.stringify(xhr.responseJSON.errors)
                                     });
                                 }
-                                self.afterPlaceOrder(self.getCancelOrderUrl());
+                                self.afterPlaceOrder(self.getCancelOrderUrl(), true);
                             });
                         })
                         .fail(function () {
                             self.isPlaceOrderActionAllowed(true);
-                            self.afterPlaceOrder(self.getCancelOrderUrl());
+                            self.afterPlaceOrder(self.getCancelOrderUrl(), true);
                         })
                     })
                     .fail(function () {
                         self.isPlaceOrderActionAllowed(true);
-                        self.afterPlaceOrder(self.getCancelOrderUrl());
+                        self.afterPlaceOrder(self.getCancelOrderUrl(), true);
                     });
 
                 return true;
@@ -198,7 +199,10 @@ define(
                     dataType: 'json'
                 });
             },
-            afterPlaceOrder: function (redirectUrl) {
+            afterPlaceOrder: function (redirectUrl, failed) {
+                if (failed) {
+                    globalMessageList.addErrorMessage({ message: mage('Error! Payment failed, please try again later.') });
+                }
                 fullScreenLoader.stopLoader();
                 window.location.href = redirectUrl;
             }

@@ -33,7 +33,6 @@ class Cancel extends Action
 
         $this->moyasarHelper->cancelCurrentOrder($order, $errorMsg);
         $this->checkoutSession->restoreQuote();
-        $this->messageManager->addError(__('Error! Payment failed, please try again later.'));
 
         return $this->_redirect('checkout', ['_fragment' => 'payment']);
     }
