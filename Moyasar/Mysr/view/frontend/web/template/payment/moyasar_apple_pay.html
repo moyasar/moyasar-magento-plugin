@@ -12,15 +12,19 @@
                 <ul class="credit-card-types">
                     <li class="item _active">
                         <img data-bind="attr: {
-                                    'src': require.toUrl('Moyasar_Mysr/images/applepay.png'),
-                                    'alt': item,
-                                    }"
-                             style="height: 30px;"/>
+                                'src': require.toUrl('Moyasar_Mysr/images/applepay.png'),
+                                'alt': item,
+                            }"
+                            style="height: 30px;"/>
                     </li>
                 </ul>
             </div>
         </div>
 
-        <div class="apple-pay-button-area" data-bind="attr: {'initialized': initiateApplePay()}"></div>
+        <div class="apple-pay-button apple-pay-button-black" data-bind="
+            enable: (getCode() == isChecked()),
+            click: placeOrder,
+            attr: {initialized: initiateApplePay(), title: $t('Pay')}">
+        </div>
     </div>
 </div>

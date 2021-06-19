@@ -117,6 +117,7 @@ class PaymentConfigProvider implements ConfigProviderInterface
     private function moyasarApplePay($method)
     {
         return [
+            'api_key' => $this->moyasarHelper->moyasarPublishableApiKey(),
             'country' => $this->scopeConfig->getValue('general/country/default'),
             'store_name' => $this->storeManager->getStore()->getName(),
             'currencies_fractions' => $this->currencyHelper->fractionsMap()

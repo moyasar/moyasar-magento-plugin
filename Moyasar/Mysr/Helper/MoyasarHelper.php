@@ -427,37 +427,4 @@ class MoyasarHelper extends AbstractHelper
 
         return @json_decode($this->_curl->getBody());
     }
-
-    public function authorizeApplePayPayment($amount, $description, $currency, $paymentData)
-    {
-        $data = [
-            'amount' => $amount,
-            'description' => $description,
-            'currency' => $currency,
-            'source' => [
-                'type' => 'applepay',
-                'token' => $paymentData
-            ]
-        ];
-
-        $this->_curl->setCredentials($this->moyasarSecretApiKey(), '');
-        $this->_curl->addHeader('Content-Type', 'application/json');
-
-        try {
-            $this->_curl->post($this->buildMoyasarUrl('payments'), json_encode($data));
-        } catch (Exception $e) {
-            $this->_logger->warning('Error while trying to authorize Apple Pay payment', ['error' => $e]);
-            return null;
-        }
-
-        if ($this->_curl->getStatus() > 299) {
-            $this->_logger->warning('Error while trying to authorize Apple Pay payment, didn\'t get 201 from Moyasar, instead got ' . $this->_curl->getStatus(), [
-                'response' => @json_decode($this->_curl->getBody(), true)
-            ]);
-
-            return null;
-        }
-
-        return @json_decode($this->_curl->getBody(), true);
-    }
 }

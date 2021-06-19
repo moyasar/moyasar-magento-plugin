@@ -7,9 +7,10 @@ define(
         'jquery',
         'Magento_Checkout/js/model/full-screen-loader',
         'Magento_Checkout/js/action/place-order',
-        'Magento_Checkout/js/model/payment/additional-validators',
         'mage/url',
-        'mage/translate'
+        'mage/translate',
+        'Magento_Ui/js/model/messageList',
+        'Magento_Checkout/js/model/quote'
     ],
     function (
         Component,
@@ -17,12 +18,21 @@ define(
         $,
         fullScreenLoader,
         placeOrderAction,
-        additionalValidators,
         url,
-        mage
+        mage,
+        globalMessageList,
+        quoteModel
     ) {
         'use strict';
+
         return Component.extend({
+            // Instance Fields
+            applePaySession: null,
+            isOrderPlaced: false,
+            placedOrderId: null,
+            applePayToken: null,
+            payment: null,
+
             defaults: {
                 template: 'Moyasar_Mysr/payment/moyasar_apple_pay'
             },
@@ -32,11 +42,20 @@ define(
             isActive: function () {
                 return true;
             },
+            getCustomerEmail: function () {
+                return quoteModel.guestEmail ? quoteModel.guestEmail : window.checkoutConfig.customerData.email;
+            },
             getValidationUrl: function () {
                 return url.build('moyasar_mysr/applepay/validate');
             },
-            getAuthorizationUrl: function () {
-                return url.build('moyasar_mysr/applepay/authorize');
+            getRedirectUrl: function() {
+                return url.build('moyasar_mysr/redirect/response');
+            },
+            getCancelOrderUrl: function () {
+                return url.build('moyasar_mysr/order/cancel');
+            },
+            getApiKey: function () {
+                return window.checkoutConfig.moyasar_apple_pay.api_key;
             },
             getAmount: function () {
                 var totals = quote.getTotals()();
@@ -63,6 +82,18 @@ define(
                 x = n.toFixed(precision).replace(/-/, 0).slice(2);
                 return i + '.' + x;
             },
+            getAmountSmallUnit: function (amount) {
+                var currency = this.getCurrency();
+                var fractionSize = window.checkoutConfig.moyasar_credit_card.currencies_fractions[currency];
+
+                if (!fractionSize) {
+                    fractionSize = window.checkoutConfig.moyasar_credit_card.currencies_fractions['DEFAULT'];
+                }
+
+                var total = amount ? amount : this.getAmount();
+
+                return total * (10 ** fractionSize);
+            },
             getCurrency: function () {
                 var totals = quote.getTotals()();
 
@@ -78,57 +109,156 @@ define(
             getStoreName: function () {
                 return window.checkoutConfig.moyasar_apple_pay.store_name;
             },
+            isApplePayAvailable: function () {
+                return window.ApplePaySession && window.ApplePaySession.canMakePayments();
+            },
+            buildApplePayRequest: function () {
+                return {
+                    countryCode: this.getCountry(),
+                    currencyCode: this.getCurrency(),
+                    supportedNetworks: ['visa', 'masterCard', 'mada'],
+                    merchantCapabilities: ['supports3DS', 'supportsCredit', 'supportsDebit'],
+                    total: {
+                        label: this.getStoreName(),
+                        amount: this.getAmount()
+                    },
+                };
+            },
             redirectAfterPlaceOrder: false,
             placeOrder: function (data, event) {
-                var self = this;
-
                 if (event) {
                     event.preventDefault();
                 }
 
-                return true;
-            },
-            initiateApplePay: function () {
-                if (this.applePayManager) {
-                    return true;
+                this.isPlaceOrderActionAllowed(false);
+                fullScreenLoader.startLoader();
+
+                if (! this.isApplePayAvailable()) {
+                    fullScreenLoader.stopLoader();
+                    globalMessageList.addErrorMessage({ message: mage('Apple Pay is not available on your system.') });
+                    return;
                 }
 
-                var self = this;
+                var request = this.buildApplePayRequest();
+                this.applePaySession = new ApplePaySession(6, request);
 
-                this.applePayManager = new ApplePayManager('.apple-pay-button-area');
-                this.applePayManager.initiate({
-                    version: 6,
-                    amount: this.getFormattedAmount(this.getAmount()),
-                    currency: this.getCurrency(),
-                    country: this.getCountry(),
-                    label: this.getStoreName(),
-                    validateMerchantEndpoint: this.getValidationUrl(),
-                    authorizePaymentEndpoint: this.getAuthorizationUrl(),
-                    onPaymentSuccess: event => {
-                        var paymentId = event.payment_id;
-                        var status = event.status;
-                        var redirect = event.redirect_url;
-
-                        this.isPlaceOrderActionAllowed(false);
-
-                        self.placeMagentoOrder(paymentId)
-                            .done(function () {
-                                window.location.href = redirect + '?status=' + status + '&id=' + paymentId;
-                            })
-                            .fail(function () {
-                                self.isPlaceOrderActionAllowed(true);
-                                globalMessageList.addErrorMessage({
-                                    message: mage('Error! Could not place order.')
-                                });
-                            });
-                    },
-                    translations: {
-                        not_configured: mage('Apple Pay is not properly configured'),
-                        not_supported: mage('Apple Pay is not supported on your browser')
-                    }
-                });
+                // Hook Session Events
+                this.applePaySession.onvalidatemerchant = this.onValidateMerchant.bind(this);
+                this.applePaySession.onpaymentauthorized = this.onAuthPayment.bind(this);
+                this.applePaySession.oncancel = this.onApplePayCanceled.bind(this);
+                this.applePaySession.begin();
 
                 return true;
+            },
+            onApplePayCanceled: function (event) {
+                if (this.isOrderPlaced) {
+                    this.redirectToCancelOrder(mage('Apple Pay session was canceled, please try again.'));
+                    return;
+                }
+
+                fullScreenLoader.stopLoader();
+                globalMessageList.addErrorMessage({ message: mage('Apple Pay session was canceled.') });
+                console.log(event);
+            },
+            onValidateMerchant: function (event) {
+                var request = $.ajax({
+                    url: this.getValidationUrl(),
+                    type: 'POST',
+                    dataType: 'json',
+                    data: JSON.stringify({
+                        'validation_url': event.validationURL
+                    })
+                });
+
+                request
+                    .done(this.merchantValidationReturned.bind(this))
+                    .fail(this.merchantValidationFailed.bind(this));
+            },
+            merchantValidationReturned: function (data) {
+                this.applePaySession.completeMerchantValidation(data);
+            },
+            merchantValidationFailed: function (jqXHR, textStatus, errorThrown) {
+                this.applePaySession.completeMerchantValidation({});
+                fullScreenLoader.stopLoader();
+                globalMessageList.addErrorMessage({ message: mage('Merchant validation failed, please try again later.') });
+                console.error('Apple Pay merchant validation failed. Status: ' + textStatus);
+                console.error(errorThrown);
+            },
+            onAuthPayment: function (event) {
+                this.applePayToken = event.payment.token.paymentData;
+
+                this.placeMagentoOrder()
+                    .done(this.afterOrderPlaced.bind(this))
+                    .fail(this.orderPlacingFailed.bind(this));
+            },
+            afterOrderPlaced: function (orderId) {
+                this.isOrderPlaced = true;
+                this.placedOrderId = orderId;
+
+                var request = $.ajax({
+                    url: 'https://api.moyasar.com/v1/payments',
+                    type: 'POST',
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        'publishable_api_key': this.getApiKey(),
+                        'amount': this.getAmountSmallUnit(),
+                        'description': 'Order for ' + this.getCustomerEmail() + '. Order ID: ' + orderId,
+                        'currency': this.getCurrency(),
+                        'metadata': {
+                            'order_id': orderId
+                        },
+                        'source': {
+                            'type': 'applepay',
+                            'token': JSON.stringify(this.applePayToken)
+                        }
+                    }),
+                });
+
+                request
+                    .done(this.onMoyasarResponse.bind(this))
+                    .fail(this.paymentAuthFailed.bind(this));
+            },
+            orderPlacingFailed: function (payment) {
+                this.applePaySession.abort();
+                fullScreenLoader.stopLoader();
+                globalMessageList.addErrorMessage({ message: mage('Failed placing order, please try again.') });
+            },
+            onMoyasarResponse: function (data, textStatus, jqXHR) {
+                var isOk = jqXHR.status >= 200 && jqXHR.status < 300;
+                this.payment = data;
+
+                if (isOk && data.status === 'failed') {
+                    this.applePaySession.completePayment({ status: ApplePaySession.STATUS_FAILURE, errors: [data.source.message] });
+                    this.redirectToCancelOrder(mage('Payment failed: ' + data.source.message));
+                } else if (! isOk) {
+                    this.applePaySession.completePayment({ status: ApplePaySession.STATUS_FAILURE, errors: [data.message || null] });
+                    this.redirectToCancelOrder(mage('Payment authorization failed, please try again.'));
+                    console.error('Could not authorize Apple Pay payment: ' + data.message || null);
+                    console.error('Server Response Status: ' + jqXHR.status);
+                } else {
+                    // paid, authorized
+                    this.applePaySession.completePayment({ status: ApplePaySession.STATUS_SUCCESS });
+                    window.location.href = this.getRedirectUrl() + '?status=' + data.status + '&id=' + data.id;
+                }
+            },
+            paymentAuthFailed: function (jqXHR, textStatus, errorThrown) {
+                this.redirectToCancelOrder(mage('Payment authorization failed, please try again.'));
+                console.error('Could not authorize Apple Pay payment. Status: ' + textStatus);
+                console.error(errorThrown);
+            },
+            initiateApplePay: function () {
+                if (! this.isApplePayAvailable()) {
+                    this.removeApplePayButton();
+                }
+            },
+            removeApplePayButton: function () {
+                var btn = $('.apple-pay-button');
+                var parent = btn.parent();
+                var message = mage('Apple Pay is not available on your system.');
+
+                btn.remove();
+                parent.append('<span>' + message + '</span>');
             },
             placeMagentoOrder: function (paymentId) {
                 var paymentData = this.getData();
@@ -138,6 +268,11 @@ define(
 
                 return $.when(placeOrderAction(paymentData, this.messageContainer));
             },
+            redirectToCancelOrder(error) {
+                fullScreenLoader.stopLoader();
+                globalMessageList.addErrorMessage({ message: error });
+                window.location.href = this.getCancelOrderUrl();
+            }
         });
     }
 );
