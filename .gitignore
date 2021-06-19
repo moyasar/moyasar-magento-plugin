@@ -49,3 +49,5 @@ merchant_id.pem
 merchant_id.csr
 
 modman
+
+.DS_Store
