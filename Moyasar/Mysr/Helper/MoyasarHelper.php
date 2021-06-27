@@ -137,12 +137,13 @@ class MoyasarHelper extends AbstractHelper
             $invoice =  $this->invoiceService->prepareInvoice($order);
             $invoice->register();
             $invoice->save();
-        }
 
-        // Send Invoice mail to customer
-        $this->invoiceSender->send($invoice);
-        $order->addStatusHistoryComment(__('Notified customer about invoice creation #%1.', $invoice->getId()))
-        ->setIsCustomerNotified(true)->save();
+            // Send Invoice mail to customer
+            $this->invoiceSender->send($invoice);
+            $order
+                ->addStatusHistoryComment(__('Notified customer about invoice creation #%1.', $invoice->getId()))
+                ->setIsCustomerNotified(true)->save();
+        }
     }
 
     /**
