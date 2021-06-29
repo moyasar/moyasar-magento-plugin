@@ -136,13 +136,24 @@ class MoyasarHelper extends AbstractHelper
         if ($this->isInvoiceGeneratingEnabled() && $order->canInvoice()) {
             $invoice =  $this->invoiceService->prepareInvoice($order);
             $invoice->register();
-            $invoice->save();
+            $invoice->pay();
 
             // Send Invoice mail to customer
             $this->invoiceSender->send($invoice);
-            $order
-                ->addStatusHistoryComment(__('Notified customer about invoice creation #%1.', $invoice->getId()))
-                ->setIsCustomerNotified(true)->save();
+            
+            $order = $invoice->getOrder();
+
+            $history = $order
+                ->addCommentToStatusHistory(__('Notified customer of invoice creation.'))
+                ->setIsCustomerNotified(true);
+
+            $transactionSave = $this->_objectManager
+                ->create(\Magento\Framework\DB\Transaction::class)
+                ->addObject($invoice)
+                ->addObject($invoice->getOrder())
+                ->addObject($history);
+
+            $transactionSave->save();
         }
     }
 
@@ -321,7 +332,7 @@ class MoyasarHelper extends AbstractHelper
 
     public function buildMoyasarUrl($path)
     {
-        $isStaging = false;
+        $isStaging = true;
         $base = 'https://api.moyasar.com/v1/';
 
         if ($isStaging) {
