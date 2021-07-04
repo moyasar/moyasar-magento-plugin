@@ -31,6 +31,7 @@ define(
             isOrderPlaced: false,
             placedOrderId: null,
             applePayToken: null,
+            stage: 'idle',
             payment: null,
 
             defaults: {
@@ -142,25 +143,44 @@ define(
                 var request = this.buildApplePayRequest();
                 this.applePaySession = new ApplePaySession(6, request);
 
+                this.isOrderPlaced = false;
+                this.placedOrderId = null;
+                this.applePayToken = null;
+                this.stage = 'idle';
+                this.payment = null;
+
                 // Hook Session Events
                 this.applePaySession.onvalidatemerchant = this.onValidateMerchant.bind(this);
                 this.applePaySession.onpaymentauthorized = this.onAuthPayment.bind(this);
                 this.applePaySession.oncancel = this.onApplePayCanceled.bind(this);
                 this.applePaySession.begin();
+                this.stage = 'session_begin';
 
                 return true;
             },
             onApplePayCanceled: function (event) {
-                if (this.isOrderPlaced) {
-                    this.redirectToCancelOrder(mage('Apple Pay session was canceled, please try again.'));
+                if (! this.isOrderPlaced) {
+                    fullScreenLoader.stopLoader();
+                    globalMessageList.addErrorMessage({ message: mage('Apple Pay session was canceled.') });
                     return;
                 }
 
-                fullScreenLoader.stopLoader();
-                globalMessageList.addErrorMessage({ message: mage('Apple Pay session was canceled.') });
-                console.log(event);
+                switch (this.stage) {
+                    case 'placing_order':
+                    case 'authorizing_payment':
+                    case 'after_authorizing_payment':
+                    case 'placing_order_failed':
+                    case 'authorizing_payment_failed':
+                    case 'authorizing_payment_paid':
+                        // Do not do anything, just wait for code to finish
+                        return;
+                    default:
+                        this.redirectToCancelOrder(mage('Apple Pay session was canceled, please try again.'));
+                }
             },
             onValidateMerchant: function (event) {
+                this.stage = 'merchant_validation';
+
                 var request = $.ajax({
                     url: this.getValidationUrl(),
                     type: 'POST',
@@ -174,10 +194,17 @@ define(
                     .done(this.merchantValidationReturned.bind(this))
                     .fail(this.merchantValidationFailed.bind(this));
             },
-            merchantValidationReturned: function (data) {
-                this.applePaySession.completeMerchantValidation(data);
+            merchantValidationReturned: function (data, textStatus, jqXHR) {
+                this.stage = 'waiting_payment_data';
+                
+                try {
+                    this.applePaySession.completeMerchantValidation(data);
+                } catch (errorThrown) {
+                    this.merchantValidationFailed(jqXHR, textStatus, errorThrown);
+                }
             },
             merchantValidationFailed: function (jqXHR, textStatus, errorThrown) {
+                this.stage = 'merchant_validation_failed';
                 this.applePaySession.completeMerchantValidation({});
                 fullScreenLoader.stopLoader();
                 globalMessageList.addErrorMessage({ message: mage('Merchant validation failed, please try again later.') });
@@ -185,6 +212,8 @@ define(
                 console.error(errorThrown);
             },
             onAuthPayment: function (event) {
+                this.stage = 'placing_order';
+
                 this.applePayToken = event.payment.token.paymentData;
 
                 this.placeMagentoOrder()
@@ -192,11 +221,13 @@ define(
                     .fail(this.orderPlacingFailed.bind(this));
             },
             afterOrderPlaced: function (orderId) {
+                this.stage = 'authorizing_payment';
+
                 this.isOrderPlaced = true;
                 this.placedOrderId = orderId;
 
                 var request = $.ajax({
-                    url: 'https://api.moyasar.com/v1/payments',
+                    url: 'https://apimig.moyasar.com/v1/payments',
                     type: 'POST',
                     dataType: 'json',
                     contentType: 'application/json',
@@ -220,29 +251,48 @@ define(
                     .fail(this.paymentAuthFailed.bind(this));
             },
             orderPlacingFailed: function (payment) {
+                this.stage = 'placing_order_failed';
                 this.applePaySession.abort();
                 fullScreenLoader.stopLoader();
                 globalMessageList.addErrorMessage({ message: mage('Failed placing order, please try again.') });
             },
             onMoyasarResponse: function (data, textStatus, jqXHR) {
+                this.stage = 'after_authorizing_payment';
+
                 var isOk = jqXHR.status >= 200 && jqXHR.status < 300;
                 this.payment = data;
 
                 if (isOk && data.status === 'failed') {
-                    this.applePaySession.completePayment({ status: ApplePaySession.STATUS_FAILURE, errors: [data.source.message] });
+                    this.stage = 'authorizing_payment_failed';
+
+                    try {
+                        this.applePaySession.completePayment({ status: ApplePaySession.STATUS_FAILURE, errors: [data.source.message] });
+                    } catch {}
+
                     this.redirectToCancelOrder(mage('Payment failed: ' + data.source.message));
                 } else if (! isOk) {
-                    this.applePaySession.completePayment({ status: ApplePaySession.STATUS_FAILURE, errors: [data.message || null] });
+                    this.stage = 'authorizing_payment_failed';
+
+                    try {
+                        this.applePaySession.completePayment({ status: ApplePaySession.STATUS_FAILURE, errors: [data.message || null] });
+                    } catch {}
+
                     this.redirectToCancelOrder(mage('Payment authorization failed, please try again.'));
                     console.error('Could not authorize Apple Pay payment: ' + data.message || null);
                     console.error('Server Response Status: ' + jqXHR.status);
                 } else {
+                    this.stage = 'authorizing_payment_paid';
                     // paid, authorized
-                    this.applePaySession.completePayment({ status: ApplePaySession.STATUS_SUCCESS });
+                    
+                    try {
+                        this.applePaySession.completePayment({ status: ApplePaySession.STATUS_SUCCESS });
+                    } catch {}
+
                     window.location.href = this.getRedirectUrl() + '?status=' + data.status + '&id=' + data.id;
                 }
             },
             paymentAuthFailed: function (jqXHR, textStatus, errorThrown) {
+                this.stage = 'authorizing_payment_failed';
                 this.redirectToCancelOrder(mage('Payment authorization failed, please try again.'));
                 console.error('Could not authorize Apple Pay payment. Status: ' + textStatus);
                 console.error(errorThrown);
