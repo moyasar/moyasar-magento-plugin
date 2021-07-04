@@ -227,7 +227,7 @@ define(
                 this.placedOrderId = orderId;
 
                 var request = $.ajax({
-                    url: 'https://apimig.moyasar.com/v1/payments',
+                    url: 'https://api.moyasar.com/v1/payments',
                     type: 'POST',
                     dataType: 'json',
                     contentType: 'application/json',

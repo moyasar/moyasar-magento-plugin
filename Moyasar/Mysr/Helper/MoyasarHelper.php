@@ -332,7 +332,7 @@ class MoyasarHelper extends AbstractHelper
 
     public function buildMoyasarUrl($path)
     {
-        $isStaging = true;
+        $isStaging = false;
         $base = 'https://api.moyasar.com/v1/';
 
         if ($isStaging) {
