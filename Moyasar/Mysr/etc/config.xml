@@ -6,16 +6,17 @@
 				<is_invoice_generating_enabled>1</is_invoice_generating_enabled>
 				<is_amount_verification_enabled>0</is_amount_verification_enabled>
 				<!-- It isn't needed to add the following line -model tag- but payment tag requires model tag, so I add MoyasarCreditCard model-->
-				<model>Moyasar\Mysr\Model\Payment\MoyasarCreditCard</model>
+				<model>Moyasar\Mysr\Model\Payment\MoyasarOnlinePayment</model>
 			</moyasar_api_conf>
-			<moyasar_credit_card>
+
+			<moyasar_online_payment>
 				<active>1</active>
-				<model>Moyasar\Mysr\Model\Payment\MoyasarCreditCard</model>
-				<order_status>pending_payment</order_status>
-				<title>Credit Card: Mada, Visa, MasterCard</title>
-				<cards_type>visa,mada,mastercard</cards_type>
-				<sort_order>1</sort_order>
-			</moyasar_credit_card>
+				<title>Online Payment</title>
+				<model>Moyasar\Mysr\Model\Payment\MoyasarOnlinePayment</model>
+				<crdit_card>1</crdit_card>
+				<stc_pay>0</stc_pay>
+				<apple_pay>0</apple_pay>
+			</moyasar_online_payment>
 
 			<moyasar_apple_pay>
 				<active>0</active>

@@ -4,8 +4,7 @@ namespace Moyasar\Mysr\Observer;
 
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Moyasar\Mysr\Model\Payment\MoyasarApplePay;
-use Moyasar\Mysr\Model\Payment\MoyasarCreditCard;
+use Moyasar\Mysr\Model\Payment\MoyasarOnlinePayment;
 use Moyasar\Mysr\Model\Payment\MoyasarStcPay;
 
 class BeforeOrderPlaceObserver implements ObserverInterface
@@ -13,8 +12,7 @@ class BeforeOrderPlaceObserver implements ObserverInterface
     public function execute(Observer $observer)
     {
         $methods = [
-            MoyasarCreditCard::CODE,
-            MoyasarApplePay::CODE,
+            MoyasarOnlinePayment::CODE,
             MoyasarStcPay::CODE
         ];
 

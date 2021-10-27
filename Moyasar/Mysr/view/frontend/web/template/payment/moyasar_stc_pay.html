@@ -14,6 +14,7 @@
               class="form"
               method="post">
             <fieldset class="fieldset payment items ccard">
+                <input name="currency" type="hidden" data-bind="value: getCurrency()" />
                 <input name="publishable_api_key" type="hidden" data-bind="value: getApiKey()" />
                 <input name="source[type]" type="hidden" value="stcpay" />
 

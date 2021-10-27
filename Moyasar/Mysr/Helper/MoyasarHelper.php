@@ -63,7 +63,26 @@ class MoyasarHelper extends AbstractHelper
         $this->invoiceService = $invoiceService;
         $this->invoiceSender = $invoiceSender;
     }
+        // Methods
+    public function methodEnabled()
+        {
+            $methods = [];
+            if ($this->scopeConfig->getValue('payment/moyasar_online_payment/crdit_card', ScopeInterface::SCOPE_STORE)) {
+                $methods[] = 'creditcard';
+            }
 
+            if ($this->scopeConfig->getValue('payment/moyasar_online_payment/stc_pay', ScopeInterface::SCOPE_STORE)) {
+                $methods[] = 'stcpay';
+            }
+
+            if ($this->scopeConfig->getValue('payment/moyasar_online_payment/apple_pay', ScopeInterface::SCOPE_STORE)) {
+                $methods[] = 'applepay';
+            }
+
+            return $methods;
+        }
+    
+        // 
     public function saveOrder(Order $order)
     {
         // Save method is deprecated in new versions of Magento
@@ -121,7 +140,6 @@ class MoyasarHelper extends AbstractHelper
         $order->setEmailSent((int) ($notified && true));
         $order->addStatusToHistory(Order::STATE_PROCESSING, $comment, $notified);
         $this->saveOrder($order);
-        $this->generateInvoice($order);
 
         return true;
     }
@@ -136,25 +154,13 @@ class MoyasarHelper extends AbstractHelper
         if ($this->isInvoiceGeneratingEnabled() && $order->canInvoice()) {
             $invoice =  $this->invoiceService->prepareInvoice($order);
             $invoice->register();
-            $invoice->pay();
-
-            // Send Invoice mail to customer
-            $this->invoiceSender->send($invoice);
-            
-            $order = $invoice->getOrder();
-
-            $history = $order
-                ->addCommentToStatusHistory(__('Notified customer of invoice creation.'))
-                ->setIsCustomerNotified(true);
-
-            $transactionSave = $this->_objectManager
-                ->create(\Magento\Framework\DB\Transaction::class)
-                ->addObject($invoice)
-                ->addObject($invoice->getOrder())
-                ->addObject($history);
-
-            $transactionSave->save();
+            $invoice->save();
         }
+
+        // Send Invoice mail to customer
+        $this->invoiceSender->send($invoice);
+        $order->addStatusHistoryComment(__('Notified customer about invoice creation #%1.', $invoice->getId()))
+        ->setIsCustomerNotified(true)->save();
     }
 
     /**
@@ -179,12 +185,6 @@ class MoyasarHelper extends AbstractHelper
         $this->saveOrder($order);
 
         return true;
-    }
-
-    public function rejectFraudPayment($order, $response)
-    {
-        $order->addStatusToHistory(Order::STATUS_FRAUD, 'Payment Review Failed: ***possible tampering** | Actual payment: ' . $response['amount_format']);
-        $this->cancelCurrentOrder($order, "Order canceled, payment with ID ". $response['id'] . " may be fraudulent");
     }
 
     public function orderCurrency($order)
@@ -216,7 +216,7 @@ class MoyasarHelper extends AbstractHelper
      * @param $moyasarPaymentId
      * @return string
      */
-    public function verifyAndProcess($order, $moyasarPaymentId, $returnedStatus)
+    public function verifyAndProcess($order, $moyasarPaymentId)
     {
         if (!$order) {
             return 'failed';
@@ -227,18 +227,6 @@ class MoyasarHelper extends AbstractHelper
         }
 
         if (!$order->getId()) {
-            return 'failed';
-        }
-
-        // ALOOOT of cleaning needed here.
-        if (!$this->isAmountVerificationEnabled() && $returnedStatus == 'paid') {
-            $this->processOrder($order, "Payment is successful, ID: $moyasarPaymentId");
-            return 'paid';
-        }
-
-        if (!$this->isAmountVerificationEnabled() && $returnedStatus == 'failed') {
-            $order->addStatusToHistory(Order::STATE_CANCELED, "Moyasar payment with ID $moyasarPaymentId has status $returnedStatus, order will be canceled");
-            $this->cancelCurrentOrder($order, "Order canceled, payment with ID $moyasarPaymentId has status $returnedStatus");
             return 'failed';
         }
 
@@ -286,12 +274,14 @@ class MoyasarHelper extends AbstractHelper
             }
 
             if ($response['amount'] != $amount) {
-                $this->rejectFraudPayment($order, $response);
+                $order->addStatusToHistory(Order::STATUS_FRAUD, 'Payment Review Failed: ***possible tampering** | Actual amount paid: ' . $response['amount_format']);
+                $this->cancelCurrentOrder($order, "Order canceled, payment with ID $moyasarPaymentId may be fraudulent");
                 $result = 'failed';
             }
 
             if (mb_strtoupper($response['currency']) != $currency) {
-                $this->rejectFraudPayment($order, $response);
+                $order->addStatusToHistory(Order::STATUS_FRAUD, 'Payment Review Failed: ***possible tampering** | Payment currency: ' . $response['currency'] . ', order currency: ' . $currency);
+                $this->cancelCurrentOrder($order, "Order canceled, payment with ID $moyasarPaymentId may be fraudulent");
                 $result = 'failed';
             }
 
@@ -300,24 +290,13 @@ class MoyasarHelper extends AbstractHelper
             }
 
             $this->processOrder($order, "Payment is successful, ID: $moyasarPaymentId");
+            $this->generateInvoice($order);
 
             return $result;
         } catch (Exception $e) {
             $this->_logger->critical('Error: ', ['exception' => $e]);
             return 'failed';
         }
-    }
-
-    public function isAmountVerificationEnabled()
-    {
-        return $this->scopeConfig->getValue('payment/moyasar_api_conf/is_amount_verification_enabled', ScopeInterface::SCOPE_STORE);
-    }
-
-    public function isInvoiceGeneratingEnabled()
-    {
-        $isEnabled = $this->scopeConfig->getValue('payment/moyasar_api_conf/is_invoice_generating_enabled', ScopeInterface::SCOPE_STORE);
-
-        return $isEnabled;
     }
 
     public function moyasarPublishableApiKey()
@@ -350,6 +329,13 @@ class MoyasarHelper extends AbstractHelper
         $this->_curl->get($this->buildMoyasarUrl("payments/$paymentId"));
 
         return @json_decode($this->_curl->getBody(), true);
+    }
+
+    public function isInvoiceGeneratingEnabled()
+    {
+        $isEnabled = $this->scopeConfig->getValue('payment/moyasar_api_conf/is_invoice_generating_enabled', ScopeInterface::SCOPE_STORE);
+
+        return $isEnabled;
     }
 
     public function getMerchantCertificatePath()
@@ -438,5 +424,38 @@ class MoyasarHelper extends AbstractHelper
         }
 
         return @json_decode($this->_curl->getBody());
+    }
+
+    public function authorizeApplePayPayment($amount, $description, $currency, $paymentData)
+    {
+        $data = [
+            'amount' => $amount,
+            'description' => $description,
+            'currency' => $currency,
+            'source' => [
+                'type' => 'applepay',
+                'token' => $paymentData
+            ]
+        ];
+
+        $this->_curl->setCredentials($this->moyasarSecretApiKey(), '');
+        $this->_curl->addHeader('Content-Type', 'application/json');
+
+        try {
+            $this->_curl->post($this->buildMoyasarUrl('payments'), json_encode($data));
+        } catch (Exception $e) {
+            $this->_logger->warning('Error while trying to authorize Apple Pay payment', ['error' => $e]);
+            return null;
+        }
+
+        if ($this->_curl->getStatus() > 299) {
+            $this->_logger->warning('Error while trying to authorize Apple Pay payment, didn\'t get 201 from Moyasar, instead got ' . $this->_curl->getStatus(), [
+                'response' => @json_decode($this->_curl->getBody(), true)
+            ]);
+
+            return null;
+        }
+
+        return @json_decode($this->_curl->getBody(), true);
     }
 }

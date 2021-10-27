@@ -10,9 +10,7 @@ use Magento\Payment\Model\Method\AbstractMethod;
 use Magento\Store\Model\StoreManager;
 use Moyasar\Mysr\Helper\CurrencyHelper;
 use Moyasar\Mysr\Helper\MoyasarHelper;
-use Moyasar\Mysr\Model\Payment\MoyasarApplePay;
-use Moyasar\Mysr\Model\Payment\MoyasarCreditCard;
-use Moyasar\Mysr\Model\Payment\MoyasarStcPay;
+use Moyasar\Mysr\Model\Payment\MoyasarOnlinePayment;
 
 class PaymentConfigProvider implements ConfigProviderInterface
 {
@@ -20,9 +18,7 @@ class PaymentConfigProvider implements ConfigProviderInterface
      * @var string[]
      */
     protected $methodCodes = [
-        MoyasarCreditCard::CODE,
-        MoyasarApplePay::CODE,
-        MoyasarStcPay::CODE
+        MoyasarOnlinePayment::CODE,
     ];
 
     /**
@@ -104,32 +100,16 @@ class PaymentConfigProvider implements ConfigProviderInterface
         return strtolower(substr($code, 0, 1)) . substr($code, 1);
 	}
 
-    private function moyasarCreditCard($method)
+    private function moyasarOnlinePayment($method)
     {
         return [
             'api_key' => $this->moyasarHelper->moyasarPublishableApiKey(),
             'supported_cards' => $method->getConfigData('cards_type'),
             'currencies_fractions' => $this->currencyHelper->fractionsMap(),
-            'payment_url' => $this->moyasarHelper->buildMoyasarUrl('payments')
-        ];
-	}
-
-    private function moyasarApplePay($method)
-    {
-        return [
-            'api_key' => $this->moyasarHelper->moyasarPublishableApiKey(),
+            'payment_url' => $this->moyasarHelper->buildMoyasarUrl('payments'),
             'country' => $this->scopeConfig->getValue('general/country/default'),
             'store_name' => $this->storeManager->getStore()->getName(),
-            'currencies_fractions' => $this->currencyHelper->fractionsMap()
-        ];
-	}
-
-    private function moyasarStcPay($method)
-    {
-        return [
-            'api_key' => $this->moyasarHelper->moyasarPublishableApiKey(),
-            'currencies_fractions' => $this->currencyHelper->fractionsMap(),
-            'payment_url' => $this->moyasarHelper->buildMoyasarUrl('payments')
+            'methods' => $this->moyasarHelper->methodEnabled()            
         ];
 	}
 }
