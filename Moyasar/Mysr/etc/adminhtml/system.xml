@@ -85,24 +85,6 @@
                     <comment>Used for initiating Apple Pay Sessions, Only set if there is a password for your private key</comment>
                 </field>
             </group>
-
-            <!-- STC Pay -->
-            <group id="moyasar_stc_pay" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="4" translate="label">
-                <label>Moyasar STC Pay</label>
-                <field id="active" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label" type="select">
-                    <label>Enabled</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Please set both Moyasar publishable API key and secret API key in Credit Card configurations</comment>
-                </field>
-                <field id="title" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" canRestore="1"
-                       translate="label" type="text">
-                    <label>Title</label>
-                </field>
-                <field id="sort_order" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="60"
-                       translate="label" type="text">
-                    <label>Sort Order</label>
-                </field>
-            </group>
         </section>
     </system>
 </config>

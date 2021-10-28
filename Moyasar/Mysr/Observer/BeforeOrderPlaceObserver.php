@@ -5,7 +5,6 @@ namespace Moyasar\Mysr\Observer;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Moyasar\Mysr\Model\Payment\MoyasarOnlinePayment;
-use Moyasar\Mysr\Model\Payment\MoyasarStcPay;
 
 class BeforeOrderPlaceObserver implements ObserverInterface
 {
@@ -13,7 +12,6 @@ class BeforeOrderPlaceObserver implements ObserverInterface
     {
         $methods = [
             MoyasarOnlinePayment::CODE,
-            MoyasarStcPay::CODE
         ];
 
         $order = $observer->getOrder();

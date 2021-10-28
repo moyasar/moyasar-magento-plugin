@@ -37,7 +37,6 @@ define(
                 template: 'Moyasar_Mysr/payment/moyasar_online_payment'
             },
             initializeForm: function () {
-                alert(getMethod());
                 MoyasarForm.init({
                     element: '.mysr-form',
                     amount: this.getAmountSmallUnit(),
@@ -46,11 +45,7 @@ define(
                     description: 'Order for: ' + this.getCustomerEmail(),
                     publishable_api_key: this.getApiKey(),
                     callback_url: this.getBaseUrl(),
-                    payment_methods: [
-                        'creditcard',
-                        'applepay',
-                        'stcpay'
-                    ],
+                    methods: this.getMethod,
                     apple_pay: {
                         label: this.getStoreName(),
                         validate_merchant_url: this.getValidationUrl(),
