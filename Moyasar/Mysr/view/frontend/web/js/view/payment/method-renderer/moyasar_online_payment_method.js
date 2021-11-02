@@ -51,7 +51,6 @@ define(
                         validate_merchant_url: this.getValidationUrl(),
                         country: this.getCountry()
                     },
-                    base_url: 'https://api.moyasar.com',
                 });
             },
             getCode: function () {
