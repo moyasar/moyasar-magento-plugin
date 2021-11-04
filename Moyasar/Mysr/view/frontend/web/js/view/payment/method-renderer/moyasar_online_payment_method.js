@@ -46,6 +46,10 @@ define(
                     publishable_api_key: this.getApiKey(),
                     callback_url: this.getBaseUrl(),
                     methods: this.getMethod,
+                    on_initiating:  function () {
+                        return new Promise(function (resolve, reject) {
+                            if (this.placeMagentoOrder()) { resolve({}) } else { reject('Please Try agin')}});
+                    },
                     apple_pay: {
                         label: this.getStoreName(),
                         validate_merchant_url: this.getValidationUrl(),
@@ -115,6 +119,9 @@ define(
             },
             getValidationUrl: function () {
                 return url.build('moyasar_mysr/applepay/validate');
+            },
+            placeMagentoOrder: function () {
+                return $.when(placeOrderAction(this.getData(), this.messageContainer));
             },
         });
     }
