@@ -37,6 +37,10 @@ define(
                 template: 'Moyasar_Mysr/payment/moyasar_online_payment'
             },
             initializeForm: function () {
+                // We need to save an instance of our component
+                // Because we cannot access it within (on_initiating) because JavaScript
+                var self = this;
+
                 MoyasarForm.init({
                     element: '.mysr-form',
                     amount: this.getAmountSmallUnit(),
@@ -47,8 +51,38 @@ define(
                     callback_url: this.getBaseUrl(),
                     methods: this.getMethod,
                     on_initiating:  function () {
+                        // When the payment is started, we will disallow the user from placing order again while processing
+                        self.isPlaceOrderActionAllowed(false);
+                        // Show magento loader
+                        fullScreenLoader.startLoader();
+
                         return new Promise(function (resolve, reject) {
-                            if (this.placeMagentoOrder()) { resolve({}) } else { reject('Please Try agin')}});
+                            // The problem with
+                            // if (placeMagentoOrder()) { ... } else { ... }
+                            // is that placeMagentoOrder will do an asynchronous task
+                            // So we need to use done and fail
+                            // done and fail are the way Magento handles async tasks
+                            // Check moyasar_apple_pay_method.js for an example of how we use it
+                            self.placeMagentoOrder()
+                                .done(function (orderId) {
+                                    // Hide loader if we need to enter OTP in case of STC Pay
+                                    fullScreenLoader.startLoader();
+                                    // We can update the description with the submitted order ID
+                                    resolve({
+                                        'description': 'Order for: ' + self.getCustomerEmail() + ', Order ID: ' + orderId
+                                    });
+                                })
+                                .fail(function (response) {
+                                    reject( mage('Failed placing order, please try again.'));
+                                });
+                        });
+                    },
+                    on_failure: function (error) {
+                        fullScreenLoader.stopLoader();
+                        globalMessageList.addErrorMessage({ message: '' + error }); // '' + error will force cast error into a string
+
+                        // TODO: Cancel order using AJAX
+                        // User customer cart
                     },
                     apple_pay: {
                         label: this.getStoreName(),
@@ -60,7 +94,7 @@ define(
             getCode: function () {
                 return 'moyasar_online_payment';
             },
-            
+
             isActive: function () {
                 return true;
             },
