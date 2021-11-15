@@ -68,16 +68,8 @@ define(
                     on_failure: function (error) {
                         fullScreenLoader.stopLoader();
                         globalMessageList.addErrorMessage({ message: '' + error });
-
-                        // TODO: Cancel order using AJAX
-                        // User customer cart
-                        self.cancelMagentoOrder(orderId)
-                            .done(function (){
-                                mage('Your order is cancel successfully');
-                            })
-                            .fail(function (){
-                                mage('Error occurred when cancel order, please try again.');
-                            })
+                        window.location.href = this.getCancelOrderUrl();
+                        // window.location.href = this.cancelMagentoOrder();
                     },
                     apple_pay: {
                         label: this.getStoreName(),
@@ -152,14 +144,14 @@ define(
             placeMagentoOrder: function () {
                 return $.when(placeOrderAction(this.getData(), this.messageContainer));
             },
-            cancelMagentoOrder: function (paymentId) {
-                return $.ajax({
-                    url: url.build('moyasar_mysr/order/cancel'),
-                    method: 'POST',
-                    data: paymentId,
-                    dataType: 'json'
-                });
-            },
+            // cancelMagentoOrder: function () {
+            //     return $.ajax({
+            //         url: url.build('moyasar_mysr/order/cancel'),
+            //         method: 'POST',
+            //         data: "id=" + paymentId,
+            //         dataType: 'json',
+            //     });
+            // },
         });
     }
 );

@@ -24,6 +24,9 @@ class Cancel extends Action
     public function execute()
     {
         $order = $this->checkoutSession->getLastRealOrder();
+        // $paymentId = isset($_POST['id']) ? $_POST['id'] : null;
+        // $error = isset($_POST['message']) ? ' Error Message: ' . $_POST['message'] : null;
+
         $paymentId = isset($_GET['id']) ? $_GET['id'] : null;
         $error = isset($_GET['message']) ? ' Error Message: ' . $_GET['message'] : null;
 

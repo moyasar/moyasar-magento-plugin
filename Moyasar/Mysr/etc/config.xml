@@ -12,6 +12,7 @@
 			<moyasar_online_payment>
 				<active>1</active>
 				<title>Online Payment</title>
+				<order_status>pending_payment</order_status>
 				<model>Moyasar\Mysr\Model\Payment\MoyasarOnlinePayment</model>
 				<crdit_card>1</crdit_card>
 				<stc_pay>0</stc_pay>
