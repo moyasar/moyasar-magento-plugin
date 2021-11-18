@@ -12,7 +12,9 @@ define(
         'jquery/ui',
         'Moyasar_Mysr/js/model/create-payment',
         'Magento_Ui/js/model/messageList',
-        'mage/translate'
+        'mage/translate',
+        'Moyasar_Mysr/js/model/cancel-order',
+        'Moyasar_Mysr/js/model/extract-api-errors',
     ],
     function (
         Component,
@@ -25,10 +27,13 @@ define(
         jqueryUi,
         createMoyasarPayment,
         globalMessageList,
-        mage
+        mage,
+        cancelOrder,
+        extractApiErrors,
     ) {
         'use strict';
         return Component.extend({
+            payment: null,
             defaults: {
                 template: 'Moyasar_Mysr/payment/moyasar_credit_card'
             },
@@ -111,7 +116,6 @@ define(
             moyasarPaymentUrl: function () {
                 return window.checkoutConfig.moyasar_credit_card.payment_url;
             },
-            redirectAfterPlaceOrder: false,
             placeOrder: function (data, event) {
                 var self = this;
 
@@ -124,6 +128,7 @@ define(
                 }
 
                 this.isPlaceOrderActionAllowed(false);
+                this.payment = null;
 
                 var $form = $('#' + this.getCode() + '-form');
                 var formData = $form.serialize();
@@ -144,46 +149,48 @@ define(
 
                         mPaymentResult
                             .done(function (paymentObject) {
-                                self.updateOrderPayment(paymentObject).done(function (){
-                                    if (paymentObject.source.transaction_url) {
-                                        self.afterPlaceOrder(paymentObject.source.transaction_url) 
-                                    } else {
-                                        self.afterPlaceOrder(
-                                            self.getCancelOrderUrl() +
-                                            '?id=' + paymentObject.id +
-                                            '&message=' + paymentObject.source.message ,
-                                            true
-                                        );
-                                    }
-                                    
-                                })
-                                .fail(function (){
-                                    self.isPlaceOrderActionAllowed(true);
-                                    globalMessageList.addErrorMessage({
-                                        message: mage('Error! Could not place order.')
+                                self.payment = paymentObject;
+
+                                self.updateOrderPayment(paymentObject)
+                                    .done(function () {
+                                        if (paymentObject.source.transaction_url) {
+                                            window.location.href = paymentObject.source.transaction_url;
+                                        } else {
+                                            var errors = extractApiErrors(xhr.responseJSON);
+                                            errors.push(mage('Error! Payment failed, please try again later.'));
+
+                                            for (var e of errors) {
+                                                globalMessageList.addErrorMessage({ message: e });
+                                            }
+
+                                            self.cancelAndRedirect(errors);
+                                        }
+                                    })
+                                    .fail(function () {
+                                        var error = mage('Error! Could not place order.');
+                                        globalMessageList.addErrorMessage({ message: error });
+                                        self.cancelAndRedirect(error);
                                     });
-                                    self.afterPlaceOrder(self.getCancelOrderUrl(), true);
-                                });
                             })
                             .fail(function (xhr, status, error) {
-                                self.isPlaceOrderActionAllowed(true);
-                                globalMessageList.addErrorMessage({ message: mage('Error! Payment failed, please try again later.') });
-                                if (xhr.responseJSON.message) {
-                                    globalMessageList.addErrorMessage({
-                                        message: xhr.responseJSON.message + ' : ' + JSON.stringify(xhr.responseJSON.errors)
-                                    });
+                                var errors = extractApiErrors(xhr.responseJSON);
+                                errors.push(mage('Error! Payment failed, please try again later.'));
+
+                                for (var e of errors) {
+                                    globalMessageList.addErrorMessage({ message: e });
                                 }
-                                self.afterPlaceOrder(self.getCancelOrderUrl(), true);
+
+                                self.cancelAndRedirect(errors);
                             });
                         })
                         .fail(function () {
                             self.isPlaceOrderActionAllowed(true);
-                            self.afterPlaceOrder(self.getCancelOrderUrl(), true);
+                            globalMessageList.addErrorMessage({ message: mage('Could not place order.') });
                         })
                     })
                     .fail(function () {
                         self.isPlaceOrderActionAllowed(true);
-                        self.afterPlaceOrder(self.getCancelOrderUrl(), true);
+                        globalMessageList.addErrorMessage({ message: mage('Could not place order.') });
                     });
 
                 return true;
@@ -199,12 +206,23 @@ define(
                     dataType: 'json'
                 });
             },
-            afterPlaceOrder: function (redirectUrl, failed) {
-                if (failed) {
-                    globalMessageList.addErrorMessage({ message: mage('Error! Payment failed, please try again later.') });
-                }
-                fullScreenLoader.stopLoader();
-                window.location.href = redirectUrl;
+            cancelAndRedirect(errors) {
+                var paymentId = this.payment ? this.payment.id : null;
+
+                cancelOrder(paymentId, errors).always(function (data) {
+                    if (data.redirect_to) {
+                        for (var error of errors) {
+                            globalMessageList.addErrorMessage({ message: error });
+                        }
+
+                        setTimeout(function () {
+                            window.location.href = data.redirect_to;
+                        }, 5000);
+                    } else {
+                        fullScreenLoader.stopLoader();
+                        globalMessageList.addErrorMessage({ message: mage('Could not cancel order') });
+                    }
+                });
             }
         });
     }
