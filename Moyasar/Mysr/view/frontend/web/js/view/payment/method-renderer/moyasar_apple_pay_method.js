@@ -12,7 +12,7 @@ define(
         'Magento_Ui/js/model/messageList',
         'Magento_Checkout/js/model/quote',
         'Moyasar_Mysr/js/model/cancel-order',
-        'Moyasar_Mysr/js/model/extract-api-errors',
+        'Moyasar_Mysr/js/model/extract-api-errors'
     ],
     function (
         Component,
@@ -24,8 +24,8 @@ define(
         mage,
         globalMessageList,
         quoteModel,
-        cancelOrder,
-        extractApiErrors,
+        sendCancelOrder,
+        extractApiErrors
     ) {
         'use strict';
 
@@ -176,7 +176,7 @@ define(
                         // Do not do anything, just wait for code to finish
                         return;
                     default:
-                        this.cancelAndRedirect(mage('Apple Pay session was canceled, please try again.'));
+                        this.cancelOrder([mage('Apple Pay session was canceled, please try again.')]);
                 }
             },
             onValidateMerchant: function (event) {
@@ -207,9 +207,10 @@ define(
             merchantValidationFailed: function (jqXHR, textStatus, errorThrown) {
                 this.stage = 'merchant_validation_failed';
                 this.applePaySession.completeMerchantValidation({});
+
                 fullScreenLoader.stopLoader();
                 globalMessageList.addErrorMessage({ message: mage('Merchant validation failed, please try again later.') });
-                console.error('Apple Pay merchant validation failed. Status: ' + textStatus);
+
                 console.error(errorThrown);
             },
             onAuthPayment: function (event) {
@@ -254,36 +255,22 @@ define(
             orderPlacingFailed: function (payment) {
                 this.stage = 'placing_order_failed';
                 this.applePaySession.abort();
+
                 fullScreenLoader.stopLoader();
                 globalMessageList.addErrorMessage({ message: mage('Failed placing order, please try again.') });
             },
             onMoyasarResponse: function (data, textStatus, jqXHR) {
                 this.stage = 'after_authorizing_payment';
-
-                var isOk = jqXHR.status >= 200 && jqXHR.status < 300;
                 this.payment = data;
 
-                if (isOk && data.status === 'failed') {
+                if (data.status === 'failed') {
                     this.stage = 'authorizing_payment_failed';
 
                     try {
                         this.applePaySession.completePayment({ status: ApplePaySession.STATUS_FAILURE });
                     } catch {}
 
-                    this.cancelAndRedirect(mage('Payment failed: ' + data.source.message));
-                } else if (! isOk) {
-                    this.stage = 'authorizing_payment_failed';
-
-                    try {
-                        this.applePaySession.completePayment({ status: ApplePaySession.STATUS_FAILURE });
-                    } catch {}
-
-                    var errors = extractApiErrors(data);
-                    errors.push(mage('Payment authorization failed, please try again.'));
-                    this.cancelAndRedirect(errors);
-
-                    console.error('Could not authorize Apple Pay payment: ' + data.message || null);
-                    console.error('Server Response Status: ' + jqXHR.status);
+                    this.cancelOrder([mage('Payment failed: ' + data.source.message)]);
                 } else {
                     this.stage = 'authorizing_payment_paid';
                     // paid, authorized
@@ -305,7 +292,7 @@ define(
                     this.applePaySession.completePayment({ status: ApplePaySession.STATUS_FAILURE });
                 } catch {}
 
-                this.cancelAndRedirect(errors);
+                this.cancelOrder(errors);
             },
             initiateApplePay: function () {
                 if (! this.isApplePayAvailable()) {
@@ -328,22 +315,14 @@ define(
 
                 return $.when(placeOrderAction(paymentData, this.messageContainer));
             },
-            cancelAndRedirect(errors) {
+            cancelOrder(errors) {
+                var self = this;
                 var paymentId = this.payment ? this.payment.id : null;
 
-                cancelOrder(paymentId, errors).always(function (data) {
-                    if (data.redirect_to) {
-                        for (var error of errors) {
-                            globalMessageList.addErrorMessage({ message: error });
-                        }
-
-                        setTimeout(function () {
-                            window.location.href = data.redirect_to;
-                        }, 5000);
-                    } else {
-                        fullScreenLoader.stopLoader();
-                        globalMessageList.addErrorMessage({ message: mage('Could not cancel order') });
-                    }
+                sendCancelOrder(paymentId, errors).always(function (data) {
+                    self.isPlaceOrderActionAllowed(true);
+                    fullScreenLoader.stopLoader();
+                    globalMessageList.addErrorMessage({ message: errors.join(", ") });
                 });
             }
         });
