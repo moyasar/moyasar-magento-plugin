@@ -12,6 +12,8 @@ define(
         'mage/translate',
         'Magento_Checkout/js/action/place-order',
         'Magento_Ui/js/model/messageList',
+        'Moyasar_Mysr/js/model/cancel-order',
+        'Moyasar_Mysr/js/model/extract-api-errors'
     ],
     function (
         ko,
@@ -23,7 +25,9 @@ define(
         additionalValidators,
         mage,
         placeOrderAction,
-        globalMessageList
+        globalMessageList,
+        sendCancelOrder,
+        extractApiErrors
     ) {
         'use strict';
 
@@ -36,6 +40,10 @@ define(
         );
 
         return Component.extend({
+            payment: null,
+            redirectAfterPlaceOrder : false,
+            showingOtp: ko.observable(false),
+            transactionUrl: null,
             defaults: {
                 template: 'Moyasar_Mysr/payment/moyasar_stc_pay'
             },
@@ -112,9 +120,6 @@ define(
                 var $form = $('#' + this.getCode() + '-form');
                 return $form.validation() && $form.validation('isValid');
             },
-            redirectAfterPlaceOrder : false,
-            showingOtp: ko.observable(false),
-            transactionUrl: null,
             placeOrder: function (data, event) {
                 if (event) {
                     event.preventDefault();
@@ -150,53 +155,37 @@ define(
                             url: self.moyasarPaymentUrl(),
                             type: 'POST',
                             data: paymentData,
-                            dataType: 'json',
+                            dataType: 'json'
                         });
 
                         request
                             .done(function (data) {
+                                self.payment = data;
+
                                 self.updateOrderPayment(data).done(function (){
                                     self.isPlaceOrderActionAllowed(true);
-                                    if (data.source.transaction_url) {
+
+                                    if (data.status === 'initiated') {
                                         fullScreenLoader.stopLoader();
                                         self.showingOtp(true);
                                         self.transactionUrl = data.source.transaction_url;
                                     } else {
-                                        self.afterPlaceOrder(
-                                            self.getCancelOrderUrl() +
-                                            '?id=' + data.id +
-                                            '&message=' + data.source.message,
-                                            true
-                                        );
+                                        self.cancelOrder([data.source.message]);
                                     }
                                 })
-                                .fail(function (){
-                                    self.isPlaceOrderActionAllowed(true);
-                                    globalMessageList.addErrorMessage({
-                                        message: mage('Error! Could not place order.')
-                                    });
-                                    self.afterPlaceOrder(self.getCancelOrderUrl(), true);
+                                .fail(function () {
+                                    self.cancelOrder([mage('Error! Could not place order.')]);
                                 });
                             })
                             .fail(function (xhr, status, error) {
-                                self.transactionUrl = null;
-                                self.isPlaceOrderActionAllowed(true);
-                                globalMessageList.addErrorMessage({ message: mage('Error! Payment failed, please try again later.') });
-                                if (xhr.responseJSON.message) {
-                                    globalMessageList.addErrorMessage({ message: xhr.responseJSON.message });
-                                }
-                                self.afterPlaceOrder(self.getCancelOrderUrl(), true);
+                                var errors = extractApiErrors(xhr.responseJSON);
+                                errors.push(mage('Error! Payment failed, please try again later.'));
+                                self.cancelOrder(errors);
                             });
                         })
-                    .fail(function () {
-                        self.isPlaceOrderActionAllowed(true);
-                        self.afterPlaceOrder(self.getCancelOrderUrl(), true);
-                    })
+                    .fail(self.handlePlaceOrderFail)
                 })
-                .fail(function () {
-                    self.isPlaceOrderActionAllowed(true);
-                    self.afterPlaceOrder(self.getCancelOrderUrl(), true);
-                });
+                .fail(self.handlePlaceOrderFail);
 
                 return true;
             },
@@ -229,7 +218,7 @@ define(
                     data: {
                         'otp_value': otp
                     },
-                    dataType: 'json',
+                    dataType: 'json'
                 });
 
                 fullScreenLoader.startLoader();
@@ -237,28 +226,17 @@ define(
                 request
                     .done(function (data) {
                         if (data.status !== 'paid') {
-                            self.isPlaceOrderActionAllowed(true);
-                            globalMessageList.addErrorMessage({ message: mage('Error! Payment failed, please try again later.') });
-
-                            if (data.message) {
-                                globalMessageList.addErrorMessage({ message: data.message });
-                            }
-
-                            self.showingOtp(false);
-                            self.transactionUrl = null;
+                            var errors = extractApiErrors(data);
+                            errors.push(mage('Error! Payment failed, please try again later.'));
+                            self.cancelOrder(errors);
+                        } else {
+                            self.afterPlaceOrder(self.getRedirectUrl() + '?status=' + data.status + '&id=' + data.id);
                         }
-
-                        self.afterPlaceOrder(self.getRedirectUrl() + '?status=' + data.status + '&id=' + data.id);
                     })
                     .fail(function (xhr, status, error) {
-                        self.isPlaceOrderActionAllowed(true);
-                        self.showingOtp(false);
-                        self.transactionUrl = null;
-                        globalMessageList.addErrorMessage({ message: mage('Error! Payment failed, please try again later.') });
-                        if (xhr.responseJSON.message) {
-                            globalMessageList.addErrorMessage({ message: xhr.responseJSON.message });
-                        }
-                        self.afterPlaceOrder(self.getCancelOrderUrl(), true);
+                        var errors = extractApiErrors(xhr.responseJSON);
+                        errors.push(mage('Error! Payment failed, please try again later.'));
+                        self.cancelOrder(errors);
                     });
 
                 return true;
@@ -280,6 +258,23 @@ define(
                 }
                 fullScreenLoader.stopLoader();
                 window.location.href = url;
+            },
+            handlePlaceOrderFail: function () {
+                this.isPlaceOrderActionAllowed(true);
+                globalMessageList.addErrorMessage({ message: mage('Could not place order.') });
+            },
+            cancelOrder(errors) {
+                var self = this;
+                var paymentId = this.payment ? this.payment.id : null;
+
+                sendCancelOrder(paymentId, errors).always(function (data) {
+                    self.payment = null;
+                    self.transactionUrl = null;
+                    self.isPlaceOrderActionAllowed(true);
+                    self.showingOtp(false);
+                    fullScreenLoader.stopLoader();
+                    globalMessageList.addErrorMessage({ message: errors.join(", ") });
+                });
             }
         });
     }

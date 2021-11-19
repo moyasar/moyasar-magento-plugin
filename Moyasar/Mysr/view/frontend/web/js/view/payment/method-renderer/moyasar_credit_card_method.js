@@ -14,7 +14,7 @@ define(
         'Magento_Ui/js/model/messageList',
         'mage/translate',
         'Moyasar_Mysr/js/model/cancel-order',
-        'Moyasar_Mysr/js/model/extract-api-errors',
+        'Moyasar_Mysr/js/model/extract-api-errors'
     ],
     function (
         Component,
@@ -28,8 +28,8 @@ define(
         createMoyasarPayment,
         globalMessageList,
         mage,
-        cancelOrder,
-        extractApiErrors,
+        sendCancelOrder,
+        extractApiErrors
     ) {
         'use strict';
         return Component.extend({
@@ -153,45 +153,27 @@ define(
 
                                 self.updateOrderPayment(paymentObject)
                                     .done(function () {
-                                        if (paymentObject.source.transaction_url) {
+                                        if (paymentObject.status === 'initiated') {
                                             window.location.href = paymentObject.source.transaction_url;
+                                        } else if (paymentObject.status === 'authorized') {
+                                            window.location.href = paymentObject.callback_url;
                                         } else {
-                                            var errors = extractApiErrors(xhr.responseJSON);
-                                            errors.push(mage('Error! Payment failed, please try again later.'));
-
-                                            for (var e of errors) {
-                                                globalMessageList.addErrorMessage({ message: e });
-                                            }
-
-                                            self.cancelAndRedirect(errors);
+                                            self.cancelOrder(extractApiErrors(xhr.responseJSON));
                                         }
                                     })
                                     .fail(function () {
-                                        var error = mage('Error! Could not place order.');
-                                        globalMessageList.addErrorMessage({ message: error });
-                                        self.cancelAndRedirect(error);
+                                        self.cancelOrder([ mage('Error! Could not place order.') ]);
                                     });
                             })
-                            .fail(function (xhr, status, error) {
+                            .fail(function (xhr) {
                                 var errors = extractApiErrors(xhr.responseJSON);
                                 errors.push(mage('Error! Payment failed, please try again later.'));
-
-                                for (var e of errors) {
-                                    globalMessageList.addErrorMessage({ message: e });
-                                }
-
-                                self.cancelAndRedirect(errors);
+                                self.cancelOrder(errors);
                             });
                         })
-                        .fail(function () {
-                            self.isPlaceOrderActionAllowed(true);
-                            globalMessageList.addErrorMessage({ message: mage('Could not place order.') });
-                        })
+                        .fail(self.handlePlaceOrderFail)
                     })
-                    .fail(function () {
-                        self.isPlaceOrderActionAllowed(true);
-                        globalMessageList.addErrorMessage({ message: mage('Could not place order.') });
-                    });
+                    .fail(self.handlePlaceOrderFail);
 
                 return true;
             },
@@ -206,22 +188,18 @@ define(
                     dataType: 'json'
                 });
             },
-            cancelAndRedirect(errors) {
+            handlePlaceOrderFail: function () {
+                this.isPlaceOrderActionAllowed(true);
+                globalMessageList.addErrorMessage({ message: mage('Could not place order.') });
+            },
+            cancelOrder(errors) {
+                var self = this;
                 var paymentId = this.payment ? this.payment.id : null;
 
-                cancelOrder(paymentId, errors).always(function (data) {
-                    if (data.redirect_to) {
-                        for (var error of errors) {
-                            globalMessageList.addErrorMessage({ message: error });
-                        }
-
-                        setTimeout(function () {
-                            window.location.href = data.redirect_to;
-                        }, 5000);
-                    } else {
-                        fullScreenLoader.stopLoader();
-                        globalMessageList.addErrorMessage({ message: mage('Could not cancel order') });
-                    }
+                sendCancelOrder(paymentId, errors).always(function (data) {
+                    self.isPlaceOrderActionAllowed(true);
+                    fullScreenLoader.stopLoader();
+                    globalMessageList.addErrorMessage({ message: errors.join(", ") });
                 });
             }
         });

@@ -140,7 +140,7 @@ class MoyasarHelper extends AbstractHelper
 
             // Send Invoice mail to customer
             $this->invoiceSender->send($invoice);
-            
+
             $order = $invoice->getOrder();
 
             $history = $order

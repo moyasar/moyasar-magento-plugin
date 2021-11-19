@@ -2,6 +2,8 @@
 
 namespace Moyasar\Mysr\Controller;
 
+use Magento\Framework\App\Request\Http;
+
 trait ReadsJson
 {
     protected $json = null;
@@ -9,7 +11,11 @@ trait ReadsJson
     protected function getJsonArray()
     {
         if ($this->json == null) {
-            $this->json = json_decode($this->context->getRequest()->getContent(), true);
+            $this->json = @json_decode($this->context->getRequest()->getContent(), true);
+        }
+
+        if ($this->json == null) {
+            $this->json = $this->context->getRequest()->getPost();
         }
 
         return $this->json;

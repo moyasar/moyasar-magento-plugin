@@ -4,6 +4,10 @@ define(
         'use strict';
 
         return function (serverResponse) {
+            if (!serverResponse) {
+                return [];
+            }
+
             var errors = [];
 
             if (typeof serverResponse.message === 'string') {
