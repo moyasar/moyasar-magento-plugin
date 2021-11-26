@@ -51,7 +51,7 @@ define(
                     description: 'Order for: ' + this.getCustomerEmail(),
                     publishable_api_key: this.getApiKey(),
                     callback_url: this.getBaseUrl(),
-                    methods: this.getMethod,
+                    methods: this.getMethod(),
                     on_initiating:  function () {
                         self.isPlaceOrderActionAllowed(false);
                         fullScreenLoader.startLoader();
@@ -149,7 +149,6 @@ define(
             getCountry: function () {
                 return window.checkoutConfig.moyasar_online_payment.country;
             },
-            // Methods
             getMethod: function () {
                 return window.checkoutConfig.moyasar_online_payment.methods;
             },
@@ -162,24 +161,6 @@ define(
             placeMagentoOrder: function () {
                 return $.when(placeOrderAction(this.getData(), this.messageContainer));
             },
-            updateOrderPayment: function (payment) {
-                return $.ajax({
-                    url: url.build('moyasar_mysr/order/update'),
-                    method: 'POST',
-                    data: payment,
-                    dataType: 'json'
-                });
-            },
-            cancelOrder(errors) {
-                var self = this;
-                var paymentId = this.payment ? this.payment.id : null;
-
-                sendCancelOrder(paymentId, errors).always(function (data) {
-                    self.isPlaceOrderActionAllowed(true);
-                    fullScreenLoader.stopLoader();
-                    globalMessageList.addErrorMessage({ message: errors.join(", ") });
-                });
-            }
         });
     }
 );

@@ -29,40 +29,39 @@
                 </field>
             </group>
 
-            <group id="moyasar_credit_card" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="2" translate="label">
-                <label>Moyasar Credit Card</label>
+            <group id="moyasar_online_payment" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="2" translate="label">
+                <label>Moyasar Online ayment</label>
+
                 <field id="active" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label"
                        type="select">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="title" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" canRestore="1"
-                       translate="label" type="text">
-                    <label>Title</label>
+                
+                <field id="crdit_card" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label"
+                       type="select">
+                    <label>Card Card</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="cards_type" translate="label" type="multiselect" sortOrder="50" showInDefault="1"
-                       showInWebsite="1" showInStore="1" canRestore="1">
-                    <label>Enable Credit Cards:</label>
-                    <source_model>Moyasar\Mysr\Model\CreditCardType</source_model>
+
+                <field id="stc_pay" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label"
+                       type="select">
+                    <label>Stc Pay</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="sort_order" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="60"
-                       translate="label" type="text">
-                    <label>Sort Order</label>
+
+                <field id="apple_pay" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label"
+                       type="select">
+                    <label>Apple Pay</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>
 
+
+            <!-- Apple Pay -->
             <group id="moyasar_apple_pay" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="3" translate="label">
-                <label>Moyasar Apple Pay</label>
-                <field id="active" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label"
-                       type="select">
-                    <label>Enabled</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Please set both Moyasar publishable API key and secret API key in Credit Card configurations</comment>
-                </field>
-                <field id="title" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" canRestore="1"
-                       translate="label" type="text">
-                    <label>Title</label>
-                </field>
+                <label>Apple Pay Configuration</label>
+        
                 <field id="merchant_id" translate="label" type="text" sortOrder="30" showInDefault="1"
                        showInWebsite="1" showInStore="0">
                     <label>Apple Pay Merchant ID</label>
@@ -84,27 +83,6 @@
                        showInWebsite="1" showInStore="0">
                     <label>Private Key Password</label>
                     <comment>Used for initiating Apple Pay Sessions, Only set if there is a password for your private key</comment>
-                </field>
-                <field id="sort_order" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="60"
-                       translate="label" type="text">
-                    <label>Sort Order</label>
-                </field>
-            </group>
-
-            <group id="moyasar_stc_pay" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="4" translate="label">
-                <label>Moyasar STC Pay</label>
-                <field id="active" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label" type="select">
-                    <label>Enabled</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Please set both Moyasar publishable API key and secret API key in Credit Card configurations</comment>
-                </field>
-                <field id="title" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" canRestore="1"
-                       translate="label" type="text">
-                    <label>Title</label>
-                </field>
-                <field id="sort_order" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="60"
-                       translate="label" type="text">
-                    <label>Sort Order</label>
                 </field>
             </group>
         </section>
