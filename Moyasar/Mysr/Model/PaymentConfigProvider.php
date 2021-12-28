@@ -14,19 +14,6 @@ use Moyasar\Mysr\Model\Payment\MoyasarOnlinePayment;
 
 class PaymentConfigProvider implements ConfigProviderInterface
 {
-    /**
-     * @var string[]
-     */
-    protected $methodCodes = [
-        MoyasarOnlinePayment::CODE,
-    ];
-
-    /**
-     * @var AbstractMethod[]
-     */
-    protected $methods = [];
-
-    protected $output = [];
 
     /**
      * @var ScopeConfigInterface
@@ -76,40 +63,15 @@ class PaymentConfigProvider implements ConfigProviderInterface
 
 	public function getConfig()
 	{
-        $output = [];
-
-        foreach ($this->methods as $method) {
-            if (! $method->isAvailable()) {
-                continue;
-            }
-
-            $code = $method->getCode();
-            $configMethod = $this->configMethodName($code);
-
-            $output[$code] = $this->$configMethod($method);
-        }
-
-		return $output;
-	}
-
-    private function configMethodName($code)
-    {
-        $code = str_replace('_', ' ', $code);
-        $code = ucwords($code);
-        $code = str_replace(' ', '', $code);
-        return strtolower(substr($code, 0, 1)) . substr($code, 1);
-	}
-
-    private function moyasarOnlinePayment($method)
-    {
         return [
-            'api_key' => $this->moyasarHelper->moyasarPublishableApiKey(),
-            'supported_cards' => $method->getConfigData('cards_type'),
-            'currencies_fractions' => $this->currencyHelper->fractionsMap(),
-            'payment_url' => $this->moyasarHelper->buildMoyasarUrl('payments'),
-            'country' => $this->scopeConfig->getValue('general/country/default'),
-            'store_name' => $this->storeManager->getStore()->getName(),
-            'methods' => $this->moyasarHelper->methodEnabled()            
+            MoyasarOnlinePayment::CODE => [
+                'api_key' => $this->moyasarHelper->moyasarPublishableApiKey(),
+                'currencies_fractions' => $this->currencyHelper->fractionsMap(),
+                'payment_url' => $this->moyasarHelper->buildMoyasarUrl('payments'),
+                'country' => $this->scopeConfig->getValue('general/country/default'),
+                'store_name' => $this->storeManager->getStore()->getName(),
+                'methods' => $this->moyasarHelper->methodEnabled()
+            ]
         ];
-	}
+    }
 }
