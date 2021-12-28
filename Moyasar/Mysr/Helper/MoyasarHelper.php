@@ -66,14 +66,15 @@ class MoyasarHelper extends AbstractHelper
     public function methodEnabled()
     {
         $methods = [];
-        if ($this->scopeConfig->getValue('payment/moyasar_online_payment/crdit_card', ScopeInterface::SCOPE_STORE)) {
-            $methods[] = 'creditcard';
-        }
-        if ($this->scopeConfig->getValue('payment/moyasar_online_payment/stc_pay', ScopeInterface::SCOPE_STORE)) {
-            $methods[] = 'stcpay';
-        }
-        if ($this->scopeConfig->getValue('payment/moyasar_online_payment/apple_pay', ScopeInterface::SCOPE_STORE)) {
-            $methods[] = 'applepay';
+        $lookup = [
+            'payment/moyasar_online_payment/crdit_card' => 'creditcard',
+            'payment/moyasar_online_payment/stc_pay' => 'stcpay',
+            'payment/moyasar_online_payment/apple_pay' => 'applepay'
+        ];
+        foreach ($lookup as $key => $method) {
+            if($this->scopeConfig->getValue($key, ScopeInterface::SCOPE_STORE)) {
+                $methods[] = $method;
+            }
         }
         return $methods;
     }
