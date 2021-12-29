@@ -7,10 +7,7 @@ define(
         'jquery',
         'Magento_Checkout/js/model/full-screen-loader',
         'Magento_Checkout/js/action/place-order',
-        'Magento_Checkout/js/model/payment/additional-validators',
         'mage/url',
-        'jquery/ui',
-        'Moyasar_Mysr/js/model/create-payment',
         'Magento_Ui/js/model/messageList',
         'mage/translate',
         'Moyasar_Mysr/js/model/moyasar',
@@ -24,10 +21,7 @@ define(
         $,
         fullScreenLoader,
         placeOrderAction,
-        additionalValidators,
         url,
-        jqueryUi,
-        createMoyasarPayment,
         globalMessageList,
         mage,
         MoyasarForm,
@@ -52,43 +46,9 @@ define(
                     publishable_api_key: this.getApiKey(),
                     callback_url: this.getBaseUrl(),
                     methods: this.getMethod(),
-                    on_initiating:  function () {
-                        self.isPlaceOrderActionAllowed(false);
-                        fullScreenLoader.startLoader();
-
-                        return new Promise(function (resolve, reject) {
-                            self.placeMagentoOrder()
-                                .done(function (orderId) {
-                                    fullScreenLoader.startLoader();
-                                    resolve({
-                                        'description': 'Order for: ' + self.getCustomerEmail() + ', Order ID: ' + orderId
-                                    });
-                                })
-                                .fail(function (response) {
-                                    reject( mage('Failed placing order, please try again.'));
-                                });
-                        });
-                    },
-                    on_completed: function (payment) {
-
-                        self.payment = payment;
-                        self.updateOrderPayment(payment)
-                            .done(function () {
-                                self.isPlaceOrderActionAllowed(true);
-
-                                if (payment.status === 'initiated') {
-                                    fullScreenLoader.stopLoader();
-                                    self.transactionUrl = payment.source.transaction_url;
-                                } else {
-                                    self.cancelOrder(extractApiErrors(xhr.responseJSON));
-                                }
-                            })
-                            .fail(function (xhr) {
-                                var errors = extractApiErrors(xhr.responseJSON);
-                                errors.push(mage('Error! Payment failed, please try again later.'));
-                                self.cancelOrder(errors);
-                            });
-                    },
+                    on_initiating: this.onFormInit.bind(this),
+                    on_completed: this.onCompleted.bind(this),
+                    // on_failure: this.onFailure.bind(this),
                     apple_pay: {
                         label: this.getStoreName(),
                         validate_merchant_url: this.getValidationUrl(),
@@ -161,6 +121,63 @@ define(
             placeMagentoOrder: function () {
                 return $.when(placeOrderAction(this.getData(), this.messageContainer));
             },
+            updateOrderPayment: function (payment) {
+                return $.ajax({
+                    url: url.build('moyasar_mysr/order/update'),
+                    method: 'POST',
+                    data: payment,
+                    dataType: 'json'
+                });
+            },
+            cancelOrder: function (errors) {
+                var self = this;
+                var paymentId = this.payment ? this.payment.id : null;
+
+                sendCancelOrder(paymentId, errors).always(function (data) {
+                    self.isPlaceOrderActionAllowed(true);
+                    fullScreenLoader.stopLoader();
+                    globalMessageList.addErrorMessage({ message: errors.join(", ") });
+                });
+            },
+            onFormInit: function () {
+                self.isPlaceOrderActionAllowed(false);
+                fullScreenLoader.startLoader();
+
+                return new Promise(function (resolve, reject) {
+                    self.placeMagentoOrder()
+                        .done(function (orderId) {
+                            fullScreenLoader.startLoader();
+                            resolve({
+                                'description': 'Order for: ' + self.getCustomerEmail(), 'metadata': { 'order_id': orderId }
+                            });
+                        })
+                        .fail(function (response) {
+                            reject( mage('Failed placing order, please try again.'));
+                        });
+                });
+            },
+            onCompleted: function (payment) {
+                self.payment = payment;
+                self.updateOrderPayment(payment)
+                    .done(function () {
+                        self.isPlaceOrderActionAllowed(true);
+
+                        if (payment.status === 'initiated') {
+                            fullScreenLoader.stopLoader();
+                            self.transactionUrl = payment.source.transaction_url;
+                        } else {
+                            self.cancelOrder(extractApiErrors(xhr.responseJSON));
+                        }
+                    })
+                    .fail(function (xhr) {
+                        var errors = extractApiErrors(xhr.responseJSON);
+                        errors.push(mage('Error! Payment failed, please try again later.'));
+                        self.cancelOrder(errors);
+                    });
+            },
+            // onFailure: function (error) {
+
+            // }
         });
     }
 );
