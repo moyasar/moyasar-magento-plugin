@@ -7,7 +7,10 @@ define(
         'jquery',
         'Magento_Checkout/js/model/full-screen-loader',
         'Magento_Checkout/js/action/place-order',
+        'Magento_Checkout/js/model/payment/additional-validators',
         'mage/url',
+        'jquery/ui',
+        'Moyasar_Mysr/js/model/create-payment',
         'Magento_Ui/js/model/messageList',
         'mage/translate',
         'Moyasar_Mysr/js/model/moyasar',
@@ -21,7 +24,10 @@ define(
         $,
         fullScreenLoader,
         placeOrderAction,
+        additionalValidators,
         url,
+        jqueryUi,
+        createMoyasarPayment,
         globalMessageList,
         mage,
         MoyasarForm,
@@ -48,7 +54,6 @@ define(
                     methods: this.getMethod(),
                     on_initiating: this.onFormInit.bind(this),
                     on_completed: this.onCompleted.bind(this),
-                    // on_failure: this.onFailure.bind(this),
                     apple_pay: {
                         label: this.getStoreName(),
                         validate_merchant_url: this.getValidationUrl(),
@@ -140,15 +145,16 @@ define(
                 });
             },
             onFormInit: function () {
-                self.isPlaceOrderActionAllowed(false);
+                this.isPlaceOrderActionAllowed(false);
                 fullScreenLoader.startLoader();
+                var getEmail = this.getCustomerEmail();
 
-                return new Promise(function (resolve, reject) {
-                    self.placeMagentoOrder()
+                return new Promise((resolve, reject) => {
+                    this.placeMagentoOrder()
                         .done(function (orderId) {
                             fullScreenLoader.startLoader();
                             resolve({
-                                'description': 'Order for: ' + self.getCustomerEmail(), 'metadata': { 'order_id': orderId }
+                                'description': 'Order for: ' + getEmail + ', Order ID: ' + orderId
                             });
                         })
                         .fail(function (response) {
@@ -157,27 +163,24 @@ define(
                 });
             },
             onCompleted: function (payment) {
-                self.payment = payment;
-                self.updateOrderPayment(payment)
+                this.payment = payment;
+                this.updateOrderPayment(payment)
                     .done(function () {
-                        self.isPlaceOrderActionAllowed(true);
+                        this.isPlaceOrderActionAllowed(true);
 
                         if (payment.status === 'initiated') {
                             fullScreenLoader.stopLoader();
-                            self.transactionUrl = payment.source.transaction_url;
+                            this.transactionUrl = payment.source.transaction_url;
                         } else {
-                            self.cancelOrder(extractApiErrors(xhr.responseJSON));
+                            this.cancelOrder(extractApiErrors(xhr.responseJSON));
                         }
                     })
                     .fail(function (xhr) {
                         var errors = extractApiErrors(xhr.responseJSON);
                         errors.push(mage('Error! Payment failed, please try again later.'));
-                        self.cancelOrder(errors);
+                        this.cancelOrder(errors);
                     });
             },
-            // onFailure: function (error) {
-
-            // }
         });
     }
 );
