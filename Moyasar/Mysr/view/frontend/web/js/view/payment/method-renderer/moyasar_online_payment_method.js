@@ -54,6 +54,7 @@ define(
                     methods: this.getMethod(),
                     on_initiating: this.onFormInit.bind(this),
                     on_completed: this.onCompleted.bind(this),
+                    on_failure: this.onFailure.bind(this),
                     apple_pay: {
                         label: this.getStoreName(),
                         validate_merchant_url: this.getValidationUrl(),
@@ -181,6 +182,11 @@ define(
                         this.cancelOrder(errors);
                     });
             },
+            onFailure: function (errors) {
+                fullScreenLoader.stopLoader();
+                this.cancelOrder(["" + errors]);
+            }
+
         });
     }
 );
