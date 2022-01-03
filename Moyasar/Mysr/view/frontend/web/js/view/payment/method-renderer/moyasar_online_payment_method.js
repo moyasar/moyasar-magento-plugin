@@ -155,7 +155,7 @@ define(
                         .done(function (orderId) {
                             fullScreenLoader.startLoader();
                             resolve({
-                                'description': 'Order for: ' + getEmail + ', Order ID: ' + orderId
+                                'description': 'Order for: ' + getEmail, 'metadata': { 'order_id': orderId }
                             });
                         })
                         .fail(function (response) {
