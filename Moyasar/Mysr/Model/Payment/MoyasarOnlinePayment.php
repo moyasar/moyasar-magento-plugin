@@ -4,9 +4,9 @@ namespace Moyasar\Mysr\Model\Payment;
 use Magento\Payment\Model\Method\AbstractMethod;
 use Magento\Quote\Api\Data\CartInterface;
 
-class MoyasarCreditCard extends AbstractMethod
+class MoyasarOnlinePayment extends AbstractMethod
 {
-    const CODE = 'moyasar_credit_card';
+    const CODE = 'moyasar_online_payment';
 
     protected $_code = self::CODE;
      
