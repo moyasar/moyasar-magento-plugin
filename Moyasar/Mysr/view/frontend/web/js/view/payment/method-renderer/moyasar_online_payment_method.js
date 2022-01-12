@@ -164,22 +164,24 @@ define(
                 });
             },
             onCompleted: function (payment) {
+                var self = this;
+
                 this.payment = payment;
                 this.updateOrderPayment(payment)
                     .done(function () {
-                        this.isPlaceOrderActionAllowed(true);
+                        self.isPlaceOrderActionAllowed(true);
 
-                        if (payment.status === 'initiated') {
+                        if (payment.status == 'initiated') {
                             fullScreenLoader.stopLoader();
-                            this.transactionUrl = payment.source.transaction_url;
+                            $('#checkout').trigger('processStop');
                         } else {
-                            this.cancelOrder(extractApiErrors(xhr.responseJSON));
+                            self.cancelOrder(extractApiErrors(xhr.responseJSON));
                         }
                     })
                     .fail(function (xhr) {
                         var errors = extractApiErrors(xhr.responseJSON);
                         errors.push(mage('Error! Payment failed, please try again later.'));
-                        this.cancelOrder(errors);
+                        self.cancelOrder(errors);
                     });
             },
             onFailure: function (errors) {
