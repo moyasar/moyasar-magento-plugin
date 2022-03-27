@@ -57,7 +57,7 @@ define(
                     on_failure: this.onFailure.bind(this),
                     apple_pay: {
                         label: this.getStoreName(),
-                        validate_merchant_url: this.getValidationUrl(),
+                        validate_merchant_url: 'https://apimig.moyasar.com/v1/applepay/initiate',
                         country: this.getCountry()
                     },
                 });

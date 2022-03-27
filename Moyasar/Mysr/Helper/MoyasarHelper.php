@@ -367,51 +367,15 @@ class MoyasarHelper extends AbstractHelper
         return @json_decode($this->_curl->getBody(), true);
     }
 
-    public function getMerchantCertificatePath()
-    {
-        return $this->getFilePath('payment/moyasar_apple_pay/validate_merchant_cert');
-    }
-
-    public function getMerchantCertificateKeyPath()
-    {
-        return $this->getFilePath('payment/moyasar_apple_pay/validate_merchant_pk');
-    }
-
-    protected function getFilePath($key)
-    {
-        $varDir = $this->directoryList->getPath(DirectoryList::VAR_DIR);
-        $moyasarUploadDir = 'moyasar/applepay/certificates';
-        $path = $this->scopeConfig->getValue($key, ScopeInterface::SCOPE_STORE);
-
-        return "$varDir/$moyasarUploadDir/$path";
-    }
-
-    public function getMerchantCertificateKeyPassword()
-    {
-        $password = $this->scopeConfig->getValue('payment/moyasar_apple_pay/validate_merchant_pk_password', ScopeInterface::SCOPE_STORE);
-
-        if (!is_string($password)) {
-            return '';
-        }
-
-        return $password;
-    }
-
-    public function getMerchantApplePayIdentifier()
-    {
-        return $this->scopeConfig->getValue('payment/moyasar_apple_pay/merchant_id', ScopeInterface::SCOPE_STORE);
-    }
-
     protected function getCurrentStoreName()
     {
         return $this->storeManager->getStore()->getName();
     }
-
+ 
     protected function getInitiativeContext()
     {
         $baseUrl = $this->storeManager->getStore()->getBaseUrl();
         if (preg_match('/^.+:\/\/([A-Za-z0-9\-\.]+)\/?.*$/', $baseUrl, $matches) !== 1) {
-            return $this->getMerchantApplePayIdentifier();
         }
 
         return $matches[1];
@@ -423,8 +387,20 @@ class MoyasarHelper extends AbstractHelper
             return null;
         }
 
+        $association_file = __DIR__ . '/ap-association.txt';
+
+        if (! file_exists($association_file)) {
+          $this->log->write('Could not find Moyasar Apple Pay domain association file');
+
+          return;
+        }
+
+        if (! preg_match('/^\.well-known\/apple-developer-merchantid-domain-association(\.txt)?/', trim($_SERVER['REQUEST_URI'], '/'))) {
+
+          return;
+        }
+
         $body = [
-            'merchantIdentifier' => $this->getMerchantApplePayIdentifier(),
             'displayName' => $this->getCurrentStoreName(),
             'initiative' => 'web',
             'initiativeContext' => $this->getInitiativeContext()
@@ -432,9 +408,6 @@ class MoyasarHelper extends AbstractHelper
 
         $this->_curl->setOptions([
             CURLOPT_SSL_VERIFYPEER => true,
-            CURLOPT_SSLCERT => $this->getMerchantCertificatePath(),
-            CURLOPT_SSLKEY => $this->getMerchantCertificateKeyPath(),
-            CURLOPT_SSLKEYPASSWD => $this->getMerchantCertificateKeyPassword(),
             CURLOPT_RETURNTRANSFER => true
         ]);
 
