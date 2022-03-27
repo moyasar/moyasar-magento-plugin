@@ -372,7 +372,7 @@ class MoyasarHelper extends AbstractHelper
         return $this->storeManager->getStore()->getName();
     }
  
-    protected function getInitiativeContext()
+    public function getInitiativeContext()
     {
         $baseUrl = $this->storeManager->getStore()->getBaseUrl();
         if (preg_match('/^.+:\/\/([A-Za-z0-9\-\.]+)\/?.*$/', $baseUrl, $matches) !== 1) {
