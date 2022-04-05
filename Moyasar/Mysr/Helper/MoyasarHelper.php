@@ -367,91 +367,17 @@ class MoyasarHelper extends AbstractHelper
         return @json_decode($this->_curl->getBody(), true);
     }
 
-    public function getMerchantCertificatePath()
-    {
-        return $this->getFilePath('payment/moyasar_apple_pay/validate_merchant_cert');
-    }
-
-    public function getMerchantCertificateKeyPath()
-    {
-        return $this->getFilePath('payment/moyasar_apple_pay/validate_merchant_pk');
-    }
-
-    protected function getFilePath($key)
-    {
-        $varDir = $this->directoryList->getPath(DirectoryList::VAR_DIR);
-        $moyasarUploadDir = 'moyasar/applepay/certificates';
-        $path = $this->scopeConfig->getValue($key, ScopeInterface::SCOPE_STORE);
-
-        return "$varDir/$moyasarUploadDir/$path";
-    }
-
-    public function getMerchantCertificateKeyPassword()
-    {
-        $password = $this->scopeConfig->getValue('payment/moyasar_apple_pay/validate_merchant_pk_password', ScopeInterface::SCOPE_STORE);
-
-        if (!is_string($password)) {
-            return '';
-        }
-
-        return $password;
-    }
-
-    public function getMerchantApplePayIdentifier()
-    {
-        return $this->scopeConfig->getValue('payment/moyasar_apple_pay/merchant_id', ScopeInterface::SCOPE_STORE);
-    }
-
     protected function getCurrentStoreName()
     {
         return $this->storeManager->getStore()->getName();
     }
-
-    protected function getInitiativeContext()
+ 
+    public function getInitiativeContext()
     {
         $baseUrl = $this->storeManager->getStore()->getBaseUrl();
         if (preg_match('/^.+:\/\/([A-Za-z0-9\-\.]+)\/?.*$/', $baseUrl, $matches) !== 1) {
-            return $this->getMerchantApplePayIdentifier();
         }
 
         return $matches[1];
-    }
-
-    public function validateApplePayMerchant($validationUrl)
-    {
-        if (!$validationUrl) {
-            return null;
-        }
-
-        $body = [
-            'merchantIdentifier' => $this->getMerchantApplePayIdentifier(),
-            'displayName' => $this->getCurrentStoreName(),
-            'initiative' => 'web',
-            'initiativeContext' => $this->getInitiativeContext()
-        ];
-
-        $this->_curl->setOptions([
-            CURLOPT_SSL_VERIFYPEER => true,
-            CURLOPT_SSLCERT => $this->getMerchantCertificatePath(),
-            CURLOPT_SSLKEY => $this->getMerchantCertificateKeyPath(),
-            CURLOPT_SSLKEYPASSWD => $this->getMerchantCertificateKeyPassword(),
-            CURLOPT_RETURNTRANSFER => true
-        ]);
-
-        try {
-            $this->_curl->post($validationUrl, json_encode($body));
-        } catch (Exception $e) {
-            $this->_logger->warning('Could not validate merchant with Apple, error: ' . $e->getMessage());
-            return null;
-        }
-
-        if ($this->_curl->getStatus() > 299) {
-            $this->_logger->warning('Error while trying to validate merchant ' . $this->_curl->getStatus(), [
-                'response' => @json_decode($this->_curl->getBody(), true)
-            ]);
-            return null;
-        }
-
-        return @json_decode($this->_curl->getBody());
     }
 }

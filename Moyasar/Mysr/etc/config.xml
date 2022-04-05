@@ -18,14 +18,6 @@
 				<stc_pay>0</stc_pay>
 				<apple_pay>0</apple_pay>
 			</moyasar_online_payment>
-
-			<moyasar_apple_pay>
-				<active>0</active>
-				<model>Moyasar\Mysr\Model\Payment\MoyasarApplePay</model>
-				<order_status>pending_payment</order_status>
-				<title>Apple Pay</title>
-				<sort_order>0</sort_order>
-			</moyasar_apple_pay>
 		</payment>
 	</default>
 </config>
