@@ -56,6 +56,34 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>
+            <group id="supported_networks" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="2" translate="label">
+                <label>Supported Networks</label>
+
+                <field id="mada" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label"
+                       type="select">
+                    <label>Mada</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="amex" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label"
+                       type="select">
+                    <label>Amex</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="visa" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label"
+                       type="select">
+                    <label>Visa</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="mastercard" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label"
+                       type="select">
+                    <label>Mastercard</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+
         </section>
     </system>
 </config>
