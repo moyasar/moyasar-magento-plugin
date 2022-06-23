@@ -56,8 +56,8 @@ define(
                     on_completed: this.onCompleted.bind(this),
                     on_failure: this.onFailure.bind(this),
                     apple_pay: {
-                        label: this.getStoreName(),
-                        validate_merchant_url: this.getValidationUrl(),
+                        label: this.getDomain(),
+                        validate_merchant_url: 'https://api.moyasar.com/v1/applepay/initiate',
                         country: this.getCountry()
                     },
                 });
@@ -87,6 +87,9 @@ define(
             },
             getApiKey: function () {
                 return window.checkoutConfig.moyasar_online_payment.api_key;
+            },
+            getDomain: function () {
+                return window.checkoutConfig.moyasar_online_payment.domain_name;
             },
             getAmount: function () {
                 return parseFloat(quote.totals()['base_grand_total']).toFixed(2);

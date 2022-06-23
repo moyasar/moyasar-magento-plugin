@@ -56,35 +56,6 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>
-
-
-            <!-- Apple Pay -->
-            <group id="moyasar_apple_pay" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="3" translate="label">
-                <label>Apple Pay Configuration</label>
-        
-                <field id="merchant_id" translate="label" type="text" sortOrder="30" showInDefault="1"
-                       showInWebsite="1" showInStore="0">
-                    <label>Apple Pay Merchant ID</label>
-                    <comment>Used for initiating Apple Pay Sessions</comment>
-                </field>
-                <field id="validate_merchant_cert" translate="label" type="Magento\Framework\Data\Form\Element\File" sortOrder="39" showInDefault="1" showInWebsite="0" >
-                    <label>Validation Certificate</label>
-                    <backend_model>Moyasar\Mysr\Model\Config\ApplePayCertificateFile</backend_model>
-                    <upload_dir config="system" scope_info="1">moyasar/applepay/certificates</upload_dir>
-                    <comment>Used for initiating Apple Pay Sessions</comment>
-                </field>
-                <field id="validate_merchant_pk" translate="label" type="Magento\Framework\Data\Form\Element\File" sortOrder="40" showInDefault="1" showInWebsite="0" >
-                    <label>Certificate Private Key</label>
-                    <backend_model>Moyasar\Mysr\Model\Config\ApplePayCertificateFile</backend_model>
-                    <upload_dir config="system" scope_info="1">moyasar/applepay/certificates</upload_dir>
-                    <comment>Used for initiating Apple Pay Sessions</comment>
-                </field>
-                <field id="validate_merchant_pk_password" translate="label" type="text" sortOrder="30" showInDefault="1"
-                       showInWebsite="1" showInStore="0">
-                    <label>Private Key Password</label>
-                    <comment>Used for initiating Apple Pay Sessions, Only set if there is a password for your private key</comment>
-                </field>
-            </group>
         </section>
     </system>
 </config>

@@ -67,7 +67,8 @@ class PaymentConfigProvider implements ConfigProviderInterface
                 'payment_url' => $this->moyasarHelper->buildMoyasarUrl('payments'),
                 'country' => $this->scopeConfig->getValue('general/country/default'),
                 'store_name' => $this->storeManager->getStore()->getName(),
-                'methods' => $this->moyasarHelper->methodEnabled()
+                'methods' => $this->moyasarHelper->methodEnabled(),
+                'domain_name' => $this->moyasarHelper->getInitiativeContext()
             ]           
         ];
 	}
