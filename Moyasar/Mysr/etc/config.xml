@@ -14,10 +14,19 @@
 				<title>Online Payment</title>
 				<order_status>pending_payment</order_status>
 				<model>Moyasar\Mysr\Model\Payment\MoyasarOnlinePayment</model>
-				<crdit_card>1</crdit_card>
+				<credit_card>1</credit_card>
 				<stc_pay>0</stc_pay>
 				<apple_pay>0</apple_pay>
 			</moyasar_online_payment>
+
+			<supported_networks>
+				<title>Supported Network</title>
+				<model>Moyasar\Mysr\Model\Payment\MoyasarOnlinePayment</model>
+				<mada>1</mada>
+				<visa>1</visa>
+				<mastercard>1</mastercard>
+				<amex>0</amex>
+			</supported_networks>
 		</payment>
 	</default>
 </config>
