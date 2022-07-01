@@ -52,6 +52,7 @@ define(
                     publishable_api_key: this.getApiKey(),
                     callback_url: this.getBaseUrl(),
                     methods: this.getMethod(),
+                    supported_networks: this.getNetwork(),
                     on_initiating: this.onFormInit.bind(this),
                     on_completed: this.onCompleted.bind(this),
                     on_failure: this.onFailure.bind(this),
@@ -120,6 +121,9 @@ define(
             },
             getMethod: function () {
                 return window.checkoutConfig.moyasar_online_payment.methods;
+            },
+            getNetwork: function () {
+                return window.checkoutConfig.moyasar_online_payment.supported_networks;
             },
             getStoreName: function () {
                 return window.checkoutConfig.moyasar_online_payment.store_name;

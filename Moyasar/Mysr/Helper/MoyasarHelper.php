@@ -79,6 +79,23 @@ class MoyasarHelper extends AbstractHelper
         return $methods;
     }
 
+    public function supportNetwork()
+    {
+        $networks = [];
+        $lookup = [
+            'payment/supported_networks/mada' => 'mada',
+            'payment/supported_networks/amex' => 'amex',
+            'payment/supported_networks/visa' => 'visa',
+            'payment/supported_networks/mastercard' => 'mastercard'
+        ];
+        foreach ($lookup as $key => $network) {
+            if($this->scopeConfig->getValue($key, ScopeInterface::SCOPE_STORE)) {
+                $networks[] = $network;
+            }
+        }
+        return $networks;
+    }
+
     public function saveOrder(Order $order)
     {
         // Save method is deprecated in new versions of Magento
