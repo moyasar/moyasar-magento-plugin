@@ -17,6 +17,7 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManager;
 use Magento\Sales\Model\Service\InvoiceService;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
+use Magento\Checkout\Model\Session;
 
 class MoyasarHelper extends AbstractHelper
 {
@@ -50,19 +51,55 @@ class MoyasarHelper extends AbstractHelper
         DirectoryList $directoryList,
         CurrencyHelper $currencyHelper,
         InvoiceService $invoiceService,
-        InvoiceSender $invoiceSender
+        InvoiceSender $invoiceSender,
+        Session $session
     ) {
         $this->orderManagement = $orderManagement;
         $this->_objectManager = $objectManager;
         $this->_curl = $curl;
         $this->storeManager = $storeManager;
         $this->directoryList = $directoryList;
+        $this->session = $session;
 
         parent::__construct($context);
         $this->currencyHelper = $currencyHelper;
         $this->invoiceService = $invoiceService;
         $this->invoiceSender = $invoiceSender;
     }
+
+    public function customerFirstName()
+    {
+        $customerFirstname = $this->session->getQuote()->getShippingAddress()->getData("firstname");
+        return $customerFirstname;
+    }
+    public function customerLastName()
+    {
+        $customerLastname = $this->session->getQuote()->getShippingAddress()->getData("lastname"); 
+        return $customerLastname;
+    }
+    public function customerProvince()
+    {
+        $customerProvince = $this->session->getQuote()->getShippingAddress()->getData("region_id");
+        return $customerProvince;
+    }
+    public function customerCity()
+    {
+        $customerCity = $this->session->getQuote()->getShippingAddress()->getData("city");
+        return $customerCity;
+    }
+    public function customerZip()
+    {
+        $customerZip = $this->session->getQuote()->getShippingAddress()->getData("postcode");
+        return $customerZip;
+    }
+
+    public function customerTelephone()
+    {
+        $customerTelephone = $this->session->getQuote()->getShippingAddress()->getData("telephone");
+        return $customerTelephone;
+    }
+
+
     public function methodEnabled()
     {
         $methods = [];

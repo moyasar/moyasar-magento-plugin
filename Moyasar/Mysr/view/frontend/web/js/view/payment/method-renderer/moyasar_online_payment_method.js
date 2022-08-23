@@ -86,6 +86,24 @@ define(
             getCustomerEmail: function () {
                 return quoteModel.guestEmail ? quoteModel.guestEmail : window.checkoutConfig.customerData.email;
             },
+            getCustomerFName: function () {
+                return window.checkoutConfig.moyasar_online_payment.f_name;
+            },
+            getCustomerLName: function () {
+                return window.checkoutConfig.moyasar_online_payment.l_name;
+            },
+            getCustomerProvince: function () {
+                return window.checkoutConfig.moyasar_online_payment.province;
+            },
+            getCustomerCity: function () {
+                return window.checkoutConfig.moyasar_online_payment.city;
+            },
+            getCustomerZip: function () {
+                return window.checkoutConfig.moyasar_online_payment.zip;
+            },
+            getCustomerTelephone: function () {
+                return window.checkoutConfig.moyasar_online_payment.telephone;
+            },
             getApiKey: function () {
                 return window.checkoutConfig.moyasar_online_payment.api_key;
             },
@@ -156,13 +174,30 @@ define(
                 this.isPlaceOrderActionAllowed(false);
                 fullScreenLoader.startLoader();
                 var getEmail = this.getCustomerEmail();
+                var fName = this.getCustomerFName();
+                var lName = this.getCustomerLName();
+                var country = this.getCountry();
+                var province = this.getCustomerProvince();
+                var zip = this.getCustomerZip();
+                var telephone = this.getCustomerTelephone();
+                var city = this.getCustomerCity();
 
                 return new Promise((resolve, reject) => {
                     this.placeMagentoOrder()
                         .done(function (orderId) {
                             fullScreenLoader.startLoader();
                             resolve({
-                                'description': 'Order for: ' + getEmail, 'metadata': { 'order_id': orderId }
+                                'description': 'Order for: ' + getEmail, 'metadata': { 
+                                                                                    'order_id': orderId,
+                                                                                    'email': getEmail,
+                                                                                    'first_name': fName,
+                                                                                    'last_name' : lName,
+                                                                                    'country': country,
+                                                                                    'province': province,
+                                                                                    'zip': zip,
+                                                                                    'telephone': telephone,
+                                                                                    'city': city
+                                                                                    }
                             });
                         })
                         .fail(function (response) {
