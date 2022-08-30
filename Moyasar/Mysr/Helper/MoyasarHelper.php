@@ -67,7 +67,7 @@ class MoyasarHelper extends AbstractHelper
     {
         $methods = [];
         $lookup = [
-            'payment/moyasar_online_payment/crdit_card' => 'creditcard',
+            'payment/moyasar_online_payment/credit_card' => 'creditcard',
             'payment/moyasar_online_payment/stc_pay' => 'stcpay',
             'payment/moyasar_online_payment/apple_pay' => 'applepay'
         ];
