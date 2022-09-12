@@ -17,6 +17,7 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManager;
 use Magento\Sales\Model\Service\InvoiceService;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
+use Magento\Checkout\Model\Session;
 
 class MoyasarHelper extends AbstractHelper
 {
@@ -50,19 +51,35 @@ class MoyasarHelper extends AbstractHelper
         DirectoryList $directoryList,
         CurrencyHelper $currencyHelper,
         InvoiceService $invoiceService,
-        InvoiceSender $invoiceSender
+        InvoiceSender $invoiceSender,
+        Session $session
     ) {
         $this->orderManagement = $orderManagement;
         $this->_objectManager = $objectManager;
         $this->_curl = $curl;
         $this->storeManager = $storeManager;
         $this->directoryList = $directoryList;
+        $this->session = $session;
 
         parent::__construct($context);
         $this->currencyHelper = $currencyHelper;
         $this->invoiceService = $invoiceService;
         $this->invoiceSender = $invoiceSender;
     }
+
+    public function getAdditionalMetadata()
+    {
+        $metaData = [
+            "firstname" => $this->session->getQuote()->getShippingAddress()->getData("firstname"),
+            "lastname" => $this->session->getQuote()->getShippingAddress()->getData("lastname"),
+            "city" => $this->session->getQuote()->getShippingAddress()->getData("city"),
+            "postcode" => $this->session->getQuote()->getShippingAddress()->getData("postcode"),
+            "telephone" => $this->session->getQuote()->getShippingAddress()->getData("telephone"),
+        ];
+        
+        return $metaData;
+    }
+
     public function methodEnabled()
     {
         $methods = [];

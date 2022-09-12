@@ -40,9 +40,9 @@ define(
             defaults: {
                 template: 'Moyasar_Mysr/payment/moyasar_online_payment'
             },
+            
             initializeForm: function () {
                 var self = this;
-
                 MoyasarForm.init({
                     element: '.mysr-form',
                     amount: this.getAmountSmallUnit(),
@@ -82,6 +82,9 @@ define(
                     method: 'GET',
                     dataType: 'json'
                 });
+            },
+            getMeta: function () {
+                return window.checkoutConfig.moyasar_online_payment.additional_metadata;
             },
             getCustomerEmail: function () {
                 return quoteModel.guestEmail ? quoteModel.guestEmail : window.checkoutConfig.customerData.email;
@@ -155,14 +158,17 @@ define(
             onFormInit: function () {
                 this.isPlaceOrderActionAllowed(false);
                 fullScreenLoader.startLoader();
-                var getEmail = this.getCustomerEmail();
-
+                var getEmail = this.getCustomerEmail();   
                 return new Promise((resolve, reject) => {
                     this.placeMagentoOrder()
                         .done(function (orderId) {
+                            var metadata = Object.assign({
+                                order_id: orderId,
+                                email: getEmail
+                            }, window.checkoutConfig.moyasar_online_payment.additional_metadata) 
                             fullScreenLoader.startLoader();
                             resolve({
-                                'description': 'Order for: ' + getEmail, 'metadata': { 'order_id': orderId }
+                                'description': 'Order for: ' + getEmail, 'metadata': metadata
                             });
                         })
                         .fail(function (response) {
@@ -198,4 +204,6 @@ define(
 
         });
     }
+
+    
 );

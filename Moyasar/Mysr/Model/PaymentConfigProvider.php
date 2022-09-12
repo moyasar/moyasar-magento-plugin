@@ -69,7 +69,8 @@ class PaymentConfigProvider implements ConfigProviderInterface
                 'store_name' => $this->storeManager->getStore()->getName(),
                 'methods' => $this->moyasarHelper->methodEnabled(),
                 'domain_name' => $this->moyasarHelper->getInitiativeContext(),
-                'supported_networks' => $this->moyasarHelper->supportNetwork()
+                'supported_networks' => $this->moyasarHelper->supportNetwork(),
+                'additional_metadata' =>$this->moyasarHelper->getAdditionalMetadata()
             ]           
         ];
 	}
