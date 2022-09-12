@@ -67,38 +67,18 @@ class MoyasarHelper extends AbstractHelper
         $this->invoiceSender = $invoiceSender;
     }
 
-    public function customerFirstName()
+    public function getAdditionalMetadata()
     {
-        $customerFirstname = $this->session->getQuote()->getShippingAddress()->getData("firstname");
-        return $customerFirstname;
+        $metaData = [
+            "firstname" => $this->session->getQuote()->getShippingAddress()->getData("firstname"),
+            "lastname" => $this->session->getQuote()->getShippingAddress()->getData("lastname"),
+            "city" => $this->session->getQuote()->getShippingAddress()->getData("city"),
+            "postcode" => $this->session->getQuote()->getShippingAddress()->getData("postcode"),
+            "telephone" => $this->session->getQuote()->getShippingAddress()->getData("telephone"),
+        ];
+        
+        return $metaData;
     }
-    public function customerLastName()
-    {
-        $customerLastname = $this->session->getQuote()->getShippingAddress()->getData("lastname"); 
-        return $customerLastname;
-    }
-    public function customerProvince()
-    {
-        $customerProvince = $this->session->getQuote()->getShippingAddress()->getData("region_id");
-        return $customerProvince;
-    }
-    public function customerCity()
-    {
-        $customerCity = $this->session->getQuote()->getShippingAddress()->getData("city");
-        return $customerCity;
-    }
-    public function customerZip()
-    {
-        $customerZip = $this->session->getQuote()->getShippingAddress()->getData("postcode");
-        return $customerZip;
-    }
-
-    public function customerTelephone()
-    {
-        $customerTelephone = $this->session->getQuote()->getShippingAddress()->getData("telephone");
-        return $customerTelephone;
-    }
-
 
     public function methodEnabled()
     {

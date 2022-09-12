@@ -70,12 +70,7 @@ class PaymentConfigProvider implements ConfigProviderInterface
                 'methods' => $this->moyasarHelper->methodEnabled(),
                 'domain_name' => $this->moyasarHelper->getInitiativeContext(),
                 'supported_networks' => $this->moyasarHelper->supportNetwork(),
-                'f_name' => $this->moyasarHelper->customerFirstName(),
-                'l_name' => $this->moyasarHelper->customerLastName(),
-                'province'=> $this->moyasarHelper->customerProvince(),
-                'city'=> $this->moyasarHelper->customerCity(),
-                'zip'=> $this->moyasarHelper->customerZip(),
-                'telephone'=> $this->moyasarHelper->customerTelephone(),
+                'additional_metadata' =>$this->moyasarHelper->getAdditionalMetadata()
             ]           
         ];
 	}
