@@ -2,7 +2,7 @@
     <type name="Magento\Framework\Console\CommandListInterface">
         <arguments>
             <argument name="commands" xsi:type="array">
-                <item name="moyasar_mysr_payment_process" xsi:type="object">Moyasar\Mysr\Console\Command\CheckPendingPaymentsCommand</item>
+                <item name="moyasar_mysr_payment_process" xsi:type="object">Moyasar\Mysr\Console\Command\CheckPending</item>
             </argument>
         </arguments>
     </type>

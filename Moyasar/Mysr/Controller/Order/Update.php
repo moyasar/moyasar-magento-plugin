@@ -3,49 +3,56 @@
 namespace Moyasar\Mysr\Controller\Order;
 
 use Magento\Checkout\Model\Session;
-use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\Action\HttpPostActionInterface;
+use Magento\Framework\Controller\ResultFactory;
 use Magento\Sales\Model\Order;
 use Moyasar\Mysr\Helper\MoyasarHelper;
-use Magento\Framework\Controller\ResultFactory;
 
-class Update extends Action
+class Update implements HttpPostActionInterface
 {
+    protected $context;
     protected $checkoutSession;
+    protected $helper;
 
     public function __construct(Context $context, Session $checkoutSession, MoyasarHelper $helper)
     {
-        parent::__construct($context);
-
+        $this->context = $context;
         $this->checkoutSession = $checkoutSession;
-        $this->moyasarHelper   = $helper;
+        $this->helper = $helper;
     }
 
     public function execute()
     {
-        $order   = $this->currentOrder();
+        $order = $this->lastOrder();
         $payment = $order->getPayment();
-        $total   = $this->moyasarHelper->orderAmountInSmallestCurrencyUnit($order);
+        $paymentId = $_POST['id'] ?? null;
 
-        $paymentId = isset($_POST['id']) ? $_POST['id'] : null;
-        $amount    = isset($_POST['amount']) ? $_POST['amount'] : null;
+        $payment->setLastTransId($paymentId);
+        $order->addCommentToStatusHistory("Waiting payment $paymentId");
+        $order->setState(Order::STATE_PENDING_PAYMENT);
+        $order->save();
 
-        if (!is_null($payment)) {
-            $payment->setAdditionalInformation('moyasar_payment_id', $paymentId);
-            $order->save();
-        }
-
-        if ($amount != $total) {
-            $this->moyasarHelper->rejectFraudPayment($order, $_POST);
-            $this->checkoutSession->restoreQuote();
-            return $this->resultFactory
-                ->create(ResultFactory::TYPE_JSON)
-                ->setStatusHeader(400, null, 'Bad Request');
-        }
+        return $this->context
+            ->getResultFactory()
+            ->create(ResultFactory::TYPE_JSON)
+            ->setHttpResponseCode(201)
+            ->setData([
+                'message' => 'Order updated successfully',
+                'order_id' => $order->getId(),
+                'real_order_id' => $order->getIncrementId()
+            ]);
     }
 
-    protected function currentOrder()
+    private function lastOrder()
     {
-        return $this->checkoutSession->getLastRealOrder();
+        $order = $this->checkoutSession->getLastRealOrder();
+
+        // Work around real_last_order_id is lost from current session
+        if (! $order->getId()) {
+            $order->loadByAttribute('entity_id', $this->checkoutSession->getLastOrderId());
+        }
+
+        return $order;
     }
 }

@@ -4,24 +4,16 @@ namespace Moyasar\Mysr\Observer;
 
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Moyasar\Mysr\Model\Payment\MoyasarOnlinePayment;
+use Moyasar\Mysr\Model\Payment\MoyasarPayments;
 
 class BeforeOrderPlaceObserver implements ObserverInterface
 {
     public function execute(Observer $observer)
     {
-        $methods = [
-            MoyasarOnlinePayment::CODE,
-        ];
-
         $order = $observer->getOrder();
-        if (!$order) {
-            return;
-        }
-
         $payment = $order->getPayment();
 
-        if ($payment && in_array($payment->getMethod(), $methods)) {
+        if ($payment && $payment->getMethod() == MoyasarPayments::CODE) {
             $order->setCanSendNewEmailFlag(false);
         }
     }
