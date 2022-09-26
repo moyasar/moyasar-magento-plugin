@@ -1,89 +1,41 @@
 <?xml version="1.0" ?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
         <section id="payment" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="1000" translate="label">
-            <group id="moyasar_api_conf" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="1" translate="label">
-                <label>Moyasar General Configuration</label>
-                <field id="publishable_api_key" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1"
-                       showInStore="0">
-                    <label>Publishable API Key</label>
-                    <comment>Your Publishable API key from Moyasar's dashboard; required to initiate payments.</comment>
-                </field>
-                <field id="secret_api_key" translate="label" type="text" sortOrder="30" showInDefault="1"
-                       showInWebsite="1" showInStore="0">
-                    <label>Secret API Key</label>
-                    <comment>Your Secret API key from Moyasar's dashboard; required to verify payments.</comment>
-                </field>
-                <field id="is_amount_verification_enabled" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label"
-                       type="select">
-                    <label>Enable Automatic Verification of Amount Tampering</label>
-                    <comment>A double-check system of completed payment after the redirection to verify its status and amount paid before placing the order.</comment>
+            <group id="moyasar_payments" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="1" translate="label">
+                <label>Moyasar Payments</label>
+
+                <field id="active" showInDefault="1" showInStore="1" showInWebsite="0" sortOrder="0" translate="label" type="select">
+                    <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="is_invoice_generating_enabled" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="50" translate="label"
-                       type="select">
+
+                <field id="secret_api_key" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Secret API Key</label>
+                </field>
+
+                <field id="publishable_api_key" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Publishable API Key</label>
+                </field>
+
+                <field id="generate_invoice" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="4" translate="label" type="select">
                     <label>Enable Automatic Invoice Generator</label>
                     <comment>Generating invoice of completed order automatically.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-            </group>
 
-            <group id="moyasar_online_payment" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="2" translate="label">
-                <label>Moyasar Online ayment</label>
-
-                <field id="active" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label"
-                       type="select">
-                    <label>Enabled</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                
-                <field id="credit_card" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label"
-                       type="select">
-                    <label>Card Card</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                <field id="methods" translate="label" type="multiselect" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Methods</label>
+                    <source_model>Moyasar\Mysr\Model\Config\Methods</source_model>
+                    <can_be_empty>0</can_be_empty>
                 </field>
 
-                <field id="stc_pay" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label"
-                       type="select">
-                    <label>Stc Pay</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-
-                <field id="apple_pay" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label"
-                       type="select">
-                    <label>Apple Pay</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                <field id="schemes" translate="label" type="multiselect" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Schemes</label>
+                    <source_model>Moyasar\Mysr\Model\Config\Schemes</source_model>
+                    <can_be_empty>0</can_be_empty>
                 </field>
             </group>
-            <group id="supported_networks" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="2" translate="label">
-                <label>Supported Networks</label>
-
-                <field id="mada" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label"
-                       type="select">
-                    <label>Mada</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-
-                <field id="amex" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label"
-                       type="select">
-                    <label>Amex</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-
-                <field id="visa" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label"
-                       type="select">
-                    <label>Visa</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-
-                <field id="mastercard" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label"
-                       type="select">
-                    <label>Mastercard</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-            </group>
-
         </section>
     </system>
 </config>

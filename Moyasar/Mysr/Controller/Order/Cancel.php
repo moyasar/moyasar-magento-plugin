@@ -5,6 +5,7 @@ namespace Moyasar\Mysr\Controller\Order;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Action\HttpPostActionInterface;
+use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\UrlInterface;
 use Moyasar\Mysr\Controller\ReadsJson;
 use Moyasar\Mysr\Helper\MoyasarHelper;
@@ -43,36 +44,34 @@ class Cancel implements HttpPostActionInterface
 
     public function execute()
     {
-        $response = $this->context->getResponse();
-
         $order = $this->checkout->getLastRealOrder();
         if (!$order || !$order->getId()) {
-            $response->setStatusCode(400);
-            $response->representJson(json_encode([
-                'message' => 'No order available'
-            ]));
-
-            return $response;
+            return $this->context
+                ->getResultFactory()
+                ->create(ResultFactory::TYPE_RAW)
+                ->setHttpResponseCode(200);
         }
 
         $paymentId = $this->getJson('payment_id');
         $errors = $this->getJson('errors', []);
         $errorMsg = is_null($paymentId) ?
-                    'Payment Attempt Failed, and Order have been canceled.' :
-                    'Payment ' . $paymentId . ' failed and order has been canceled.';
+                    __('Payment Attempt Failed, and Order have been canceled.') :
+                    __('Payment %payment_id failed and order has been canceled', ['payment_id' => $paymentId]);
 
         foreach ($errors as $error) {
             $order->addCommentToStatusHistory($error);
         }
 
-        $this->moyasarHelper->cancelCurrentOrder($order, $errorMsg);
         $this->checkout->restoreQuote();
+        $order->registerCancellation($errorMsg);
+        $order->save();
 
-        $response->representJson(json_encode([
-            'message' => 'Order canceled',
-            'redirect_to' => $this->url->getUrl('checkout/cart')
-        ]));
-
-        return $response;
+        return $this->context
+            ->getResultFactory()
+            ->create(ResultFactory::TYPE_JSON)
+            ->setData([
+                'message' => __('Order canceled'),
+                'redirect_to' => $this->url->getUrl('checkout/cart')
+            ]);
     }
 }

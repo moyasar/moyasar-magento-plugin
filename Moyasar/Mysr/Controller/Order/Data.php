@@ -3,37 +3,59 @@
 namespace Moyasar\Mysr\Controller\Order;
 
 use Magento\Checkout\Model\Session;
-use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
-use Magento\Sales\Model\Order;
+use Magento\Framework\App\ActionInterface;
 use Magento\Framework\Controller\ResultFactory;
+use Magento\Sales\Api\Data\OrderAddressInterface;
 
-class Data extends Action
+class Data implements ActionInterface
 {
+    private $context;
     protected $checkoutSession;
 
     public function __construct(Context $context, Session $checkoutSession)
     {
-        parent::__construct($context);
+        $this->context = $context;
         $this->checkoutSession = $checkoutSession;
     }
 
     public function execute()
     {
-        $order   = $this->currentOrder();
+        $order = $this->checkoutSession->getLastRealOrder();
+        $data = [
+            'order_id' => $order->getId(),
+            'real_order_id' => $order->getRealOrderId(),
+        ];
 
-        $orderId = $order->getIncrementId();
-        $total   = $order->getBaseGrandTotal();
+        if ($address = $order->getShippingAddress()) {
+            $data = array_merge($data, $this->mapAddress($address));
+        }
 
-        return $this->resultFactory->create(ResultFactory::TYPE_JSON)
-            ->setData([
-                'orderId' => $orderId,
-                'total' => $total,
-            ]);
+        return $this->context
+            ->getResultFactory()
+            ->create(ResultFactory::TYPE_JSON)
+            ->setData($data);
     }
 
-    protected function currentOrder()
+    private function mapAddress(OrderAddressInterface $address)
     {
-        return $this->checkoutSession->getLastRealOrder();
+        $keys = [
+            OrderAddressInterface::FIRSTNAME,
+            OrderAddressInterface::MIDDLENAME,
+            OrderAddressInterface::LASTNAME,
+            OrderAddressInterface::STREET,
+            OrderAddressInterface::CITY,
+            OrderAddressInterface::REGION,
+            OrderAddressInterface::POSTCODE,
+            OrderAddressInterface::EMAIL,
+            OrderAddressInterface::TELEPHONE,
+            OrderAddressInterface::COMPANY,
+        ];
+
+        $prefix = $address->getAddressType();
+
+        return array_merge(...array_map(function ($key) use ($address, $prefix) {
+            return [$prefix . "_" . $key => $address->getData($key)];
+        }, $keys));
     }
 }

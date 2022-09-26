@@ -4,314 +4,95 @@ namespace Moyasar\Mysr\Helper;
 
 class CurrencyHelper
 {
-    private $currencies = [
-        'ADP' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'AFN' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'ALL' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'AMD' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'BHD' => [
-            'fraction_digits' => 3,
-            'rounding_increment' => 0
-        ],
-        'BIF' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'BYN' => [
-            'fraction_digits' => 2,
-            'rounding_increment' => 0
-        ],
-        'BYR' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'CAD' => [
-            'fraction_digits' => 2,
-            'rounding_increment' => 5
-        ],
-        'CHF' => [
-            'fraction_digits' => 2,
-            'rounding_increment' => 5
-        ],
-        'CLF' => [
-            'fraction_digits' => 4,
-            'rounding_increment' => 0
-        ],
-        'CLP' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'COP' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'CRC' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'CZK' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'DEFAULT' => [
-            'fraction_digits' => 2,
-            'rounding_increment' => 0
-        ],
-        'DJF' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'DKK' => [
-            'fraction_digits' => 2,
-            'rounding_increment' => 50
-        ],
-        'ESP' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'GNF' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'GYD' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'HUF' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'IDR' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'IQD' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'IRR' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'ISK' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'ITL' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'JOD' => [
-            'fraction_digits' => 3,
-            'rounding_increment' => 0
-        ],
-        'JPY' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'KMF' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'KPW' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'KRW' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'KWD' => [
-            'fraction_digits' => 3,
-            'rounding_increment' => 0
-        ],
-        'LAK' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'LBP' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'LUF' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'LYD' => [
-            'fraction_digits' => 3,
-            'rounding_increment' => 0
-        ],
-        'MGA' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'MGF' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'MMK' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'MNT' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'MRO' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'MUR' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'NOK' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'OMR' => [
-            'fraction_digits' => 3,
-            'rounding_increment' => 0
-        ],
-        'PKR' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'PYG' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'RSD' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'RWF' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'SEK' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'SLL' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'SOS' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'STD' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'SYP' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'TMM' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'TND' => [
-            'fraction_digits' => 3,
-            'rounding_increment' => 0
-        ],
-        'TRL' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'TWD' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'TZS' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'UGX' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'UYI' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'UYW' => [
-            'fraction_digits' => 4,
-            'rounding_increment' => 0
-        ],
-        'UZS' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'VEF' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'VND' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'VUV' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'XAF' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'XOF' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'XPF' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'YER' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'ZMK' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ],
-        'ZWD' => [
-            'fraction_digits' => 0,
-            'rounding_increment' => 0
-        ]
-    ];
-
-    public function fractionDigits($currency)
+    public static function amountToMinor($amount, $currency): int
     {
-        if (!isset($this->currencies[$currency]['fraction_digits'])) {
-            return $this->currencies['DEFAULT']['fraction_digits'];
-        }
-
-        return $this->currencies[$currency]['fraction_digits'];
+        return intval($amount * (10 ** static::fractionFor($currency)));
     }
 
-    public function fractionsMap()
+    public static function amountToMajor($amount, $currency): float
     {
-        $items = [];
+        return floatval($amount) / (10 ** static::fractionFor($currency));
+    }
 
-        foreach ($this->currencies as $currency => $data) {
-            $items[$currency] = $data['fraction_digits'];
-        }
+    public static function fractionFor($currency): int
+    {
+        return static::fractions()[$currency] ?? 2;
+    }
 
-        return $items;
+    public static function fractions(): array
+    {
+        return [
+            'ADP' => 0,
+            'AFN' => 0,
+            'ALL' => 0,
+            'AMD' => 0,
+            'BHD' => 3,
+            'BIF' => 0,
+            'BYN' => 2,
+            'BYR' => 0,
+            'CAD' => 2,
+            'CHF' => 2,
+            'CLF' => 4,
+            'CLP' => 0,
+            'COP' => 0,
+            'CRC' => 0,
+            'CZK' => 0,
+            'DJF' => 0,
+            'DKK' => 2,
+            'ESP' => 0,
+            'GNF' => 0,
+            'GYD' => 0,
+            'HUF' => 0,
+            'IDR' => 0,
+            'IQD' => 0,
+            'IRR' => 0,
+            'ISK' => 0,
+            'ITL' => 0,
+            'JOD' => 3,
+            'JPY' => 0,
+            'KMF' => 0,
+            'KPW' => 0,
+            'KRW' => 0,
+            'KWD' => 3,
+            'LAK' => 0,
+            'LBP' => 0,
+            'LUF' => 0,
+            'LYD' => 3,
+            'MGA' => 0,
+            'MGF' => 0,
+            'MMK' => 0,
+            'MNT' => 0,
+            'MRO' => 0,
+            'MUR' => 0,
+            'NOK' => 0,
+            'OMR' => 3,
+            'PKR' => 0,
+            'PYG' => 0,
+            'RSD' => 0,
+            'RWF' => 0,
+            'SEK' => 0,
+            'SLL' => 0,
+            'SOS' => 0,
+            'STD' => 0,
+            'SYP' => 0,
+            'TMM' => 0,
+            'TND' => 3,
+            'TRL' => 0,
+            'TWD' => 0,
+            'TZS' => 0,
+            'UGX' => 0,
+            'UYI' => 0,
+            'UYW' => 4,
+            'UZS' => 0,
+            'VEF' => 0,
+            'VND' => 0,
+            'VUV' => 0,
+            'XAF' => 0,
+            'XOF' => 0,
+            'XPF' => 0,
+            'YER' => 0,
+            'ZMK' => 0,
+            'ZWD' => 0
+        ];
     }
 }

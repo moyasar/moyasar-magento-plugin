@@ -2,31 +2,15 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
 	<default>
 		<payment>
-			<moyasar_api_conf>
-				<is_invoice_generating_enabled>1</is_invoice_generating_enabled>
-				<is_amount_verification_enabled>0</is_amount_verification_enabled>
-				<!-- It isn't needed to add the following line -model tag- but payment tag requires model tag, so I add MoyasarCreditCard model-->
-				<model>Moyasar\Mysr\Model\Payment\MoyasarOnlinePayment</model>
-			</moyasar_api_conf>
-
-			<moyasar_online_payment>
+			<moyasar_payments>
 				<active>1</active>
-				<title>Online Payment</title>
-				<order_status>pending_payment</order_status>
-				<model>Moyasar\Mysr\Model\Payment\MoyasarOnlinePayment</model>
-				<credit_card>1</credit_card>
-				<stc_pay>0</stc_pay>
-				<apple_pay>0</apple_pay>
-			</moyasar_online_payment>
-
-			<supported_networks>
-				<title>Supported Network</title>
-				<model>Moyasar\Mysr\Model\Payment\MoyasarOnlinePayment</model>
-				<mada>1</mada>
-				<visa>1</visa>
-				<mastercard>1</mastercard>
-				<amex>0</amex>
-			</supported_networks>
+				<model>Moyasar\Mysr\Model\Payment\MoyasarPayments</model>
+				<order_status>pending</order_status>
+				<title>Online Payments</title>
+				<generate_invoice>1</generate_invoice>
+				<methods>creditcard</methods>
+				<schemes>mada,visa,mastercard</schemes>
+			</moyasar_payments>
 		</payment>
 	</default>
 </config>

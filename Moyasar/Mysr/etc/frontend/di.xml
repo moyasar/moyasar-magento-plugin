@@ -4,7 +4,7 @@
    <type name="Magento\Checkout\Model\CompositeConfigProvider">
        <arguments>
            <argument name="configProviders" xsi:type="array">
-               <item name="payment_provider" xsi:type="object">Moyasar\Mysr\Model\PaymentConfigProvider</item>
+               <item name="payment_provider" xsi:type="object">Moyasar\Mysr\Model\Config\PaymentConfigProvider</item>
            </argument>
        </arguments>
    </type>

@@ -3,78 +3,164 @@
 namespace Moyasar\Mysr\Controller\Redirect;
 
 use Magento\Checkout\Model\Session;
-use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\ActionInterface;
+use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Sales\Model\Order;
+use Moyasar\Mysr\Helper\Http\Exceptions\ConnectionException;
+use Moyasar\Mysr\Helper\Http\Exceptions\HttpException;
+use Moyasar\Mysr\Helper\Http\QuickHttp;
 use Moyasar\Mysr\Helper\MoyasarHelper;
+use Psr\Log\LoggerInterface;
 
-class Response extends Action
+class Response implements ActionInterface
 {
+    protected $context;
     protected $checkoutSession;
     protected $moyasarHelper;
     protected $urlBuilder;
+    protected $http;
+    protected $messageManager;
+    protected $logger;
 
-    public function __construct(Context $context, Session $checkoutSession, MoyasarHelper $helper, UrlInterface $urlBuilder)
-    {
-        parent::__construct($context);
-
+    public function __construct(
+        Context $context,
+        Session $checkoutSession,
+        MoyasarHelper $helper,
+        UrlInterface $urlBuilder,
+        ManagerInterface $messageManager,
+        LoggerInterface $logger
+    ) {
+        $this->context = $context;
         $this->checkoutSession = $checkoutSession;
         $this->moyasarHelper = $helper;
         $this->urlBuilder = $urlBuilder;
+        $this->messageManager = $messageManager;
+        $this->logger = $logger;
+
+        $this->http = new QuickHttp();
     }
 
     public function execute()
     {
-        $order = $this->currentOrder();
+        $order = $this->lastOrder();
+        $orderPayment = $order->getPayment();
 
-        $paymentId = $this->orderPaymentId($order);
-        if (!$paymentId) {
-            $paymentId = isset($_GET['id']) ? $_GET['id'] : null;
+        $paymentId = $_GET['id'];
+        if (! is_null($orderPayment)) {
+            $paymentId = $orderPayment->getLastTransId() ?? $_GET['id'];
         }
 
-        $callbackUrl = $this->successPath();
-        $status = $this->moyasarHelper->verifyAndProcess($order, $paymentId, $_GET['status']);
+        if (! $paymentId) {
+            $this->messageManager->addErrorMessage(__('No payment was found for your order.'));
 
-        if ($status != 'paid') {
-            $this->checkoutSession->restoreQuote();
-            $this->messageManager->addError(__('Error! Payment failed, please try again later.'));
-            $callbackUrl = $this->cartPath();
+            return $this->context
+                ->getResultFactory()
+                ->create(ResultFactory::TYPE_REDIRECT)
+                ->setPath('checkout/cart');
         }
 
-        $this->getResponse()->setRedirect($callbackUrl);
-    }
+        $this->checkoutSession->setLastRealOrderId($order->getIncrementId());
 
-    /**
-     * Get current order object
-     *
-     * @return Order
-     */
-    protected function currentOrder()
-    {
-        return $this->checkoutSession->getLastRealOrder();
-    }
-
-    protected function successPath()
-    {
-        return $this->urlBuilder->getUrl('checkout/onepage/success');
-    }
-
-    protected function cartPath()
-    {
-        return $this->urlBuilder->getUrl('checkout/cart');
-    }
-
-    protected function orderPaymentId($order)
-    {
-        $payment = $order->getPayment();
-
-        if (is_null($payment)) {
-            return null;
+        if ($order->getState() == Order::STATE_PROCESSING) {
+            return $this->context
+                ->getResultFactory()
+                ->create(ResultFactory::TYPE_REDIRECT)
+                ->setPath('checkout/onepage/success');
         }
 
-        $additionalInfo = $payment->getAdditionalInformation();
+        try {
+            $payment = $this->http
+                ->basic_auth($this->moyasarHelper->secretApiKey())
+                ->get($this->moyasarHelper->apiBaseUrl("/v1/payments/$paymentId"))
+                ->json();
 
-        return isset($additionalInfo['moyasar_payment_id']) ? $additionalInfo['moyasar_payment_id'] : null;
+            if ($payment['status'] != 'paid') {
+                return $this->processPaymentFail($payment, $order);
+            }
+
+            $errors = $this->moyasarHelper->checkPaymentForErrors($order, $payment);
+            if (count($errors) > 0) {
+                return $this->processUnMatchingInfoFail($payment, $order, $errors);
+            }
+
+            $this->moyasarHelper->processSuccessfulOrder($order, $payment);
+
+            return $this->context
+                ->getResultFactory()
+                ->create(ResultFactory::TYPE_REDIRECT)
+                ->setPath('checkout/onepage/success');
+
+        } catch (LocalizedException $e) {
+            $this->messageManager->addErrorMessage($e->getMessage());
+            return $this->context
+                ->getResultFactory()
+                ->create(ResultFactory::TYPE_REDIRECT)
+                ->setPath('checkout/cart');
+
+        } catch (HttpException|ConnectionException $e) {
+            $orderId = $order->getRealOrderId();
+            $this->logger->critical("Cannot verify payment (order $orderId): " . $e->getMessage());
+
+            $this->messageManager
+                ->addErrorMessage(__('Could not verify your payment, please contact support: %error', ['error' => $e->getMessage()]));
+
+            return $this->context
+                ->getResultFactory()
+                ->create(ResultFactory::TYPE_REDIRECT)
+                ->setPath('checkout/cart');
+        }
+    }
+
+    private function processPaymentFail($payment, $order)
+    {
+        $message = __('Payment failed');
+        if ($sourceMessage = $payment['source']['message']) {
+            $message .= ': ' . $sourceMessage;
+        }
+
+        $this->checkoutSession->restoreQuote();
+        $this->messageManager->addErrorMessage($message);
+
+        $order->registerCancellation($message);
+        $order->getPayment()->setCcStatus('failed');
+        $order->save();
+
+        return $this->context
+            ->getResultFactory()
+            ->create(ResultFactory::TYPE_REDIRECT)
+            ->setPath('checkout/cart');
+    }
+
+    private function processUnMatchingInfoFail($payment, $order, $errors)
+    {
+        array_unshift($errors, __('Un-matching payment details %payment_id.', ['payment_id' => $payment['id']]));
+
+        $this->checkoutSession->restoreQuote();
+        $order->registerCancellation(implode("\n", $errors));
+        $order->getPayment()->setCcStatus('failed');
+        $order->save();
+
+        $this->messageManager->addErrorMessage(implode("\n", $errors));
+
+        return $this->context
+            ->getResultFactory()
+            ->create(ResultFactory::TYPE_REDIRECT)
+            ->setPath('checkout/cart');
+    }
+
+    private function lastOrder()
+    {
+        $order = $this->checkoutSession->getLastRealOrder();
+
+        // Work around real_last_order_id is lost from current session
+        if (! $order->getId()) {
+            $order->loadByAttribute('entity_id', $this->checkoutSession->getLastOrderId());
+        }
+
+        return $order;
     }
 }
