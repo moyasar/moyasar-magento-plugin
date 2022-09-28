@@ -154,14 +154,8 @@ define(
                     self.updateOrderPayment(payment)
                         .done(function (data, status, xhr) {
                             self.isPlaceOrderActionAllowed(true);
-
-                            if (payment.status === 'initiated') {
-                                fullScreenLoader.stopLoader();
-                                $('#checkout').trigger('processStop');
-                            } else {
-                                self.cancelOrder(extractApiErrors(xhr.responseJSON));
-                            }
-
+                            fullScreenLoader.stopLoader();
+                            $('#checkout').trigger('processStop');
                             resolve();
                         })
                         .fail(function (xhr) {
