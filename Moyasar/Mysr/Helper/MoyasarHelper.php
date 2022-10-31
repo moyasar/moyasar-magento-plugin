@@ -18,7 +18,7 @@ use Magento\Store\Model\StoreManager;
 
 class MoyasarHelper extends AbstractHelper
 {
-    const VERSION = '3.1.0';
+    const VERSION = '3.2.5';
 
     protected $orderManagement;
     protected $_objectManager;

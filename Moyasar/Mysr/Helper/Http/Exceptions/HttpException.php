@@ -14,8 +14,14 @@ class HttpException extends RuntimeException
 
     public function __construct($message, $response)
     {
-        parent::__construct($message, 0, null);
         $this->response = $response;
+        
+        if ($apiMessage = $this->apiErrorMessage()) {
+            $status = $response->status();
+            $message = "[$status] $apiMessage";
+        }
+
+        parent::__construct($message, 0, null);
     }
 
     public function apiErrorMessage()

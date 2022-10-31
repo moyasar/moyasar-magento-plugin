@@ -105,11 +105,11 @@ class QuickHttp
         $this->dispose();
 
         if ($response->isServerError()) {
-            throw new ServerException('Server Error', $response);
+            throw new ServerException('Server error: server returned status ' . $response->status(), $response);
         }
 
         if ($response->isClientError()) {
-            throw new ClientException('Client Error', $response);
+            throw new ClientException('Client error: server returned status ' . $response->status(), $response);
         }
 
         return $response;

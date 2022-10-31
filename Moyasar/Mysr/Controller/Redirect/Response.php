@@ -103,10 +103,16 @@ class Response implements ActionInterface
 
         } catch (HttpException|ConnectionException $e) {
             $orderId = $order->getRealOrderId();
-            $this->logger->critical("Cannot verify payment (order $orderId): " . $e->getMessage());
+            $logErrorId = bin2hex(random_bytes(6));
+
+            $this->logger->critical("[$logErrorId] Cannot verify payment (order $orderId): " . $e->getMessage());
+
+            if ($e instanceof HttpException) {
+                $this->logger->critical("[$logErrorId] server response: " . $e->response->body());
+            }
 
             $this->messageManager
-                ->addErrorMessage(__('Could not verify your payment, please contact support: %error', ['error' => $e->getMessage()]));
+                ->addErrorMessage(__('Could not verify your payment for order %order_id: %error. Error ID: %error_id', ['order_id' => $orderId, 'error' => $e->getMessage(), 'error_id' => $logErrorId]));
 
             return $this->context
                 ->getResultFactory()

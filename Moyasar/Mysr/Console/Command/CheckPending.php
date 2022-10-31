@@ -171,8 +171,9 @@ class CheckPending extends Command
 
             $this->logger->info("Processed order " . $order->getIncrementId());
         } catch (HttpException $e) {
-            $this->logger->error($e);
-            $this->logger->info($e->response->body());
+            $logErrorId = bin2hex(random_bytes(6));
+            $this->logger->error("[$logErrorId] error: " . $e->getMessage());
+            $this->logger->info("[$logErrorId] server response:" . $e->response->body());
         } catch (Exception $e) {
             $this->logger->error($e);
         }
