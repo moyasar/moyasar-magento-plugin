@@ -3,7 +3,7 @@
 "Order canceled","Order canceled"
 "Order updated successfully","Order updated successfully"
 "No payment was found for your order.","No payment was found for your order."
-"Could not verify your payment, please contact support: %error.","Could not verify your payment, please contact support: %error."
+"Could not verify your payment for order %order_id: %error. Error ID: %error_id","Could not verify your payment for order %order_id: %error. Error ID: %error_id"
 "Payment failed","Payment failed"
 "Un-matching payment details %payment_id.","Un-matching payment details %payment_id."
 "Order and payment currencies does not match, %currency.","Order and payment currencies does not match, %currency."

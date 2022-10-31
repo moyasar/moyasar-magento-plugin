@@ -3,7 +3,7 @@
 "Order canceled","تم إلغاء الطلب"
 "Order updated successfully","تم تحديث الطلب بنجاح"
 "No payment was found for your order.","لا يوجد عمليات دفع مرتبطة بالطلب."
-"Could not verify your payment, please contact support: %error.","لا يمكن التحقق من عملية الدفع ، يرجى التواصل مع خدمة العملاء: %error."
+"Could not verify your payment for order %order_id: %error. Error ID: %error_id","لا يمكن التحقق من عملية الدفع للطلب %error ، رقم الخطأ: %error_id"
 "Payment failed","عملية دفع غير ناجحة"
 "Un-matching payment details %payment_id.","بيانات عملية الدفع غير متطابقة مع الطلب %payment_id."
 "Order and payment currencies does not match, %currency.","عملة عملية الدفع والطلب غير متطابقتين, %currency."
