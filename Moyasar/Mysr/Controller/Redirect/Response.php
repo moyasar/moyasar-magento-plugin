@@ -143,12 +143,20 @@ class Response implements ActionInterface
 
     private function processUnMatchingInfoFail($payment, $order, $errors)
     {
+        $payment_id = $payment['id'];
         array_unshift($errors, __('Un-matching payment details %payment_id.', ['payment_id' => $payment['id']]));
 
         $this->checkoutSession->restoreQuote();
         $order->registerCancellation(implode("\n", $errors));
         $order->getPayment()->setCcStatus('failed');
         $order->save();
+
+        //auto void
+        if ($this->moyasarHelper->autoVoid()) {
+            $this->http
+            ->basic_auth($this->moyasarHelper->secretApiKey())
+            ->post($this->moyasarHelper->apiBaseUrl("/v1/payments/$payment_id/void"));
+        }
 
         $this->messageManager->addErrorMessage(implode("\n", $errors));
 

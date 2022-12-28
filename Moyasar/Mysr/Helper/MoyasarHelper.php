@@ -72,6 +72,11 @@ class MoyasarHelper extends AbstractHelper
         return $this->scopeConfig->getValue('payment/moyasar_payments/secret_api_key');
     }
 
+    public function autoVoid()
+    {
+        return $this->scopeConfig->getValue('payment/moyasar_payments/auto_void');
+    }
+
     /**
      * @param Order $order
      * @param array $payment
