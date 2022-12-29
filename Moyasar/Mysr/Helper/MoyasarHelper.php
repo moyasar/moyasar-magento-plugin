@@ -18,7 +18,7 @@ use Magento\Store\Model\StoreManager;
 
 class MoyasarHelper extends AbstractHelper
 {
-    const VERSION = '3.2.5';
+    const VERSION = '3.3.0';
 
     protected $orderManagement;
     protected $_objectManager;
@@ -59,7 +59,7 @@ class MoyasarHelper extends AbstractHelper
 
     public function apiBaseUrl($path = '')
     {
-        return $this->apiBaseUrl . '/' . ltrim($path, '/');
+        return rtrim($this->apiBaseUrl . '/' . ltrim($path, '/'), '/');
     }
 
     public function publishableApiKey()
@@ -120,6 +120,7 @@ class MoyasarHelper extends AbstractHelper
         $orderPayment->addTransaction(TransactionInterface::TYPE_CAPTURE, $invoice ?? null, true);
         $orderPayment->setCcStatus('paid');
 
+        $order->addStatusHistoryComment('Payment is successful: ' . $payment['id'], false);
         $order->setStatus(Order::STATE_PROCESSING);
         $order->setState(Order::STATE_PROCESSING);
 
