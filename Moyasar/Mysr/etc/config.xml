@@ -10,6 +10,7 @@
 				<generate_invoice>1</generate_invoice>
 				<methods>creditcard</methods>
 				<schemes>mada,visa,mastercard</schemes>
+				<auto_void>0</auto_void>
 			</moyasar_payments>
 		</payment>
 	</default>

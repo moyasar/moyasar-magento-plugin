@@ -40,7 +40,37 @@ define(
             defaults: {
                 template: 'Moyasar_Mysr/payment/moyasar_payments'
             },
-            
+            buildShadowRoot: function (target) {
+                if (target.attachShadow === undefined) {
+                    return target;
+                }
+
+                var shadow = target.shadowRoot;
+                if (!shadow) {
+                    shadow = target.attachShadow({ mode: 'open' });
+                }
+
+                shadow.innerHTML = '';
+
+                var headElements = Object.entries(document.head.children).map(function (e) { return e[1]; });
+                var sheetLink = headElements.find(e => e instanceof HTMLLinkElement && e.href.includes('moyasar.css'));
+                if (!sheetLink) {
+                    return target;
+                }
+
+                var rootEl = document.createElement('div');
+                shadow.appendChild(rootEl);
+
+                var newLink = document.createElement('link');
+                newLink.rel = 'stylesheet';
+                newLink.href = sheetLink.href;
+                rootEl.appendChild(newLink);
+
+                var formEl = document.createElement('div');
+                rootEl.appendChild(formEl);
+
+                return formEl;
+            },
             initializeForm: function () {
                 var config = window.checkoutConfig.moyasar_payments;
 

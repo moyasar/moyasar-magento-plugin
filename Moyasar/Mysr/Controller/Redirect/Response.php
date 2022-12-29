@@ -40,8 +40,6 @@ class Response implements ActionInterface
         $this->urlBuilder = $urlBuilder;
         $this->messageManager = $messageManager;
         $this->logger = $logger;
-
-        $this->http = new QuickHttp();
     }
 
     public function execute()
@@ -73,7 +71,7 @@ class Response implements ActionInterface
         }
 
         try {
-            $payment = $this->http
+            $payment = $this->http()
                 ->basic_auth($this->moyasarHelper->secretApiKey())
                 ->get($this->moyasarHelper->apiBaseUrl("/v1/payments/$paymentId"))
                 ->json();
@@ -88,12 +86,12 @@ class Response implements ActionInterface
             }
 
             $this->moyasarHelper->processSuccessfulOrder($order, $payment);
+            $this->logger->info("Payment [$paymentId] is successful, redirecting user to checkout/onepage/success: ");
 
             return $this->context
                 ->getResultFactory()
                 ->create(ResultFactory::TYPE_REDIRECT)
                 ->setPath('checkout/onepage/success');
-
         } catch (LocalizedException $e) {
             $this->messageManager->addErrorMessage($e->getMessage());
             return $this->context
@@ -143,12 +141,23 @@ class Response implements ActionInterface
 
     private function processUnMatchingInfoFail($payment, $order, $errors)
     {
+        $payment_id = $payment['id'];
         array_unshift($errors, __('Un-matching payment details %payment_id.', ['payment_id' => $payment['id']]));
 
         $this->checkoutSession->restoreQuote();
         $order->registerCancellation(implode("\n", $errors));
         $order->getPayment()->setCcStatus('failed');
         $order->save();
+
+        //auto void
+        if ($this->moyasarHelper->autoVoid()) {
+            $this->http()
+                ->basic_auth($this->moyasarHelper->secretApiKey())
+                ->post($this->moyasarHelper->apiBaseUrl("/v1/payments/$payment_id/void"));
+
+            $order->addStatusHistoryComment('Order value was voided automatically.', false);
+            $order->save();
+        }
 
         $this->messageManager->addErrorMessage(implode("\n", $errors));
 
@@ -168,5 +177,10 @@ class Response implements ActionInterface
         }
 
         return $order;
+    }
+
+    private function http()
+    {
+        return new QuickHttp();
     }
 }

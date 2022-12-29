@@ -35,6 +35,12 @@
                     <source_model>Moyasar\Mysr\Model\Config\Schemes</source_model>
                     <can_be_empty>0</can_be_empty>
                 </field>
+
+                <field id="auto_void" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="7" translate="label" type="select">
+                    <label>Auto Void</label>
+                    <comment>Enable Auto void for payments that do not pass currency/amount check.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
             </group>
         </section>
     </system>
