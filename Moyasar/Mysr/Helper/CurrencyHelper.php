@@ -6,7 +6,7 @@ class CurrencyHelper
 {
     public static function amountToMinor($amount, $currency): int
     {
-        return intval($amount * (10 ** static::fractionFor($currency)));
+        return round($amount * (10 ** static::fractionFor($currency)));
     }
 
     public static function amountToMajor($amount, $currency): float
