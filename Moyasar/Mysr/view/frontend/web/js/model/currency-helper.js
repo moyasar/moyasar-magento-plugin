@@ -77,7 +77,7 @@ define([], function () {
 
     return {
         to_minor: function (amount, currency) {
-            return amount * (10 ** this.fraction(currency));
+            return Math.round(amount * (10 ** this.fraction(currency)), 0);
         },
         fraction: function (currency) {
             return currencies[currency.toUpperCase()] || 2;
