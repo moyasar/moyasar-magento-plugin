@@ -1,7 +1,10 @@
 <config>
     <group id="default">
-        <job name="moyasar_mysr_check_pending_payment" instance="Moyasar\Mysr\Console\Command\CheckPending" method="cron">
-            <schedule>* * * * *</schedule>
+        <job name="moyasar_mysr_check_pending" instance="Moyasar\Mysr\Schedule\CheckPending" method="cron">
+            <schedule>*/5 * * * *</schedule>
+        </job>
+        <job name="moyasar_mysr_check_canceled" instance="Moyasar\Mysr\Schedule\CheckCanceled" method="cron">
+            <schedule>*/10 * * * *</schedule>
         </job>
     </group>
 </config>

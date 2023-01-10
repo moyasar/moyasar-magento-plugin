@@ -18,7 +18,7 @@ use Magento\Store\Model\StoreManager;
 
 class MoyasarHelper extends AbstractHelper
 {
-    const VERSION = '3.3.0';
+    const VERSION = '3.5.0';
 
     protected $orderManagement;
     protected $_objectManager;
@@ -29,6 +29,7 @@ class MoyasarHelper extends AbstractHelper
     protected $invoiceService;
     protected $invoiceSender;
     protected $apiBaseUrl;
+    protected $session;
 
     public function __construct(
         Context $context,
