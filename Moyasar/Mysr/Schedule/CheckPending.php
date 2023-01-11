@@ -103,7 +103,7 @@ class CheckPending
         $query = $this->orderCollection
             ->getSelect()
             ->join(['pp' => 'sales_order_payment'], 'main_table.entity_id = pp.parent_id')
-            ->where('updated_at >= ?', $this->date()->sub(DateInterval::createFromDateString('30 minutes'))->format('Y-m-d H:i:s'))
+            ->where('updated_at >= ?', $this->date()->sub(DateInterval::createFromDateString('6 hour'))->format('Y-m-d H:i:s'))
             ->where('updated_at <= ?', $this->date()->format('Y-m-d H:i:s'))
             ->where('main_table.status = ?', Order::STATE_PENDING_PAYMENT)
             ->where('pp.method = ?', 'moyasar_payments');
@@ -128,7 +128,7 @@ class CheckPending
 
     private function markChecked(string $id): void
     {
-        $this->cache()->save('true', $this->cacheKey($id), [], 60 * 15);
+        $this->cache()->save('true', $this->cacheKey($id), [], 3600 * 6);
     }
 
     private function http(): QuickHttp
