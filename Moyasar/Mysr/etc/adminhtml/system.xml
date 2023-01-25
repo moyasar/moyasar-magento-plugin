@@ -44,6 +44,8 @@
                 
                 <field id="title" translate="label" type="text" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Payment Title</label>
+                    <comment>Edit payment title in checkout page.</comment>
+
                 </field>
 
             </group>
