@@ -41,6 +41,11 @@
                     <comment>Enable Auto void for payments that do not pass currency/amount check.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                
+                <field id="title" translate="label" type="text" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Payment Title</label>
+                </field>
+
             </group>
         </section>
     </system>
