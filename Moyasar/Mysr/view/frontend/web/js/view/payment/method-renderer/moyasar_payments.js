@@ -15,7 +15,10 @@ define(
         'Magento_Checkout/js/model/quote',
         'Moyasar_Mysr/js/model/cancel-order',
         'Moyasar_Mysr/js/model/extract-api-errors',
-        'Moyasar_Mysr/js/model/currency-helper'
+        'Moyasar_Mysr/js/model/currency-helper',
+        'Magento_Checkout/js/model/cart/totals-processor/default',
+        'Magento_Checkout/js/model/cart/cache',
+        'ko',
     ],
     function (
         Component,
@@ -33,7 +36,11 @@ define(
         quoteModel,
         sendCancelOrder,
         extractApiErrors,
-        currencyHelper
+        currencyHelper,
+        defaultTotal,
+        cartCache,
+        ko
+
     ) {
         'use strict';
         return Component.extend({
