@@ -91,9 +91,9 @@ class MoyasarHelper extends AbstractHelper
             $errors[] = __('Order and payment currencies does not match, %currency.', ['currency' => strtoupper($order->getBaseCurrencyCode()) . ' : ' . strtoupper($payment['currency'])]);
         }
 
-        $orderAmount = CurrencyHelper::amountToMinor($order->getGrandTotal(), $order->getBaseCurrencyCode());
+        $orderAmount = CurrencyHelper::amountToMinor($order->getBaseGrandTotal(), $order->getBaseCurrencyCode());
         if ($orderAmount != $payment['amount']) {
-            $total = $order->getGrandTotal() . ' : ' . CurrencyHelper::amountToMajor($payment['amount'], $payment['currency']);
+            $total = $order->getBaseGrandTotal() . ' : ' . CurrencyHelper::amountToMajor($payment['amount'], $payment['currency']);
             $errors[] = __('Order and payment amounts do not match %total.', ['total' => $total]);
         }
 

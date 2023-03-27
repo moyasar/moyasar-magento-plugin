@@ -15,7 +15,10 @@ define(
         'Magento_Checkout/js/model/quote',
         'Moyasar_Mysr/js/model/cancel-order',
         'Moyasar_Mysr/js/model/extract-api-errors',
-        'Moyasar_Mysr/js/model/currency-helper'
+        'Moyasar_Mysr/js/model/currency-helper',
+        'Magento_Checkout/js/model/cart/totals-processor/default',
+        'Magento_Checkout/js/model/cart/cache',
+        'ko',
     ],
     function (
         Component,
@@ -33,7 +36,11 @@ define(
         quoteModel,
         sendCancelOrder,
         extractApiErrors,
-        currencyHelper
+        currencyHelper,
+        defaultTotal,
+        cartCache,
+        ko
+
     ) {
         'use strict';
         return Component.extend({
@@ -104,7 +111,7 @@ define(
                 return quoteModel.guestEmail ? quoteModel.guestEmail : window.checkoutConfig.customerData.email;
             },
             getAmount: function () {
-                return parseFloat(quote.totals()['base_grand_total']).toFixed(2);
+                return Math.round(quote.totals()['base_grand_total']).toFixed(2);
             },
             getCurrency: function () {
                 var totals = quote.getTotals()();
