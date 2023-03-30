@@ -125,7 +125,7 @@ class Webhook implements HttpPostActionInterface
 
     private function payload()
     {
-        return json_decode(file_get_contents('php://input'), true);
+        return json_decode(html_entity_decode(file_get_contents('php://input')), true);
     }
 
     private function basicResponse($message, $status = 200)
