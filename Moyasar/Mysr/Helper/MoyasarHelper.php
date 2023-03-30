@@ -78,6 +78,11 @@ class MoyasarHelper extends AbstractHelper
         return $this->scopeConfig->getValue('payment/moyasar_payments/auto_void');
     }
 
+    public function webhookSharedSecret()
+    {
+        return $this->scopeConfig->getValue('payment/moyasar_payments/webhook_secret');
+    }
+
     /**
      * @param Order $order
      * @param array $payment

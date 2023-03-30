@@ -35,12 +35,14 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
-                <field id="webhook_url" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="0" readonly="true">
+                <field id="webhook_url" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Webhook URL</label>
+                    <frontend_model>Moyasar\Mysr\Admin\DisabledElement</frontend_model>
                 </field>
 
-                <field id="webhook_secret" translate="label" type="text" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="0" readonly="true">
+                <field id="webhook_secret" translate="label" type="text" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Webhook Secret</label>
+                    <frontend_model>Moyasar\Mysr\Admin\DisabledElement</frontend_model>
                 </field>
 
                 <field id="methods" translate="label" type="multiselect" sortOrder="9" showInDefault="1" showInWebsite="1" showInStore="0">
