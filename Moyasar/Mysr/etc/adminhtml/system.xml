@@ -5,49 +5,57 @@
             <group id="moyasar_payments" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="1" translate="label">
                 <label>Moyasar Payments</label>
 
-                <field id="active" showInDefault="1" showInStore="1" showInWebsite="0" sortOrder="0" translate="label" type="select">
+                <field id="title" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Payment Title</label>
+                    <comment>Edit payment title in checkout page.</comment>
+                </field>
+
+                <field id="active" showInDefault="1" showInStore="1" showInWebsite="0" sortOrder="2" translate="label" type="select">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
-                <field id="secret_api_key" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="secret_api_key" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Secret API Key</label>
                 </field>
 
-                <field id="publishable_api_key" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="publishable_api_key" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Publishable API Key</label>
                 </field>
 
-                <field id="generate_invoice" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="4" translate="label" type="select">
-                    <label>Enable Automatic Invoice Generator</label>
+                <field id="generate_invoice" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="5" translate="label" type="select">
+                    <label>Invoice Generation</label>
                     <comment>Generating invoice of completed order automatically.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
-                <field id="methods" translate="label" type="multiselect" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="auto_void" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="6" translate="label" type="select">
+                    <label>Auto Void</label>
+                    <comment>Enable Auto void for payments that do not pass currency/amount check.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="webhook_url" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="0" readonly="true">
+                    <label>Webhook URL</label>
+                    <frontend_model>Moyasar\Mysr\Model\Adminhtml\Source\WebhookUrlElement</frontend_model>
+                </field>
+
+                <field id="webhook_secret" translate="label" type="text" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="0" readonly="true">
+                    <label>Webhook Secret</label>
+                    <frontend_model>Moyasar\Mysr\Model\Adminhtml\Source\WebhookUrlElement</frontend_model>
+                </field>
+
+                <field id="methods" translate="label" type="multiselect" sortOrder="9" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Methods</label>
                     <source_model>Moyasar\Mysr\Model\Config\Methods</source_model>
                     <can_be_empty>0</can_be_empty>
                 </field>
 
-                <field id="schemes" translate="label" type="multiselect" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="schemes" translate="label" type="multiselect" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Schemes</label>
                     <source_model>Moyasar\Mysr\Model\Config\Schemes</source_model>
                     <can_be_empty>0</can_be_empty>
                 </field>
-
-                <field id="auto_void" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="7" translate="label" type="select">
-                    <label>Auto Void</label>
-                    <comment>Enable Auto void for payments that do not pass currency/amount check.</comment>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                
-                <field id="title" translate="label" type="text" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Payment Title</label>
-                    <comment>Edit payment title in checkout page.</comment>
-
-                </field>
-
             </group>
         </section>
     </system>

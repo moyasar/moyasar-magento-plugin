@@ -111,7 +111,10 @@ define(
                 return quoteModel.guestEmail ? quoteModel.guestEmail : window.checkoutConfig.customerData.email;
             },
             getAmount: function () {
-                return Math.round(quote.totals()['base_grand_total']).toFixed(2);
+                var basetotal = (quote.totals()['base_grand_total']) * 100;
+                var total = (Math.round(basetotal).toFixed(2)) / 100 ;
+                return total;
+                // return Math.round(quote.totals()['base_grand_total']).toFixed(2);
             },
             getCurrency: function () {
                 var totals = quote.getTotals()();

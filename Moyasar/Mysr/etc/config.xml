@@ -11,6 +11,8 @@
 				<methods>creditcard</methods>
 				<schemes>mada,visa,mastercard</schemes>
 				<auto_void>0</auto_void>
+				<webhook_url>{{secure_base_ur}}moyasar_mysr/order/webhook</webhook_url>
+				<webhook_secret></webhook_secret>
 			</moyasar_payments>
 		</payment>
 	</default>
