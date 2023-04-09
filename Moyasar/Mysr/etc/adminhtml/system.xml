@@ -37,12 +37,10 @@
 
                 <field id="webhook_url" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="0" readonly="true">
                     <label>Webhook URL</label>
-                    <frontend_model>Moyasar\Mysr\Model\Adminhtml\Source\WebhookUrlElement</frontend_model>
                 </field>
 
                 <field id="webhook_secret" translate="label" type="text" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="0" readonly="true">
                     <label>Webhook Secret</label>
-                    <frontend_model>Moyasar\Mysr\Model\Adminhtml\Source\WebhookUrlElement</frontend_model>
                 </field>
 
                 <field id="methods" translate="label" type="multiselect" sortOrder="9" showInDefault="1" showInWebsite="1" showInStore="0">
