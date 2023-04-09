@@ -15,10 +15,7 @@ define(
         'Magento_Checkout/js/model/quote',
         'Moyasar_Mysr/js/model/cancel-order',
         'Moyasar_Mysr/js/model/extract-api-errors',
-        'Moyasar_Mysr/js/model/currency-helper',
-        'Magento_Checkout/js/model/cart/totals-processor/default',
-        'Magento_Checkout/js/model/cart/cache',
-        'ko',
+        'Moyasar_Mysr/js/model/currency-helper'
     ],
     function (
         Component,
@@ -36,11 +33,7 @@ define(
         quoteModel,
         sendCancelOrder,
         extractApiErrors,
-        currencyHelper,
-        defaultTotal,
-        cartCache,
-        ko
-
+        currencyHelper
     ) {
         'use strict';
         return Component.extend({
@@ -82,7 +75,7 @@ define(
                 var config = window.checkoutConfig.moyasar_payments;
 
                 MoyasarForm.init({
-                    element: '.mysr-form',
+                    element: this.buildShadowRoot($('.mysr-form')[0]),
                     amount: currencyHelper.to_minor(this.getAmount(), this.getCurrency()),
                     currency: this.getCurrency(),
                     description: 'Order for: ' + this.getCustomerEmail(),
@@ -111,10 +104,9 @@ define(
                 return quoteModel.guestEmail ? quoteModel.guestEmail : window.checkoutConfig.customerData.email;
             },
             getAmount: function () {
-                var basetotal = (quote.totals()['base_grand_total']) * 100;
-                var total = (Math.round(basetotal).toFixed(2)) / 100 ;
-                return total;
-                // return Math.round(quote.totals()['base_grand_total']).toFixed(2);
+                var totals = quote.totals();
+                var baseTotal = currencyHelper.to_minor(totals['base_grand_total'], totals['base_currency_code']);
+                return (Math.round(baseTotal).toFixed(0)) / 100;
             },
             getCurrency: function () {
                 var totals = quote.getTotals()();
