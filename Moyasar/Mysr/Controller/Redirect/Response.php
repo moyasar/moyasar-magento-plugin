@@ -126,7 +126,6 @@ class Response implements ActionInterface
             $message .= ': ' . $sourceMessage;
         }
 
-        $this->checkoutSession->restoreQuote();
         $this->messageManager->addErrorMessage($message);
 
         $order->registerCancellation($message);
@@ -144,7 +143,6 @@ class Response implements ActionInterface
         $payment_id = $payment['id'];
         array_unshift($errors, __('Un-matching payment details %payment_id.', ['payment_id' => $payment['id']]));
 
-        $this->checkoutSession->restoreQuote();
         $order->registerCancellation(implode("\n", $errors));
         $order->getPayment()->setCcStatus('failed');
         $order->save();
