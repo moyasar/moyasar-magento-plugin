@@ -4,7 +4,9 @@ namespace Moyasar\Mysr\Controller\Order;
 
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Action\HttpPostActionInterface;
-use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\CsrfAwareActionInterface;
+use Magento\Framework\App\Request\InvalidRequestException;
+use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\UrlInterface;
@@ -15,48 +17,42 @@ use Moyasar\Mysr\Helper\Http\Exceptions\ConnectionException;
 use Moyasar\Mysr\Helper\Http\Exceptions\HttpException;
 use Moyasar\Mysr\Helper\Http\QuickHttp;
 use Moyasar\Mysr\Helper\MoyasarHelper;
+use Psr\Log\LoggerInterface;
 
-class Webhook implements HttpPostActionInterface
+class Webhook implements HttpPostActionInterface, CsrfAwareActionInterface
 {
     use ReadsJson;
 
-    /**
-     * @var Context
-     */
+    /** @var Context */
     protected $context;
 
-    /**
-     * @var MoyasarHelper
-     */
+    /** @var MoyasarHelper */
     protected $moyasarHelper;
 
-    /**
-     * @var UrlInterface
-     */
+    /** @var UrlInterface */
     private $url;
 
-    /**
-     * @var OrderRepository
-     */
-    private $config;
+    /** @var LoggerInterface */
+    private $logger;
 
     public function __construct(
         Context $context,
         MoyasarHelper $helper,
         OrderRepository $orderRepo,
-        ScopeConfigInterface $config
+        LoggerInterface $logger
     ) {
         $this->context = $context;
         $this->moyasarHelper = $helper;
         $this->url = $context->getUrl();
         $this->orderRepo = $orderRepo;
+        $this->logger = $logger;
     }
 
     public function execute()
     {
         $payload = $this->payload();
 
-        $sharedSecret = $this->config->get('payment/moyasar_payments/webhook_secret');
+        $sharedSecret = $this->moyasarHelper->webhookSharedSecret();
         if ($payload['secret_token'] != $sharedSecret) {
             return $this->basicResponse('Invalid shared token.', 401);
         }
@@ -160,5 +156,15 @@ class Webhook implements HttpPostActionInterface
             $order->addStatusHistoryComment('Order value was voided automatically.', false);
             $order->save();
         }
+    }
+
+    public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
+    {
+        return null;
+    }
+
+    public function validateForCsrf(RequestInterface $request): ?bool
+    {
+        return true;
     }
 }
