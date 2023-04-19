@@ -47,11 +47,6 @@ define(
 
                 var headElements = Object.entries(document.head.children).map(function (e) { return e[1]; });
                 var sheetLink = headElements.find(e => e instanceof HTMLLinkElement && e.href.includes('moyasar.css'));
-
-                if (!sheetLink) {
-                    sheetLink = headElements.find(e => e instanceof HTMLLinkElement && e.href.includes('merged'));
-                }
-
                 if (!sheetLink) {
                     return target;
                 }
