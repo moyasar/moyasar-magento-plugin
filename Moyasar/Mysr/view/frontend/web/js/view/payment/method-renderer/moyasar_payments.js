@@ -45,18 +45,23 @@ define(
                     return target;
                 }
 
+                var headElements = Object.entries(document.head.children).map(function (e) { return e[1]; });
+                var sheetLink = headElements.find(e => e instanceof HTMLLinkElement && e.href.includes('moyasar.css'));
+
+                if (!sheetLink) {
+                    sheetLink = headElements.find(e => e instanceof HTMLLinkElement && e.href.includes('merged'));
+                }
+
+                if (!sheetLink) {
+                    return target;
+                }
+
                 var shadow = target.shadowRoot;
                 if (!shadow) {
                     shadow = target.attachShadow({ mode: 'open' });
                 }
 
                 shadow.innerHTML = '';
-
-                var headElements = Object.entries(document.head.children).map(function (e) { return e[1]; });
-                var sheetLink = headElements.find(e => e instanceof HTMLLinkElement && e.href.includes('moyasar.css'));
-                if (!sheetLink) {
-                    return target;
-                }
 
                 var rootEl = document.createElement('div');
                 shadow.appendChild(rootEl);
