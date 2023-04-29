@@ -8,12 +8,55 @@
     </div>
 
     <div class="payment-method-content">
-        <div class="mysr-form" data-bind="attr: {initialized: initializeForm()}"></div>
+        <style>
+            .moy-logo-list {
+                display: flex;
+                gap: 16px;
+                height: 42px;
+                margin-top: 12px;
+                margin-bottom: 16px;
+            }
+        </style>
+
+        <div class="moy-logo-list">
+            <!-- ko if: isApplePayEnabled() -->
+            <img data-bind="attr: { 'src': require.toUrl('Moyasar_Mysr/images/apple_pay.png') }" alt="Apple Pay Logo">
+            <!-- /ko -->
+
+            <!-- ko if: isCreditCardEnabled() -->
+            <img data-bind="attr: { 'src': require.toUrl('Moyasar_Mysr/images/mada.png') }" alt="MADA Logo">
+            <img data-bind="attr: { 'src': require.toUrl('Moyasar_Mysr/images/visa.png') }" alt="Visa Logo">
+            <img data-bind="attr: { 'src': require.toUrl('Moyasar_Mysr/images/mc.png') }" alt="Mastercard Logo">
+            <!-- /ko -->
+
+            <!-- ko if: isStcPayEnabled() -->
+            <img data-bind="attr: { 'src': require.toUrl('Moyasar_Mysr/images/stc_pay.png') }" alt="Stc Pay Logo">
+            <!-- /ko -->
+
+            <!-- ko if: isAmexEnabled() -->
+            <img data-bind="attr: { 'src': require.toUrl('Moyasar_Mysr/images/amex.png') }" alt="American Express Logo">
+            <!-- /ko -->
+        </div>
 
         <div class="checkout-agreements-block">
             <!-- ko foreach: $parent.getRegion('before-place-order') -->
             <!-- ko template: getTemplate() --><!-- /ko -->
             <!--/ko-->
+        </div>
+
+        <div class="actions-toolbar">
+            <div class="primary">
+                <button type="submit"
+                    data-bind="
+                        attr: { title: $t('Checkout'), 'form': getCode() + '-form' },
+                        enable: (getCode() == isChecked()),
+                        click: placeOrder,
+                        css: { disabled: !isPlaceOrderActionAllowed() }
+                    "
+                    class="action primary checkout">
+                    <span data-bind="i18n: 'Checkout'"></span>
+                </button>
+            </div>
         </div>
     </div>
 </div>
