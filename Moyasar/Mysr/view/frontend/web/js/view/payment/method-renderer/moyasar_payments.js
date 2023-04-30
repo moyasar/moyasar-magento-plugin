@@ -46,18 +46,6 @@ define(
                         fullScreenLoader.stopLoader();
                         globalMessageList.addErrorMessage({ message: response.message });
                     });
-            },
-            isCreditCardEnabled: function() {
-                return true;
-            },
-            isAmexEnabled: function() {
-                return true;
-            },
-            isApplePayEnabled: function() {
-                return true;
-            },
-            isStcPayEnabled: function() {
-                return true;
             }
         });
     }

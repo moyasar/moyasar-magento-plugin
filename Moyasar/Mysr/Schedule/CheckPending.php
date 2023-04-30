@@ -34,13 +34,6 @@ class CheckPending
 
     public function cron(): void
     {
-//        $query = $this->orderCollection->getSelect()->where('entity_id = 1');
-//        $orders =  $this->orderCollection->load($query)->getItems();
-//
-//        foreach ($orders as $order) {
-//            dd($this->isAbandoned($order));
-//        }
-
         foreach ($this->pendingOrders() as $order) {
             if ($this->isChecked($order->getIncrementId())) {
                 continue;
@@ -87,7 +80,7 @@ class CheckPending
                 $payment['id'] .
                 ', status: ' .
                 $payment['status'] .
-                ', message' .
+                ', message: ' .
                 $payment['source']['message']
             );
         }
@@ -137,7 +130,8 @@ class CheckPending
             ->join(['pp' => 'sales_order_payment'], 'main_table.entity_id = pp.parent_id')
             ->where('updated_at >= ?', $this->date()->sub(DateInterval::createFromDateString('6 hour'))->format('Y-m-d H:i:s'))
             ->where('updated_at <= ?', $this->date()->sub(DateInterval::createFromDateString('15 minutes'))->format('Y-m-d H:i:s'))
-            ->where('main_table.status = ?', Order::STATE_PENDING_PAYMENT)
+            ->where('main_table.state in (?)', ['new', 'pending_payment'])
+            ->where('main_table.status = ?', 'pending')
             ->where('pp.method = ?', 'moyasar_payments');
 
         return $this->orderCollection->load($query)->getItems();
