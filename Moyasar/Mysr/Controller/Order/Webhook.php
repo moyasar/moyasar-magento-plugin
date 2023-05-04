@@ -32,6 +32,9 @@ class Webhook implements HttpPostActionInterface, CsrfAwareActionInterface
     /** @var UrlInterface */
     private $url;
 
+    /** @var OrderRepository */
+    private $orderRepo;
+
     /** @var LoggerInterface */
     private $logger;
 
@@ -61,35 +64,19 @@ class Webhook implements HttpPostActionInterface, CsrfAwareActionInterface
         $paymentId = $payment['id'];
         $order = $this->orderRepo->get($payment['metadata']['order_id']);
 
+        if ($order->getState() != Order::STATE_NEW) {
+            return $this->basicResponse('Order is not pending, skipping.');
+        }
+
+        if (! in_array($payment['status'], ['paid', 'authorized', 'captured'])) {
+            return $this->basicResponse('Payment is not a success, it will be taken care by cron job.');
+        }
+
         try {
             $payment = $this->http()
                 ->basic_auth($this->moyasarHelper->secretApiKey())
                 ->get($this->moyasarHelper->apiBaseUrl("/v1/payments/$paymentId"))
                 ->json();
-
-            // paid/authorized/captured + processed
-            // Order has been already been processed
-            if (in_array($payment['status'], ['paid', 'authorized', 'captured']) && $order->getState() == Order::STATE_PROCESSING) {
-                return $this->basicResponse('All good. Order is already processed.');
-            }
-
-            // failed/canceled
-            if ($payment['status'] == 'failed' && $order->getState() == Order::STATE_CANCELED) {
-                return $this->basicResponse('All good. Order is already canceled.');
-            }
-
-            if ($payment['status'] == 'failed') {
-                $message = __('Payment failed');
-                if ($sourceMessage = $payment['source']['message']) {
-                    $message .= ': ' . $sourceMessage;
-                }
-
-                $order->registerCancellation($message);
-                $order->getPayment()->setCcStatus('failed');
-                $order->save();
-
-                return $this->basicResponse('Payment failed, order was canceled.');
-            }
 
             $errors = $this->moyasarHelper->checkPaymentForErrors($order, $payment);
             if (count($errors) > 0) {
@@ -140,8 +127,9 @@ class Webhook implements HttpPostActionInterface, CsrfAwareActionInterface
 
     private function processUnMatchingInfoFail($payment, $order, $errors)
     {
-        $payment_id = $payment['id'];
-        array_unshift($errors, __('Un-matching payment details %payment_id.', ['payment_id' => $payment['id']]));
+        $paymentId = $payment['id'];
+
+        array_unshift($errors, __('Un-matching payment details %payment_id.', ['payment_id' => $paymentId]));
 
         $order->registerCancellation(implode("\n", $errors));
         $order->getPayment()->setCcStatus('failed');
@@ -151,7 +139,7 @@ class Webhook implements HttpPostActionInterface, CsrfAwareActionInterface
         if ($this->moyasarHelper->autoVoid()) {
             $this->http()
                 ->basic_auth($this->moyasarHelper->secretApiKey())
-                ->post($this->moyasarHelper->apiBaseUrl("/v1/payments/$payment_id/void"));
+                ->post($this->moyasarHelper->apiBaseUrl("/v1/payments/$paymentId/void"));
 
             $order->addStatusHistoryComment('Order value was voided automatically.', false);
             $order->save();

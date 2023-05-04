@@ -7,9 +7,9 @@ use DateTime;
 use DateTimeZone;
 use Exception;
 use Magento\Framework\App\Cache\Frontend\Pool;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Reports\Model\ResourceModel\Order\Collection;
 use Magento\Sales\Model\Order;
-use Moyasar\Mysr\Helper\Http\QuickHttp;
 use Moyasar\Mysr\Helper\MoyasarHelper;
 use Psr\Log\LoggerInterface;
 
@@ -58,36 +58,61 @@ class CheckPending
     {
         $this->logger->info("Processing pending order " . $order->getIncrementId());
 
-        $orderPayment = $order->getPayment();
-        $paymentId = $orderPayment->getLastTransId();
-        if (! $paymentId) {
-            $this->logger->warning("Cannot find payment ID for order " . $order->getIncrementId());
-            return;
-        }
+        $apiPayments = $this->moyasarHelper->getOrderPayments($order->getId());
+        usort($apiPayments, function ($a, $b) {
+            return new DateTime($a) < new DateTime($b) ? -1 : 1;
+        });
 
-        $this->logger->info("Fetching Moyasar payment $paymentId...");
-
-        $payment = $this->http()
-            ->basic_auth($this->moyasarHelper->secretApiKey())
-            ->get($this->moyasarHelper->apiBaseUrl("/v1/payments/$paymentId"))
-            ->json();
-
-        $this->logger->info("Fetched payment $paymentId.");
-
-        if ($payment['status'] != 'paid') {
-            $message = __('Payment failed');
-            if ($sourceMessage = $payment['source']['message']) {
-                $message .= ': ' . $sourceMessage;
+        if (count($apiPayments) == 0) {
+            try {
+                $order->registerCancellation('Order was canceled because there were no payment attempts within 15 minutes.', false);
+                $order->save();
+            } catch (LocalizedException $e) {
+                $order->addCommentToStatusHistory('Order cannot be canceled automatically, order must be canceled manually.');
             }
 
-            $this->processFailedPayment($payment, $order, [$message]);
             return;
         }
 
+        foreach ($apiPayments as $payment) {
+            $order->addCommentToStatusHistory(
+                'Payment: ' .
+                $payment['id'] .
+                ', status: ' .
+                $payment['status'] .
+                ', message: ' .
+                $payment['source']['message']
+            );
+        }
+
+        $paidPayments = array_filter($apiPayments, function ($p) {
+            return $p['status'] == 'paid';
+        });
+
+        // No successful payments, add all IDs in history and cancel order
+        if (count($paidPayments) == 0) {
+            $order->getPayment()->setLastTransId($apiPayments[count($apiPayments) - 1]['id']);
+
+            try {
+                $order->registerCancellation('No successful payments, order canceled.', false);
+                $order->save();
+            } catch (LocalizedException $e) {
+                $order->addCommentToStatusHistory('Order cannot be canceled automatically, order must be canceled manually.');
+            }
+
+            return;
+        }
+
+        $payment = $paidPayments[0];
         $errors = $this->moyasarHelper->checkPaymentForErrors($order, $payment);
         if (count($errors) > 0) {
             array_unshift($errors, 'Un-matching payment details ' . $payment['id']);
-            $this->processFailedPayment($payment, $order, $errors);
+
+            $order->registerCancellation(implode("\n", $errors));
+            $order->getPayment()->setLastTransId($payment['id']);
+            $order->addCommentToStatusHistory('Order was canceled automatically by cron jobs.');
+            $order->save();
+
             return;
         }
 
@@ -104,8 +129,9 @@ class CheckPending
             ->getSelect()
             ->join(['pp' => 'sales_order_payment'], 'main_table.entity_id = pp.parent_id')
             ->where('updated_at >= ?', $this->date()->sub(DateInterval::createFromDateString('6 hour'))->format('Y-m-d H:i:s'))
-            ->where('updated_at <= ?', $this->date()->format('Y-m-d H:i:s'))
-            ->where('main_table.status = ?', Order::STATE_PENDING_PAYMENT)
+            ->where('updated_at <= ?', $this->date()->sub(DateInterval::createFromDateString('15 minutes'))->format('Y-m-d H:i:s'))
+            ->where('main_table.state in (?)', ['new', 'pending_payment'])
+            ->where('main_table.status = ?', 'pending')
             ->where('pp.method = ?', 'moyasar_payments');
 
         return $this->orderCollection->load($query)->getItems();
@@ -126,22 +152,13 @@ class CheckPending
         return $this->cache()->load($this->cacheKey($id)) == 'true';
     }
 
+    /**
+     * @param string $id
+     * @return void
+     */
     private function markChecked(string $id): void
     {
-        $this->cache()->save('true', $this->cacheKey($id), [], 3600 * 6);
-    }
-
-    private function http(): QuickHttp
-    {
-        return new QuickHttp();
-    }
-
-    private function processFailedPayment($payment, $order, $errors)
-    {
-        $order->registerCancellation(implode("\n", $errors));
-        $order->getPayment()->setLastTransId($payment['id']);
-        $order->addCommentToStatusHistory('Order was canceled automatically by cron jobs.');
-        $order->save();
+        $this->cache()->save('true', $this->cacheKey($id), [], 3600 * 12);
     }
 
     private function date()

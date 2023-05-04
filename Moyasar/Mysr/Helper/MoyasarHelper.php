@@ -15,6 +15,7 @@ use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Magento\Sales\Model\Service\InvoiceService;
 use Magento\Store\Model\StoreManager;
+use Moyasar\Mysr\Helper\Http\QuickHttp;
 
 class MoyasarHelper extends AbstractHelper
 {
@@ -126,7 +127,7 @@ class MoyasarHelper extends AbstractHelper
         $orderPayment->addTransaction(TransactionInterface::TYPE_CAPTURE, $invoice ?? null, true);
         $orderPayment->setCcStatus('paid');
 
-        $order->addStatusHistoryComment('Payment is successful: ' . $payment['id'], false);
+        $order->addCommentToStatusHistory('Payment is successful: ' . $payment['id'], Order::STATE_PROCESSING);
         $order->setStatus(Order::STATE_PROCESSING);
         $order->setState(Order::STATE_PROCESSING);
 
@@ -137,5 +138,31 @@ class MoyasarHelper extends AbstractHelper
 
         $order->setSendEmail(true);
         $order->save();
+    }
+
+    public function getOrderPayments(string $id): array
+    {
+        $payments = [];
+        $currentPage = 1;
+
+        do {
+            $response = $this->http()
+                ->basic_auth($this->secretApiKey())
+                ->get(
+                    $this->apiBaseUrl('/v1/payments'),
+                    ['metadata[order_id]' => $id, 'page' => $currentPage]
+                )->json();
+
+            $payments = array_merge($payments, $response['payments']);
+            $lastPage = $response['meta']['total_pages'];
+            $currentPage++;
+        } while ($currentPage <= $lastPage);
+
+        return $payments;
+    }
+
+    public function http()
+    {
+        return new QuickHttp();
     }
 }

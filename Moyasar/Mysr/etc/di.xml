@@ -3,7 +3,6 @@
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="moyasar_mysr_process_pending" xsi:type="object">Moyasar\Mysr\Console\Command\CheckPending</item>
-                <item name="moyasar_mysr_process_canceled" xsi:type="object">Moyasar\Mysr\Console\Command\CheckCanceled</item>
             </argument>
         </arguments>
     </type>

@@ -8,12 +8,68 @@
     </div>
 
     <div class="payment-method-content">
-        <div class="mysr-form" data-bind="attr: {initialized: initializeForm()}"></div>
+        <style>
+            .moy-logo-list {
+                display: flex;
+                gap: 16px;
+                height: 42px;
+                margin-top: 12px;
+                margin-bottom: 16px;
+            }
+
+            .moy-logo-list img {
+                border: 1px solid rgb(189 189 189 / 60%);
+                border-radius: 5px;
+                padding: 5px 8px;
+                box-sizing: content-box;
+            }
+        </style>
+
+        <div class="moy-logo-list">
+            <!-- ko if: window.checkoutConfig.moyasar_payments.methods.includes('applepay') -->
+            <img data-bind="attr: { 'src': require.toUrl('Moyasar_Mysr/images/apple_pay.png') }" alt="Apple Pay Logo">
+            <!-- /ko -->
+
+            <!-- ko if: window.checkoutConfig.moyasar_payments.supported_networks.includes('mada') -->
+            <img data-bind="attr: { 'src': require.toUrl('Moyasar_Mysr/images/mada.png') }" alt="American Express Logo">
+            <!-- /ko -->
+
+            <!-- ko if: window.checkoutConfig.moyasar_payments.supported_networks.includes('visa') -->
+            <img data-bind="attr: { 'src': require.toUrl('Moyasar_Mysr/images/visa.png') }" alt="American Express Logo">
+            <!-- /ko -->
+
+            <!-- ko if: window.checkoutConfig.moyasar_payments.supported_networks.includes('mastercard') -->
+            <img data-bind="attr: { 'src': require.toUrl('Moyasar_Mysr/images/mc.png') }" alt="American Express Logo">
+            <!-- /ko -->
+
+            <!-- ko if: window.checkoutConfig.moyasar_payments.methods.includes('stcpay') -->
+            <img data-bind="attr: { 'src': require.toUrl('Moyasar_Mysr/images/stc_pay.png') }" alt="Stc Pay Logo">
+            <!-- /ko -->
+
+            <!-- ko if: window.checkoutConfig.moyasar_payments.supported_networks.includes('amex') -->
+            <img data-bind="attr: { 'src': require.toUrl('Moyasar_Mysr/images/amex.png') }" alt="American Express Logo">
+            <!-- /ko -->
+        </div>
 
         <div class="checkout-agreements-block">
             <!-- ko foreach: $parent.getRegion('before-place-order') -->
             <!-- ko template: getTemplate() --><!-- /ko -->
             <!--/ko-->
+        </div>
+
+        <div class="actions-toolbar">
+            <div class="primary">
+                <button type="submit"
+                    data-bind="
+                        attr: { title: $t('Place Order'), 'form': getCode() + '-form' },
+                        enable: (getCode() == isChecked()),
+                        click: placeOrder,
+                        css: { disabled: !isPlaceOrderActionAllowed() }
+                    "
+                    class="action primary checkout">
+                    <span data-bind="i18n: 'Place Order'"></span>
+                </button>
+            </div>
         </div>
     </div>
 </div>
