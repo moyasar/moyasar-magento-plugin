@@ -15,10 +15,10 @@ use Psr\Log\LoggerInterface;
 
 class CheckPending
 {
-    private Collection $orderCollection;
-    private MoyasarHelper $moyasarHelper;
-    private Pool $cachePool;
-    private LoggerInterface $logger;
+    private $orderCollection;
+    private $moyasarHelper;
+    private $cachePool;
+    private $logger;
 
     public function __construct(
         Collection $orderCollection,

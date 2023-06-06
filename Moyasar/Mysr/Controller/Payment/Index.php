@@ -8,9 +8,12 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\View\Result\LayoutFactory;
 use Magento\Quote\Model\QuoteRepository;
+use Magento\Sales\Api\Data\OrderAddressInterface;
 use Magento\Sales\Model\Order;
+use Moyasar\Mysr\Helper\CurrencyHelper;
+use Moyasar\Mysr\Helper\MoyasarHelper;
+use Moyasar\Mysr\Model\Config\PaymentConfigProvider;
 use Psr\Log\LoggerInterface;
 
 class Index implements ActionInterface
@@ -24,30 +27,43 @@ class Index implements ActionInterface
     /** @var LoggerInterface */
     private $logger;
 
-    /** @var LayoutFactory */
-    private $layoutFactory;
-
     /** @var QuoteRepository */
     protected $quoteRepository;
 
     /** @var ManagerInterface */
     protected $eventManager;
 
+    /** @var ResultFactory */
+    private $resultFactory;
+
+    /** @var MoyasarHelper */
+    private $helper;
+
+    /** @var PaymentConfigProvider */
+    private $configProvider;
+
+    /** @var Order */
+    private $order;
+
     public function __construct(
         Context $context,
         Session $checkoutSession,
         LoggerInterface $logger,
-        LayoutFactory $layoutFactory,
         QuoteRepository $quoteRepository,
-        ManagerInterface $eventManager
+        ManagerInterface $eventManager,
+        ResultFactory $resultFactory,
+        MoyasarHelper $helper,
+        PaymentConfigProvider $configProvider
 
     ) {
         $this->context = $context;
         $this->checkoutSession = $checkoutSession;
         $this->logger = $logger;
-        $this->layoutFactory = $layoutFactory;
         $this->quoteRepository = $quoteRepository;
         $this->eventManager = $eventManager;
+        $this->resultFactory = $resultFactory;
+        $this->helper = $helper;
+        $this->configProvider = $configProvider;
     }
 
     public function execute()
@@ -57,7 +73,7 @@ class Index implements ActionInterface
             return $this->redirectToCart();
         }
 
-        $order = $this->lastOrder();
+        $this->order = $order = $this->lastOrder();
         if (! $order->getId()) {
             $this->logger->warning('Moyasar payment page accessed without last order set.');
             return $this->redirectToCart();
@@ -72,9 +88,9 @@ class Index implements ActionInterface
 
         $this->logger->info('Rendering Moyasar payment page for order ' . $order->getId());
 
-        $view = $this->layoutFactory->create();
+        $view = $this->resultFactory->create(ResultFactory::TYPE_RAW);
         $view->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0', true);
-        $view->getLayout()->getBlock('payment_index')->setData('order', $order);
+        $view->setContents($this->renderCheckoutPage());
 
         return $view;
     }
@@ -118,11 +134,89 @@ class Index implements ActionInterface
             $this->quoteRepository->save($quote);
             $this->checkoutSession->replaceQuote($quote)->unsLastRealOrderId();
             $this->eventManager->dispatch('restore_quote', ['order' => $order, 'quote' => $quote]);
+
             return true;
         } catch (NoSuchEntityException $e) {
             $this->logger->critical($e);
         }
 
         return false;
+    }
+
+    public function formConfig()
+    {
+        $config = array_values($this->configProvider->getConfig())[0];
+
+        $metadata = [
+            'order_id' => $this->order->getId(),
+            'real_order_id' => $this->order->getRealOrderId(),
+        ];
+
+        if ($address = $this->order->getShippingAddress()) {
+            $metadata = array_merge($metadata, $this->mapAddress($address));
+        }
+
+        return [
+            'element' => '.mysr-form',
+            'amount' => CurrencyHelper::amountToMinor($this->order->getBaseGrandTotal(), $this->order->getBaseCurrencyCode()),
+            'currency' => $this->order->getBaseCurrencyCode(),
+            'description' => 'Payment for order ' . $this->order->getRealOrderId(),
+            'publishable_api_key' => $this->helper->publishableApiKey(),
+            'callback_url' => $this->context->getUrl()->getUrl('moyasar_mysr/redirect/response'),
+            'methods' => $config['methods'],
+            'supported_networks' => $config['supported_networks'],
+            'base_url' => $config['base_url'],
+            'metadata' => $metadata,
+            'apple_pay' => [
+                'label' => $config['domain_name'],
+                'validate_merchant_url' => 'https://api.moyasar.com/v1/applepay/initiate',
+                'country' => $config['country']
+            ]
+        ];
+    }
+
+    public function title()
+    {
+        $order = $this->order;
+
+        return $order->getBaseCurrencyCode() . ' ' .
+            number_format($order->getBaseGrandTotal(), CurrencyHelper::fractionFor($order->getBaseCurrencyCode()));
+    }
+
+    public function backUrl()
+    {
+        return $this->context->getUrl()->getUrl('moyasar_mysr/payment/cancel') . '?order_id=' . $this->order->getId();
+    }
+
+    private function renderCheckoutPage()
+    {
+        $block = $this;
+
+        ob_start();
+        include __DIR__ . '/checkout.php';
+
+        return ob_get_flush();
+    }
+
+    private function mapAddress(OrderAddressInterface $address)
+    {
+        $keys = [
+            OrderAddressInterface::FIRSTNAME,
+            OrderAddressInterface::MIDDLENAME,
+            OrderAddressInterface::LASTNAME,
+            OrderAddressInterface::STREET,
+            OrderAddressInterface::CITY,
+            OrderAddressInterface::REGION,
+            OrderAddressInterface::POSTCODE,
+            OrderAddressInterface::EMAIL,
+            OrderAddressInterface::TELEPHONE,
+            OrderAddressInterface::COMPANY,
+        ];
+
+        $prefix = $address->getAddressType();
+
+        return array_merge(...array_map(function ($key) use ($address, $prefix) {
+            return [$prefix . "_" . $key => $address->getData($key)];
+        }, $keys));
     }
 }
