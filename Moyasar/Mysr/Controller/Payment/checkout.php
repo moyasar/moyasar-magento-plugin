@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @var \Moyasar\Mysr\Block\PaymentIndex $block
+ * @var \Moyasar\Mysr\Controller\Payment\Index $block
  */
 
 ?>
