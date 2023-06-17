@@ -62,7 +62,6 @@
                 <button type="submit"
                     data-bind="
                         attr: { title: $t('Place Order'), 'form': getCode() + '-form' },
-                        enable: (getCode() == isChecked()),
                         click: placeOrder,
                         css: { disabled: !isPlaceOrderActionAllowed() }
                     "
