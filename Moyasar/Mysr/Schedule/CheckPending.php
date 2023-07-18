@@ -60,7 +60,7 @@ class CheckPending
 
         $apiPayments = $this->moyasarHelper->getOrderPayments($order->getId());
         usort($apiPayments, function ($a, $b) {
-            return new DateTime($a) < new DateTime($b) ? -1 : 1;
+            return new DateTime($a['created_at']) < new DateTime($b['created_at']) ? -1 : 1;
         });
 
         if (count($apiPayments) == 0) {
