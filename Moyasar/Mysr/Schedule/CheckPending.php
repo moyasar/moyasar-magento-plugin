@@ -56,6 +56,9 @@ class CheckPending
      */
     private function processPayment($order)
     {
+        // Allow cancel of order
+        $order->setState(Order::STATE_PAYMENT_REVIEW);
+
         $this->logger->info("Processing pending order " . $order->getIncrementId());
 
         $apiPayments = $this->moyasarHelper->getOrderPayments($order->getId());
@@ -64,13 +67,15 @@ class CheckPending
         });
 
         if (count($apiPayments) == 0) {
+            $this->logger->info("No payments for order " . $order->getIncrementId() . ' trying canceling...');
+
             try {
                 $order->registerCancellation('Order was canceled because there were no payment attempts within 15 minutes.', false);
-                $order->save();
             } catch (LocalizedException $e) {
                 $order->addCommentToStatusHistory('Order cannot be canceled automatically, order must be canceled manually.');
             }
 
+            $order->save();
             return;
         }
 
@@ -91,21 +96,25 @@ class CheckPending
 
         // No successful payments, add all IDs in history and cancel order
         if (count($paidPayments) == 0) {
+            $this->logger->info("Zero paid payments for order " . $order->getIncrementId() . ' trying canceling...');
+
             $order->getPayment()->setLastTransId($apiPayments[count($apiPayments) - 1]['id']);
 
             try {
                 $order->registerCancellation('No successful payments, order canceled.', false);
-                $order->save();
             } catch (LocalizedException $e) {
                 $order->addCommentToStatusHistory('Order cannot be canceled automatically, order must be canceled manually.');
             }
 
+            $order->save();
             return;
         }
 
         $payment = $paidPayments[0];
         $errors = $this->moyasarHelper->checkPaymentForErrors($order, $payment);
         if (count($errors) > 0) {
+            $this->logger->info("Order had errors " . $order->getIncrementId() . ' trying canceling...');
+
             array_unshift($errors, 'Un-matching payment details ' . $payment['id']);
 
             $order->registerCancellation(implode("\n", $errors));
