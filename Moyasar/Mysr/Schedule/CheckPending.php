@@ -4,29 +4,32 @@ namespace Moyasar\Mysr\Schedule;
 
 use DateInterval;
 use DateTime;
-use DateTimeZone;
 use Exception;
 use Magento\Framework\App\Cache\Frontend\Pool;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Reports\Model\ResourceModel\Order\Collection;
+use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\ResourceModel\Order\Collection;
 use Moyasar\Mysr\Helper\MoyasarHelper;
 use Psr\Log\LoggerInterface;
 
 class CheckPending
 {
     private $orderCollection;
+    private $orderRepo;
     private $moyasarHelper;
     private $cachePool;
     private $logger;
 
     public function __construct(
         Collection $orderCollection,
+        OrderRepositoryInterface $orderRepo,
         MoyasarHelper $moyasarHelper,
         Pool $cachePool,
         LoggerInterface $logger
     ) {
         $this->orderCollection = $orderCollection;
+        $this->orderRepo = $orderRepo;
         $this->moyasarHelper = $moyasarHelper;
         $this->cachePool = $cachePool;
         $this->logger = $logger;
@@ -56,6 +59,8 @@ class CheckPending
      */
     private function processPayment($order)
     {
+        $order = $this->orderRepo->get($order->getId());
+
         // Allow cancel of order
         $order->setState(Order::STATE_PAYMENT_REVIEW);
 
@@ -75,7 +80,7 @@ class CheckPending
                 $order->addCommentToStatusHistory('Order cannot be canceled automatically, order must be canceled manually.');
             }
 
-            $order->save();
+            $this->orderRepo->save($order);
             return;
         }
 
@@ -106,7 +111,7 @@ class CheckPending
                 $order->addCommentToStatusHistory('Order cannot be canceled automatically, order must be canceled manually.');
             }
 
-            $order->save();
+            $this->orderRepo->save($order);
             return;
         }
 
@@ -120,7 +125,7 @@ class CheckPending
             $order->registerCancellation(implode("\n", $errors));
             $order->getPayment()->setLastTransId($payment['id']);
             $order->addCommentToStatusHistory('Order was canceled automatically by cron jobs.');
-            $order->save();
+            $this->orderRepo->save($order);
 
             return;
         }
@@ -167,11 +172,11 @@ class CheckPending
      */
     private function markChecked(string $id): void
     {
-        $this->cache()->save('true', $this->cacheKey($id), [], 3600 * 12);
+        $this->cache()->save('true', $this->cacheKey($id), [], 60 * 30);
     }
 
     private function date()
     {
-        return new DateTime('now', new DateTimeZone('utc'));
+        return new DateTime('now');
     }
 }
