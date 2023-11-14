@@ -44,7 +44,15 @@ class Response implements ActionInterface
 
     public function execute()
     {
-        $order = $this->lastOrder();
+        $paymentId = $_GET['id'];
+        
+        //fetch payment
+        $payment = $this->http()
+                ->basic_auth($this->moyasarHelper->secretApiKey())
+                ->get($this->moyasarHelper->apiBaseUrl("/v1/payments/$paymentId"))
+                ->json();
+
+        $order = $this->lastOrder($payment);
         $orderPayment = $order->getPayment();
 
         $paymentId = $_GET['id'];
@@ -166,13 +174,16 @@ class Response implements ActionInterface
             ->setPath('checkout/cart');
     }
 
-    private function lastOrder()
+    private function lastOrder($payment)
     {
-        $order = $this->checkoutSession->getLastRealOrder();
+        $orderId = $payment['metadata']['order_id'];
+
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $order = $objectManager->create('\Magento\Sales\Model\OrderRepository')->get($orderId);
 
         // Work around real_last_order_id is lost from current session
         if (! $order->getId()) {
-            $order->loadByAttribute('entity_id', $this->checkoutSession->getLastOrderId());
+            $order->loadByAttribute('order_id', $order);
         }
 
         return $order;
