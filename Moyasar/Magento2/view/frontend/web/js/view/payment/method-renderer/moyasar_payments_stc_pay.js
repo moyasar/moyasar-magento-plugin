@@ -29,10 +29,14 @@ define(
             initialize: function () {
                 this._super();
                 const self = this;
-                //  Document Ready
-                setTimeout(function () {
-                    self.setupStcValidationListeners();
-                }, 2000);
+                $(document).ready(function () {
+                    $(document).ajaxStop(function () {
+                        self.setupStcValidationListeners();
+                    });
+                    setTimeout(function (){
+                        self.setupStcValidationListeners();
+                    }, 2500);
+                });
             },
             /**
              * Stc Pay Section

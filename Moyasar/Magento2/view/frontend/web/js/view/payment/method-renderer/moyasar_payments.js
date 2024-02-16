@@ -29,10 +29,15 @@ define(
                 template: 'Moyasar_Magento2/payment/moyasar_payments'
             },
             initialize: function () {
-                const self = this;
                 this._super();
-                $(document).ajaxStop(function() {
-                    self.setupValidationListeners();
+                const self = this;
+                $(document).ready(function () {
+                    $(document).ajaxStop(function () {
+                        self.setupValidationListeners();
+                    });
+                    setTimeout(function (){
+                        self.setupValidationListeners();
+                    }, 2500);
                 });
             },
             numericInputComputed: function (value) {
