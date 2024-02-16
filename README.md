@@ -6,7 +6,7 @@
 
 1. Install the package using composer:
 ```sh
-$ composer require Moyasar/Magento2
+$ composer require moyasar/magento2
 ```
 2. Enable the extension and clear static view files:
 ```sh
