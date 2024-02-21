@@ -60,7 +60,7 @@ class MoyasarHelper extends AbstractHelper
         $this->invoiceService = $invoiceService;
         $this->invoiceSender = $invoiceSender;
 
-        $this->apiBaseUrl = "https://apimig.moyasar.com";
+        $this->apiBaseUrl = "https://api.moyasar.com";
     }
 
     public function apiBaseUrl($path = '')
