@@ -20,7 +20,7 @@ class ButtonElement extends Field
      *
      * @return $this
      */
-    protected function _prepareLayout(): static
+    protected function _prepareLayout()
     {
         parent::_prepareLayout();
         if (!$this->getTemplate()) {

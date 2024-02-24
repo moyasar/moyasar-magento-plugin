@@ -59,7 +59,7 @@ class Apple implements ActionInterface
         LoggerInterface      $logger,
         JsonFactory          $resultJsonFactory,
         StoreManagerInterface $storeManager,
-        ScopeConfigInterface $scopeConfig,
+        ScopeConfigInterface $scopeConfig
 
     )
     {

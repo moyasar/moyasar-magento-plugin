@@ -52,7 +52,7 @@ class Initiate implements ActionInterface
         ManagerInterface $messageManager,
         LoggerInterface  $logger,
         JsonFactory      $resultJsonFactory,
-        RequestInterface $request,
+        RequestInterface $request
     )
     {
         $this->context = $context;

@@ -28,9 +28,9 @@ class Validate implements ActionInterface
 
     protected $method = 'creditcard'; // stcpay, creditcard
     protected $paymentId;
-    private mixed $otpToken;
-    private mixed $otpId;
-    private mixed $otp;
+    private $otpToken;
+    private $otpId;
+    private $otp;
 
     public function __construct(
         Context          $context,
