@@ -96,6 +96,7 @@ class Initiate implements ActionInterface
             return $resultJson->setData(['message' => 'Payment failed'])->setHttpResponseCode(400);
         }
 
+        $paymentId = $response['id'];
         $responseData = [
             'status' => $response['status'],
         ];
@@ -111,6 +112,11 @@ class Initiate implements ActionInterface
         if ($this->method == 'applepay') {
             $responseData = array_merge($responseData, $this->applepayResponseData($response));
         }
+
+        $this->order->setState(Order::STATE_PENDING_PAYMENT);
+        $this->order->getPayment()->setCcStatus('pending');
+        $this->order->addStatusHistoryComment("Payment initiated with Moyasar. Payment ID: $paymentId, Method: $this->method", Order::STATE_PENDING_PAYMENT);
+        $this->order->save();
 
         return $resultJson->setData($responseData);
     }
