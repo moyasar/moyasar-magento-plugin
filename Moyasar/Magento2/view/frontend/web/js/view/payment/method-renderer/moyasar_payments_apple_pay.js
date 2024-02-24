@@ -64,7 +64,7 @@ define(
                     countryCode: window.checkoutConfig.moyasar_payments.country,
                     currencyCode: data.base_currency_code,
                     supportedNetworks: window.checkoutConfig.moyasar_payments.supported_networks,
-                    merchantCapabilities: ['supports3DS'],
+                    merchantCapabilities: ['supports3DS', 'supportsDebit', 'supportsCredit'],
                     total: {
                         label: window.checkoutConfig.moyasar_payments.store_name,
                         amount: `${data.base_grand_total}`

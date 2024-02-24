@@ -12,6 +12,9 @@ use Moyasar\Magento2\Model\Payment\MoyasarPayments;
 
 class PaymentConfigProvider implements ConfigProviderInterface
 {
+
+    const XML_PATH_STORE_NAME = 'general/store_information/name';
+
     /**
      * @var ScopeConfigInterface
      */
@@ -58,7 +61,7 @@ class PaymentConfigProvider implements ConfigProviderInterface
             'api_key' => $this->moyasarHelper->publishableApiKey(),
             'base_url' => $this->moyasarHelper->apiBaseUrl(),
             'country' => $this->scopeConfig->getValue('general/country/default'),
-            'store_name' => $this->storeManager->getStore()->getName(),
+            'store_name' => $this->getStoreName(),
             'domain_name' => $matches[1],
             'supported_networks' => explode(',', $this->scopeConfig->getValue('payment/moyasar_payments/schemes')),
             'methods' => explode(',', $this->scopeConfig->getValue('payment/moyasar_payments/methods')),
@@ -85,5 +88,20 @@ class PaymentConfigProvider implements ConfigProviderInterface
         return [
             MoyasarPayments::CODE => $config
         ];
+    }
+
+    /**
+     * Get store name
+     *
+     * @return string
+     */
+    public function getStoreName()
+    {
+        $store_name = $this->scopeConfig->getValue(self::XML_PATH_STORE_NAME) ?? $this->storeManager->getStore()->getName() ?? 'Store';
+        // Check is store english (Regex)
+        if (!preg_match('/\A\p{ASCII}+\z/', $store_name)) {
+            $store_name = 'Store';
+        }
+        return $store_name;
     }
 }
