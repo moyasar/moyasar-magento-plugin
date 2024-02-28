@@ -12,7 +12,8 @@ define(
         'Magento_Checkout/js/model/quote',
         'Magento_Checkout/js/model/totals',
         'domReady!',
-        'Magento_Checkout/js/checkout-data'
+        'Magento_Checkout/js/checkout-data',
+        'mage/translate'
     ],
     function (
         Component,
@@ -124,12 +125,12 @@ define(
 
                 if (value === '') {
                     this.detectCardType(value);
-                    errorMessage.text(ignoreEmpty ? '' : window.checkoutConfig.moyasar_payments.messages.creditcard['card_required']);
+                    errorMessage.text(ignoreEmpty ? '' : $.mage.__('Card Number is required.'));
                     return false;
                 }
 
                 if (!this.detectCardType(value)) {
-                    errorMessage.text(window.checkoutConfig.moyasar_payments.messages.creditcard['card_not_supported']);
+                    errorMessage.text($.mage.__('Card Type is not supported.'));
                     return false;
                 }
                 if (value.length > 16) {
@@ -154,13 +155,13 @@ define(
                 const value = $('#moyasar-cardholder-name').val();
 
                 if (value === '') {
-                    errorMessage.text(ignoreEmpty ? '' : window.checkoutConfig.moyasar_payments.messages.creditcard['cardholder_required']);
+                    errorMessage.text(ignoreEmpty ? '' : $.mage.__('Cardholder Name is required.'));
                     return false;
                 }
 
                 // Name must have first and last name
                 if (!ignoreEmpty && value.split(' ').length < 2) {
-                    errorMessage.text(window.checkoutConfig.moyasar_payments.messages.creditcard['cardholder_full_name']);
+                    errorMessage.text($.mage.__('Cardholder Name must have first name and last name.'));
                     return false;
                 }
 
@@ -198,7 +199,7 @@ define(
                 input.val(value);
 
                 if (value === '') {
-                    errorMessage.text(ignoreEmpty ? '' : window.checkoutConfig.moyasar_payments.messages.creditcard['expiry_required']);
+                    errorMessage.text(ignoreEmpty ? '' : $.mage.__('Expiration Date is required.'));
                     return false;
                 }
 
@@ -221,7 +222,7 @@ define(
                 }
 
                 if (value === '') {
-                    errorMessage.text(ignoreEmpty ? '' : window.checkoutConfig.moyasar_payments.messages.creditcard['cvv_required']);
+                    errorMessage.text(ignoreEmpty ? '' : $.mage.__('CVV is required.'));
                     return false;
                 }
 

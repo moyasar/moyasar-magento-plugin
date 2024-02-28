@@ -65,24 +65,6 @@ class PaymentConfigProvider implements ConfigProviderInterface
             'domain_name' => $matches[1],
             'supported_networks' => explode(',', $this->scopeConfig->getValue('payment/moyasar_payments/schemes')),
             'methods' => explode(',', $this->scopeConfig->getValue('payment/moyasar_payments/methods')),
-            'messages' => [
-                'creditcard' => [
-                    'card_required' => __('Card Number is required.'),
-                    'card_not_supported' => __('Card Type is not supported.'),
-                    'cardholder_required' => __('Cardholder Name is required.'),
-                    'cardholder_full_name' => __('Cardholder Name must have first name and last name.'),
-                    'expiry_required' => __('Expiration Date is required.'),
-                    'cvv_required' => __('CVV is required.'),
-
-                ],
-                'stcpay' => [
-                    'otp_sent' => __('OTP has been sent.'),
-                    'otp_required' => __('OTP is required.'),
-                    'phone_start' => __('Phone number must start with 05.'),
-                    'submit' => __('Submit'),
-                ]
-
-            ]
         ];
 
         return [

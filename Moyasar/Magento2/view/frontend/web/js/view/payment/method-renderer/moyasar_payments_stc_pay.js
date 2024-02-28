@@ -12,6 +12,7 @@ define(
         'Magento_Checkout/js/model/quote',
         'Magento_Checkout/js/model/totals',
         'Magento_Checkout/js/checkout-data',
+        'mage/translate'
     ],
     function (
         Component,
@@ -88,7 +89,7 @@ define(
                     return false;
                 }              // Starts with 05
                 if (value.length >= 2 && !value.startsWith('05')) {
-                    errorMessage.text(window.checkoutConfig.moyasar_payments.messages.stcpay['phone_start']);
+                    errorMessage.text($.mage.__('Phone number must start with 05.'));
                     return false;
                 }
                 // Length must be 10
@@ -113,7 +114,7 @@ define(
 
 
                 if (value === '') {
-                    errorMessage.text(window.checkoutConfig.moyasar_payments.messages.stcpay['otp_required']);
+                    errorMessage.text($.mage.__('OTP is required.'));
                     return false;
                 }
 
@@ -134,7 +135,7 @@ define(
                 input.hide();
                 otpButton.show();
                 otpButton.focus();
-                button.text(window.checkoutConfig.moyasar_payments.messages.stcpay['submit']);
+                button.text($.mage.__('Submit'));
                 button.prop('disabled', true);
 
                 // Replace on click event
@@ -172,7 +173,7 @@ define(
                             success: function (response) {
                                 window.moyasar_stc_pay = response['stcpay'];
                                 fullScreenLoader.stopLoader();
-                                globalMessageList.addSuccessMessage({ message: window.checkoutConfig.moyasar_payments.messages.stcpay['otp_sent'] });
+                                globalMessageList.addSuccessMessage({ message: $.mage.__('OTP has been sent.') });
 
                                 // Show OTP Input
                                 self.stcPayShowOtpInput();

@@ -22,6 +22,7 @@
 "Cardholder Name is required.","اسم صاحب البطاقة مطلوب."
 "Cardholder Name must have first name and last name.","اسم صاحب البطاقة يجب أن يحتوي على الاسم الأول والاسم الأخير."
 "Expiration Date is required.","تاريخ الانتهاء مطلوب."
+"Card Type is not supported.","نوع البطاقة غير مدعوم."
 "CVV is required.","CVV مطلوب."
 "OTP is required.","رمز التحقق مطلوب."
 "Phone number must start with 05.","رقم الجوال يجب أن يبدأ بـ 05."
