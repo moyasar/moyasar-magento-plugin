@@ -19,7 +19,7 @@ use Moyasar\Magento2\Helper\Http\QuickHttp;
 
 class MoyasarHelper extends AbstractHelper
 {
-    const VERSION = '3.5.4';
+    const VERSION = '4.0.0';
 
     const XML_PATH_IS_ACTIVE = 'payment/moyasar_payments/active';
     const XML_PATH_ACTIVE_METHODS = 'payment/moyasar_payments/methods';
