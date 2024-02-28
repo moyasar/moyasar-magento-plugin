@@ -55,7 +55,7 @@ class Failed implements ActionInterface
 
         $this->messageManager->addErrorMessage($message);
 
-        if ($order->getState() == Order::STATE_NEW){
+        if ($order->getState() == Order::STATE_NEW || $order->getState() == Order::STATE_PENDING_PAYMENT){
             $order->addStatusHistoryComment('The order was automatically canceled because the payment failed.', false);
 
             $order->setState(Order::STATE_CANCELED);
