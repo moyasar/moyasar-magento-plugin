@@ -81,7 +81,7 @@ class PaymentConfigProvider implements ConfigProviderInterface
     {
         $store_name = $this->scopeConfig->getValue(self::XML_PATH_STORE_NAME) ?? $this->storeManager->getStore()->getName() ?? 'Store';
         // Check is store english (Regex)
-        if (!preg_match('/\A\p{ASCII}+\z/', $store_name)) {
+        if (!preg_match('/\A[\x00-\x7F]+\z/', $store_name)) {
             $store_name = 'Store';
         }
         return $store_name;
