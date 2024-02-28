@@ -199,9 +199,7 @@ define(
                 }
                 const otp = $('#moyasar-stc-otp').val().replace(/\s/g, "");
                 const link = url.build('moyasar/payment/validate') +
-                    '?payment_id=' + window.moyasar_stc_pay['payment_id'] +
-                    '&method=' + 'stcpay' +
-                    '&otp_id=' + window.moyasar_stc_pay['otp_id'] +
+                    '?otp_id=' + window.moyasar_stc_pay['otp_id'] +
                     '&otp_token=' + window.moyasar_stc_pay['otp_token'] +
                     '&otp=' + otp;
                 this.redirectSuccess(link);

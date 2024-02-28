@@ -26,8 +26,22 @@ class Validate implements ActionInterface
     protected $messageManager;
     protected $logger;
 
+    /**
+     * @var string
+     * Method of payment (stcpay, creditcard, applepay)
+     */
     protected $method = 'creditcard'; // stcpay, creditcard
+
+    /**
+     * @var string
+     * Moyasar payment ID
+     */
     protected $paymentId;
+
+    /**
+     * @var string
+     * STC Pay Tokens
+     */
     private $otpToken;
     private $otpId;
     private $otp;
@@ -49,63 +63,49 @@ class Validate implements ActionInterface
         $this->logger = $logger;
     }
 
-    private function redirectToCart()
-    {
-        return $this->context
-            ->getResultFactory()
-            ->create(ResultFactory::TYPE_REDIRECT)
-            ->setPath('checkout/cart');
-    }
 
-    private function redirectToSuccess()
+    private function validateRequest()
     {
-        return $this->context
-            ->getResultFactory()
-            ->create(ResultFactory::TYPE_REDIRECT)
-            ->setPath('checkout/onepage/success');
-    }
-
-    private function fetchPayment()
-    {
-        $request =  $this->http();
-        $url = $this->moyasarHelper->apiBaseUrl("/v1/payments/{$this->paymentId}");
-
+        // If Payments is STC Pay then we need to check if the OTP, ID, Token are set
         if ($this->method == 'stcpay') {
-            $url = $this->moyasarHelper->apiBaseUrl("/v1/stc_pays/{$this->otpId}/proceed?otp_token={$this->otpToken}&otp_value={$this->otp}");
-        }else{
-            $request = $this->http()->basic_auth($this->moyasarHelper->secretApiKey());
+            if (!isset($_GET['otp_token']) || !isset($_GET['otp']) || !isset($_GET['otp_id'])){
+                return false;
+            }
+            $this->otpToken = $_GET['otp_token'];
+            $this->otpId = $_GET['otp_id'];
+            $this->otp = $_GET['otp'];
         }
-        return $request->get($url)->json();
+        return true;
     }
 
     public function execute()
     {
-        if (!isset($_GET['payment_id'])) $this->redirectToCart();
-
-        $this->paymentId = $_GET['payment_id'];
-        $this->method = $_GET['method'] ?? 'creditcard';
-        $this->logger->info("Validating:  [{$this->paymentId}], Method: [{$this->method}]");
-
-        if ($this->method == 'stcpay') {
-            if (!isset($_GET['otp_token']) || !isset($_GET['otp']) || !isset($_GET['otp_id'])) $this->redirectToCart();
-            list($this->otpToken, $this->otpId, $this->otp) = array($_GET['otp_token'], $_GET['otp_id'], $_GET['otp']);
-        }
-
 
         $order = $this->lastOrder();
-        $orderPayment = $order->getPayment();
-
-
-        if (!is_null($orderPayment)) {
-            $this->paymentId = $orderPayment->getLastTransId() ?? $_GET['payment_id'];
+        if (!$order) {
+            $this->logger->warning('Moyasar validate payment accessed without active order.');
+            return $this->redirectToCart();
         }
-
+        $payment = $order->getPayment();
+        $this->paymentId = $payment->getAdditionalInformation('moyasar_payment_id');
+        $this->method = $payment->getAdditionalInformation('moyasar_payment_method');
         $this->checkoutSession->setLastRealOrderId($order->getIncrementId());
 
-        if ($order->getState() == Order::STATE_PROCESSING) $this->redirectToSuccess();
+        $isValid = $this->validateRequest();
+        if (!$isValid){
+            $this->logger->warning('Moyasar validate payment accessed with missing arguments');
+            return $this->redirectToCart();
+        }
+
+        if ($order->getState() == Order::STATE_PROCESSING){
+            return $this->redirectToSuccess();
+        };
+
+        $this->logger->info("Validating:  [{$this->paymentId}], Method: [{$this->method}]");
+
 
         try {
-            $payment = $this->fetchPayment();
+            $payment = $this->getPaymentData();
             $this->logger->info("Payment ID: [{$this->paymentId}], Status:  [{$payment['source']['message']}]");
 
             if ($payment['status'] != 'paid') {
@@ -143,6 +143,49 @@ class Validate implements ActionInterface
             return $this->redirectToCart();
         }
     }
+
+    private function redirectToCart()
+    {
+        return $this->context
+            ->getResultFactory()
+            ->create(ResultFactory::TYPE_REDIRECT)
+            ->setPath('checkout/cart');
+    }
+
+    private function redirectToSuccess()
+    {
+        return $this->context
+            ->getResultFactory()
+            ->create(ResultFactory::TYPE_REDIRECT)
+            ->setPath('checkout/onepage/success');
+    }
+
+    private function getPaymentData()
+    {
+        if ($this->method == 'stcpay') {
+            return $this->fetchSTCPayment();
+        }
+        return $this->fetchPayment();
+    }
+
+    private function fetchPayment()
+    {
+        return $this->http()
+            ->basic_auth($this->moyasarHelper->secretApiKey())
+            ->get($this->moyasarHelper->apiBaseUrl("/v1/payments/{$this->paymentId}"))
+            ->json();
+    }
+
+    private function fetchSTCPayment()
+    {
+        return $this->http()
+            ->get($this->moyasarHelper->apiBaseUrl("/v1/stc_pays/{$this->otpId}/proceed"), [
+                'otp_token' => $this->otpToken,
+                'otp_value' => $this->otp
+            ])
+            ->json();
+    }
+
 
     private function processPaymentFail($payment, $order)
     {
@@ -201,6 +244,7 @@ class Validate implements ActionInterface
 
         return $order;
     }
+
 
     private function http()
     {

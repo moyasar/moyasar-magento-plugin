@@ -112,6 +112,23 @@ class MoyasarHelper extends AbstractHelper
 
     /**
      * @param Order $order
+     * @param $paymentId
+     * @param $method
+     * @return void
+     */
+    public function processInitiateOrder($order, $paymentId, $method): void
+    {
+        $orderPayment = $order->getPayment();
+        $orderPayment->setAdditionalInformation('moyasar_payment_id', $paymentId);
+        $orderPayment->setAdditionalInformation('moyasar_payment_method', $method);
+        $orderPayment->save();
+        $order->setState(Order::STATE_PENDING_PAYMENT);
+        $order->addStatusHistoryComment("Payment initiated with Moyasar. Payment ID: $paymentId, Method: $method", Order::STATE_PENDING_PAYMENT);
+        $order->save();
+    }
+
+    /**
+     * @param Order $order
      * @param array $payment
      * @return void
      */

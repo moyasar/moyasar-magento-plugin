@@ -31,13 +31,20 @@ class Initiate implements ActionInterface
     /** @var MoyasarHelper */
     private $moyasarHelper;
 
-    private $token;
-
     /** @var Order */
     private $order;
 
+    /**
+     * @var string
+     * Method of payment (stcpay, creditcard, applepay)
+     */
+    private $method = 'creditcard';
 
-    private $method = 'creditcard'; // stcpay, creditcard, applepay
+    /**
+     * @var string
+     * Token from Moyasar.js (stcpyay: phone number, applepay: paymentData)
+     */
+    private $token;
 
     /**
      * @var RequestInterface
@@ -97,6 +104,8 @@ class Initiate implements ActionInterface
         }
 
         $paymentId = $response['id'];
+        $this->logger->info("Moyasar payment initiated. id: $paymentId, status {$response['status']}, message: {$response['source']['message']}");
+
         $responseData = [
             'status' => $response['status'],
         ];
@@ -113,10 +122,7 @@ class Initiate implements ActionInterface
             $responseData = array_merge($responseData, $this->applepayResponseData($response));
         }
 
-        $this->order->setState(Order::STATE_PENDING_PAYMENT);
-        $this->order->getPayment()->setCcStatus('pending');
-        $this->order->addStatusHistoryComment("Payment initiated with Moyasar. Payment ID: $paymentId, Method: $this->method", Order::STATE_PENDING_PAYMENT);
-        $this->order->save();
+        $this->moyasarHelper->processInitiateOrder($this->order, $paymentId, $this->method);
 
         return $resultJson->setData($responseData);
     }
@@ -193,14 +199,14 @@ class Initiate implements ActionInterface
         return [
             'required_3ds' => $response['status'] == 'initiated',
             '3d_url' => $response['source']['transaction_url'] ?? '',
-            'redirect_url' => $this->urlBuilder->getUrl('moyasar/payment/validate') . '?payment_id=' . $response['id'] . '&method=' . $this->method,
+            'redirect_url' => $this->urlBuilder->getUrl('moyasar/payment/validate')
         ];
     }
 
     private function applepayResponseData($response)
     {
         return [
-            'redirect_url' => $this->urlBuilder->getUrl('moyasar/payment/validate') . '?payment_id=' . $response['id'] . '&method=' . $this->method,
+            'redirect_url' => $this->urlBuilder->getUrl('moyasar/payment/validate')
         ];
     }
 
