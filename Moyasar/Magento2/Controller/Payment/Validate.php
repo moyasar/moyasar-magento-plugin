@@ -200,6 +200,7 @@ class Validate implements ActionInterface
             $quote->setIsActive(1);
             $quote->setReservedOrderId(null);
             $quote->save();
+            $this->checkoutSession->replaceQuote($quote);
         }
 
         $this->messageManager->addErrorMessage($message);
