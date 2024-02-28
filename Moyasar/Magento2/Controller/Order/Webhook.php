@@ -65,8 +65,8 @@ class Webhook implements HttpPostActionInterface, CsrfAwareActionInterface
         $paymentId = $payment['id'];
         $order = $this->orderRepo->get($payment['metadata']['order_id']);
 
-        if ($order->getState() != Order::STATE_NEW) {
-            return $this->basicResponse('Order is not pending, skipping.');
+        if ($order->getState() != Order::STATE_PENDING_PAYMENT) {
+            return $this->basicResponse('Order is not pending for payment, skipping.');
         }
 
         if (! in_array($payment['status'], ['paid', 'authorized', 'captured'])) {
