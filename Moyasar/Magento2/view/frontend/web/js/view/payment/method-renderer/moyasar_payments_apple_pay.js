@@ -1,6 +1,7 @@
 define(
     [
         'Magento_Checkout/js/view/payment/default',
+        'ko',
         'jquery',
         'Magento_Checkout/js/model/full-screen-loader',
         'Magento_Checkout/js/action/place-order',
@@ -14,6 +15,7 @@ define(
     ],
     function (
         Component,
+        ko,
         $,
         fullScreenLoader,
         placeOrderAction,
@@ -25,11 +27,18 @@ define(
     ) {
         'use strict';
         return Component.extend({
+            isVisible: ko.observable(false),
             defaults: {
                 template: 'Moyasar_Magento2/payment/moyasar_payments_apple_pay'
             },
             initialize: function () {
                 this._super();
+                this.checkApplePaySupport();
+            },
+            checkApplePaySupport: function () {
+                if (window.ApplePaySession && ApplePaySession.canMakePayments()) {
+                    this.isVisible(true);
+                }
             },
             getCode: function () {
                 return 'moyasar_payments_apple_pay';
