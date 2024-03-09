@@ -22,9 +22,6 @@ class MoyasarPaymentsApplePay extends AbstractMethod
      */
     public function isActive($storeId = null)
     {
-        $paymentActive = $this->_scopeConfig->getValue(MoyasarHelper::XML_PATH_IS_ACTIVE, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId);
-        $activeMethods = $this->_scopeConfig->getValue(MoyasarHelper::XML_PATH_ACTIVE_METHODS, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId);
-        $activeMethods = explode(',', $activeMethods);
-        return $paymentActive && in_array('applepay', $activeMethods);
+        return $this->_scopeConfig->getValue(MoyasarHelper::XML_PATH_APPLE_PAY_IS_ACTIVE, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId);
     }
 }

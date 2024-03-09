@@ -2,18 +2,17 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
 	<default>
 		<payment>
-			<moyasar_payments>
-				<active>1</active>
-				<model>Moyasar\Magento2\Model\Payment\MoyasarPayments</model>
-				<order_status>pending</order_status>
-				<title>Online Payments</title>
-				<generate_invoice>1</generate_invoice>
-				<methods>creditcard</methods>
-				<schemes>mada,visa,mastercard</schemes>
-				<auto_void>0</auto_void>
-				<webhook_url>{{secure_base_ur}}moyasar_magento2/order/webhook</webhook_url>
-				<webhook_secret></webhook_secret>
-			</moyasar_payments>
+            <moyasar_payments>
+                <active>1</active>
+                <title>Card Payments</title>
+                <model>Moyasar\Magento2\Model\Payment\MoyasarPayments</model>
+                <schemes>mada,visa,mastercard</schemes>
+                <order_status>pending</order_status>
+                <generate_invoice>1</generate_invoice>
+                <auto_void>0</auto_void>
+                <webhook_url>{{secure_base_ur}}moyasar_magento2/order/webhook</webhook_url>
+                <webhook_secret></webhook_secret>
+            </moyasar_payments>
             <moyasar_payments_stc_pay>
                 <active>1</active>
                 <title>STC Pay</title>

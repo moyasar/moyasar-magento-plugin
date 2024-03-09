@@ -19,9 +19,6 @@ class MoyasarPaymentsStcPay extends AbstractMethod
      */
     public function isActive($storeId = null)
     {
-        $paymentActive = $this->_scopeConfig->getValue(MoyasarHelper::XML_PATH_IS_ACTIVE, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId);
-        $activeMethods = $this->_scopeConfig->getValue(MoyasarHelper::XML_PATH_ACTIVE_METHODS, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId);
-        $activeMethods = explode(',', $activeMethods);
-        return $paymentActive && in_array('stcpay', $activeMethods);
+        return $this->_scopeConfig->getValue(MoyasarHelper::XML_PATH_STC_PAY_IS_ACTIVE, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId);
     }
 }

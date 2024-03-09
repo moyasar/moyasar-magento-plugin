@@ -21,8 +21,9 @@ class MoyasarHelper extends AbstractHelper
 {
     const VERSION = '4.0.0';
 
-    const XML_PATH_IS_ACTIVE = 'payment/moyasar_payments/active';
-    const XML_PATH_ACTIVE_METHODS = 'payment/moyasar_payments/methods';
+    const XML_PATH_CREDIT_CARD_IS_ACTIVE = 'payment/moyasar_payments/active';
+    const XML_PATH_APPLE_PAY_IS_ACTIVE = 'payment/moyasar_payments_apple_pay/active';
+    const XML_PATH_STC_PAY_IS_ACTIVE = 'payment/moyasar_payments_stc_pay/active';
 
 
     protected $orderManagement;
@@ -60,7 +61,7 @@ class MoyasarHelper extends AbstractHelper
         $this->invoiceService = $invoiceService;
         $this->invoiceSender = $invoiceSender;
 
-        $this->apiBaseUrl = "https://api.moyasar.com";
+        $this->apiBaseUrl = "https://apimig.moyasar.com";
     }
 
     public function apiBaseUrl($path = '')
@@ -81,6 +82,11 @@ class MoyasarHelper extends AbstractHelper
     public function autoVoid()
     {
         return $this->scopeConfig->getValue('payment/moyasar_payments/auto_void');
+    }
+
+    public function generateInvoice()
+    {
+        $this->scopeConfig->getValue('payment/moyasar_payments/generate_invoice');
     }
 
     public function webhookSharedSecret()
@@ -136,7 +142,7 @@ class MoyasarHelper extends AbstractHelper
     {
         $orderPayment = $order->getPayment();
 
-        $generateInvoice = $this->scopeConfig->getValue('payment/moyasar_payments/generate_invoice') == true;
+        $generateInvoice = $this->generateInvoice() == true;
         if ($generateInvoice) {
             $invoice = $order->prepareInvoice();
             $invoice->setTransactionId($payment['id']);
@@ -187,18 +193,4 @@ class MoyasarHelper extends AbstractHelper
         return new QuickHttp();
     }
 
-    /**
-     * Check if a payment method is active
-     *
-     * @param string $methodCode The payment method code
-     * @return bool
-     */
-    public function isPaymentMethodActive($methodCode)
-    {
-        $activeMethods = $this->scopeConfig->getValue(self::XML_PATH_ACTIVE_METHODS, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-        if (is_array($activeMethods)) {
-            return in_array($methodCode, $activeMethods);
-        }
-        return false;
-    }
 }
