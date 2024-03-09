@@ -40,6 +40,10 @@ class CheckPending
 
     public function cron(): void
     {
+        if (!$this->moyasarHelper->isCronEnabled()) {
+            return;
+        }
+
         foreach ($this->pendingOrders() as $order) {
             if ($this->isChecked($order->getIncrementId())) {
                 continue;

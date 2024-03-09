@@ -12,6 +12,7 @@
                 <auto_void>0</auto_void>
                 <webhook_url>{{secure_base_ur}}moyasar_magento2/order/webhook</webhook_url>
                 <webhook_secret></webhook_secret>
+                <enable_cron>0</enable_cron>
             </moyasar_payments>
             <moyasar_payments_stc_pay>
                 <active>1</active>

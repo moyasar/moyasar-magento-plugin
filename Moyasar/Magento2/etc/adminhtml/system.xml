@@ -40,16 +40,16 @@
                        sortOrder="2" translate="label">
                     <label>Configuration</label>
 
-                    <field id="secret_api_key" translate="label" type="text" sortOrder="3" showInDefault="1"
-                           showInWebsite="1" showInStore="0">
-                        <label>Secret API Key</label>
-                        <config_path>payment/moyasar_payments/secret_api_key</config_path>
-                    </field>
-
                     <field id="publishable_api_key" translate="label" type="text" sortOrder="4" showInDefault="1"
                            showInWebsite="1" showInStore="0">
                         <label>Publishable API Key</label>
                         <config_path>payment/moyasar_payments/publishable_api_key</config_path>
+                    </field>
+
+                    <field id="secret_api_key" translate="label" type="text" sortOrder="3" showInDefault="1"
+                           showInWebsite="1" showInStore="0">
+                        <label>Secret API Key</label>
+                        <config_path>payment/moyasar_payments/secret_api_key</config_path>
                     </field>
 
                     <field id="generate_invoice" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="6"
@@ -73,6 +73,7 @@
                         <label>Webhook URL</label>
                         <config_path>payment/moyasar_payments/webhook_url</config_path>
                         <frontend_model>Moyasar\Magento2\Admin\DisabledElement</frontend_model>
+                        <comment>Webhook URL for receiving payment status updates.</comment>
                     </field>
 
                     <field id="webhook_secret" translate="label" type="text" sortOrder="9" showInDefault="1"
@@ -80,6 +81,14 @@
                         <label>Webhook Secret</label>
                         <config_path>payment/moyasar_payments/webhook_secret</config_path>
                         <frontend_model>Moyasar\Magento2\Admin\DisabledElement</frontend_model>
+                    </field>
+
+                    <field id="enable_cron" showInDefault="1" showInStore="0" showInWebsite="1" sortOrder="10"
+                           translate="label" type="select">
+                        <label>Enable Cron Job</label>
+                        <config_path>payment/moyasar_payments/enable_cron</config_path>
+                        <comment>Enable Cron job for checking pending payments</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
 
 

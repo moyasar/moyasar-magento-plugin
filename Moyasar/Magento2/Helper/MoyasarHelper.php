@@ -84,6 +84,11 @@ class MoyasarHelper extends AbstractHelper
         return $this->scopeConfig->getValue('payment/moyasar_payments/auto_void');
     }
 
+    public function isCronEnabled()
+    {
+        return $this->scopeConfig->getValue('payment/moyasar_payments/enable_cron');
+    }
+
     public function generateInvoice()
     {
         $this->scopeConfig->getValue('payment/moyasar_payments/generate_invoice');
