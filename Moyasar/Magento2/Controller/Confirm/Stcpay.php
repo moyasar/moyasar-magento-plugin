@@ -1,6 +1,6 @@
 <?php
 
-namespace Moyasar\Magento2\Controller\Payment;
+namespace Moyasar\Magento2\Controller\Confirm;
 
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Context;
@@ -15,9 +15,8 @@ use Moyasar\Magento2\Helper\MoyasarHelper;
 use Moyasar\Magento2\Helper\PaymentHelper;
 use Psr\Log\LoggerInterface;
 
-class Validate implements ActionInterface
+class Stcpay implements ActionInterface
 {
-
     use PaymentHelper;
 
     protected $context;
@@ -27,6 +26,14 @@ class Validate implements ActionInterface
     protected $http;
     protected $messageManager;
     protected $logger;
+
+    /**
+     * @var string
+     * STC Pay Tokens
+     */
+    private $otpToken;
+    private $otpId;
+    private $otp;
 
     public function __construct(
         Context          $context,
@@ -48,23 +55,27 @@ class Validate implements ActionInterface
     public function execute()
     {
         $order = $this->lastOrder();
-
         if (!$order) {
             $this->logger->warning('Moyasar validate payment accessed without active order.');
             return $this->redirectToCart();
         }
         $this->setUpPaymentData($order);
 
+        $isValid = $this->validateRequest();
+        if (!$isValid){
+            $this->logger->warning('Moyasar validate payment accessed with missing arguments');
+            return $this->redirectToCart();
+        }
 
         if ($order->getState() == Order::STATE_PROCESSING){
             return $this->redirectToSuccess();
         };
 
-        $this->logger->info("(Validate Controller) Validating:  [{$this->paymentId}], Method: [{$this->method}]");
+        $this->logger->info("(STCPay Controller) Validating:  [{$this->paymentId}], Method: [{$this->method}]");
 
 
         try {
-            $payment = $this->fetchPayment();
+            $payment = $this->fetchSTCPayment();
             $this->logger->info("Payment ID: [{$this->paymentId}], Status:  [{$payment['source']['message']}]");
 
             if ($payment['status'] != 'paid') {
@@ -92,15 +103,33 @@ class Validate implements ActionInterface
         }
     }
 
+
     /**
-     * @description Fetch Payment
+     * @description Validate STC Params
      * @return bool
      */
-    private function fetchPayment()
+    private function validateRequest()
+    {
+        if (!isset($_GET['otp_token']) || !isset($_GET['otp']) || !isset($_GET['otp_id'])){
+            return false;
+        }
+        $this->otpToken = $_GET['otp_token'];
+        $this->otpId = $_GET['otp_id'];
+        $this->otp = $_GET['otp'];
+        return true;
+    }
+
+    /**
+     * @description Submit STC Pay OTP
+     * @return array
+     */
+    private function fetchSTCPayment()
     {
         return $this->http()
-            ->basic_auth($this->moyasarHelper->secretApiKey())
-            ->get($this->moyasarHelper->apiBaseUrl("/v1/payments/{$this->paymentId}"))
+            ->get($this->moyasarHelper->apiBaseUrl("/v1/stc_pays/{$this->otpId}/proceed"), [
+                'otp_token' => $this->otpToken,
+                'otp_value' => $this->otp
+            ])
             ->json();
     }
 

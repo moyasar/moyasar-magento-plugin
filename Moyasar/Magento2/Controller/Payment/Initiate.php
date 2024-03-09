@@ -213,9 +213,13 @@ class Initiate implements ActionInterface
 
     private function stcpayResponseData($paymentId, $url)
     {
-        $otpId = explode('/', parse_url($url, PHP_URL_PATH))[3];
-        parse_str(parse_url($url, PHP_URL_QUERY), $queryParams);
-        $otpToken = $queryParams['otp_token'] ?? null;
+        $otpId = null;
+        $otpToken = null;
+        if ($url){
+            $otpId = explode('/', parse_url($url, PHP_URL_PATH))[3];
+            parse_str(parse_url($url, PHP_URL_QUERY), $queryParams);
+            $otpToken = $queryParams['otp_token'] ?? null;
+        }
         return [
             'otp_id' => $otpId,
             'otp_token' => $otpToken,
