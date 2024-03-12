@@ -4,10 +4,13 @@
 
 ## Installation
 
-1. Download the Payment Module archive, unpack it and upload Moyasar contents to <root>/app/code/Moyasar/Mysr of your Magento 2 installation.
+1. Install the package using composer:
+```sh
+$ composer require moyasar/magento2
+```
 2. Enable the extension and clear static view files:
 ```sh
-$ php bin/magento module:enable Moyasar_Mysr --clear-static-content
+$ php bin/magento module:enable Moyasar_Magento2 --clear-static-content
 ```
 3. Register the extension:
 ```sh

@@ -1,0 +1,101 @@
+<div class="payment-method" data-bind="css: {'_active': (getSTCPayCode() == isChecked())}">
+    <div class="payment-method-title field choice">
+        <input type="radio"
+               name="payment[method]"
+               class="radio"
+               data-bind="attr: {'id': getSTCPayCode()}, value: getSTCPayCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()"/>
+        <label data-bind="attr: {'for': getSTCPayCode()}" class="label"><span
+            data-bind="text: getTitle()"></span></label>
+    </div>
+
+    <div class="payment-method-content">
+        <style>
+            .stc-pay-container {
+                display: flex;
+                align-items: center;
+            }
+
+
+            @media (max-width: 600px) {
+                .stc-pay-container {
+                    display: block;
+                }
+                .moyasar-stc-pay-button{
+                    margin-top: 10px;
+                }
+            }
+
+            .moyasar-stc-input {
+                flex-grow: 1;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                padding: 10px;
+                margin-right: 10px;
+            }
+            .moyasar-stc-otp {
+                flex-grow: 1;
+                margin-right: 10px;
+                display: none;
+            }
+
+            .moyasar-stc-pay-button {
+                background: #6e3b96;
+                color: #fff;
+                padding: 8px;
+                border-radius: 4px;
+                width: 100%;
+                cursor: pointer;
+            }
+            .moyasar-stc-pay-button:hover {
+                flex-grow: 0;
+                color: #fff;
+                background: #5c2e7f;
+            }
+
+            .moyasar-error-message{
+                color: red;
+                margin-top: 3px;
+                font-weight: 500;
+                font-size: 11px;
+                margin-left: 3px;
+            }
+
+        </style>
+
+        <div>
+            <div class="moyasar-payment-stc-pay-form">
+                <!-- ko if: window.checkoutConfig.moyasar_payments.methods.includes('stcpay') -->
+                <p data-bind="text: $t('Please enter your mobile number and press \'Place Order\'. You will receive an SMS code required to complete the payment process.')"></p>
+                <div class="stc-pay-container">
+
+
+                    <input id="moyasar-stc-input" class="moyasar-stc-input" placeholder="05x xxx xxxx" name="phone"
+                           pattern="[0-9]*" inputmode="numeric" type="text">
+                    <input type="text" id="moyasar-stc-otp" class="moyasar-stc-otp" placeholder="xxxx" pattern="[0-9]*"
+                           inputmode="numeric">
+                    <button class="moyasar-stc-pay-button "
+                            disabled
+                            type="submit"
+                            data-bind="
+                        attr: { title: $t('Place Order'), 'form': getCode() + '-stc-pay-form' },
+                        click: placeOrderStcPay
+                    ">
+                        <span data-bind="i18n: 'Place Order'"></span>
+                        <!--                        <div class="moyasar-stc-pay-button-icon" id="moyasar-stc-pay-icon"></div>-->
+                    </button>
+                </div>
+                <div id="moyasar-stc-pay-error-message" class="moyasar-error-message"
+                     style="margin-bottom: 20px;"></div>
+                <!-- /ko -->
+            </div>
+        </div>
+
+        <div class="checkout-agreements-block">
+            <!-- ko foreach: $parent.getRegion('before-place-order') -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
+            <!--/ko-->
+        </div>
+
+    </div>
+
+</div>

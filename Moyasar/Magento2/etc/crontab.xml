@@ -1,0 +1,7 @@
+<config>
+    <group id="default">
+        <job name="moyasar_magento2_check_pending" instance="Moyasar\Magento2\Schedule\CheckPending" method="cron">
+            <schedule>*/5 * * * *</schedule>
+        </job>
+    </group>
+</config>

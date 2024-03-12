@@ -1,0 +1,25 @@
+{
+    "name": "moyasar/magento2",
+    "description": "Magento 2 payment module that integrate with https:\\moyasar.com Gateway",
+    "type": "magento2-module",
+    "version": "4.0.0",
+    "authors": [
+        {
+            "email": "support@moyasar.com",
+            "name": "Moyasar Dev Team"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "ext-json": "*",
+        "ext-curl": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Moyasar\\Magento2\\": ""
+        },
+        "files": [
+            "registration.php"
+        ]
+    }
+}

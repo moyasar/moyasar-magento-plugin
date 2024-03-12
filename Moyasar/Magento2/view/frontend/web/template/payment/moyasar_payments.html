@@ -1,0 +1,236 @@
+<div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked())}">
+    <div class="payment-method-title field choice">
+        <input type="radio"
+               name="payment[method]"
+               class="radio"
+               data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()"/>
+        <label data-bind="attr: {'for': getCode()}" class="label"><span data-bind="text: getTitle()"></span></label>
+    </div>
+
+    <div class="payment-method-content">
+
+
+        <style>
+            /* styles.css */
+            .moyasar-payment-form {
+                margin: auto;
+            }
+
+            .moyasar-input-field {
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                padding: 10px;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .moyasar-expiry-cvc {
+                margin-top: 15px;
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .moyasar-input-small {
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                padding: 10px;
+                width: 48%;
+                box-sizing: border-box;
+            }
+
+            .moyasar-pay-button {
+                margin-top: 20px;
+                background: #0058a3;
+                color: #fff;
+                padding: 10px;
+                border: none;
+                border-radius: 4px;
+                width: 100%;
+                cursor: pointer;
+
+            }
+
+            .moyasar-input-card {
+                position: relative;
+            }
+
+            .moyasar-card-number {
+                padding-right: 80px;
+            }
+
+            .moyasar-card-logos {
+                position: absolute;
+                right: 10px;
+                top: 50%;
+                transform: translateY(-50%);
+                display: flex;
+            }
+
+            .moyasar-card-logos img {
+                height: 25px;
+                margin-left: 3px;
+            }
+
+            /* Add responsive behavior if needed */
+            @media (max-width: 600px) {
+                .moyasar-card-logos img {
+                    height: 10px;
+                    margin-left: 2px;
+                }
+            }
+
+            @media (max-width: 600px) {
+                .payment-form {
+                    width: auto;
+                }
+            }
+
+            apple-pay-button {
+                --apple-pay-button-width: 100%;
+                --apple-pay-button-height: 40px;
+                --apple-pay-button-border-radius: 3px;
+                --apple-pay-button-padding: 0px 0px;
+                --apple-pay-button-box-sizing: border-box;
+            }
+
+            .moyasar-error-message {
+                color: red;
+                margin-top: 3px;
+                font-weight: 500;
+                font-size: 11px;
+                margin-left: 3px;
+            }
+
+            .moyasar-apple-pay-container {
+                display: flex;
+                justify-content: center;
+                margin-top: 5px;
+            }
+
+            .moyasar-name-section {
+                margin-bottom: 20px;
+            }
+
+            .moyasar-popup {
+                overflow: hidden;
+                --height: 100vh;
+                height: var(--height); /* was  800px */
+                transform: scale(var(--scale)); /* scaled to % of original frame size */
+                margin: calc(-1 * (var(--height) - var(--scale) * var(--height)) / 2) calc(-1 * (var(--width) - var(--scale) * var(--width)) / 2);
+            }
+
+            @media (max-width: 600px) {
+                .moyasar-popup {
+                    overflow: hidden;
+                    --width: 100vw; /* only change these values */
+                    --height: 100vh;
+                    --scale: 0.7;
+                    width: var(--width); /* was 1024px */
+                    height: var(--height); /* was  800px */
+
+                    transform: scale(var(--scale)); /* scaled to % of original frame size */
+
+                    margin: calc(-1 * (var(--height) - var(--scale) * var(--height)) / 2) calc(-1 * (var(--width) - var(--scale) * var(--width)) / 2);
+                }
+            }
+
+        </style>
+        <div id="3d-secure-popup" style="display:none;">
+            <iframe id="3d-secure-iframe" src="about:blank" frameborder="0" class="moyasar-popup" height="100%"
+                    width="100%"></iframe>
+        </div>
+
+        <div>
+            <div class="moyasar-payment-form">
+                <!-- ko if: window.checkoutConfig.moyasar_payments.methods.includes('creditcard') -->
+                <form id="moyasar-payment-form">
+                    <div class="card-info">
+                        <div class="card-info">
+                            <div class="field moyasar-name-section">
+                                <label for="moyasar-cardholder-name" data-bind="i18n: 'Name on card'"></label>
+                                <input type="text" id="moyasar-cardholder-name" name="cardholder-name"
+                                       data-bind="attr:{placeholder: $t('Name on card')} "
+                                       class="input-text moyasar-input-field" required/>
+                                <div id="moyasar-cardholder-name-error-message" class="moyasar-error-message"></div>
+                            </div>
+                            <div class="field">
+                                <label for="moyasar-card-number" data-bind="i18n: 'Card information'"></label>
+                                <div class="moyasar-input-card">
+                                    <input type="text" id="moyasar-card-number" placeholder="1234 5678 9101 1121"
+                                           class="input-field moyasar-card-number"
+                                           data-bind="
+
+                        input: validateCardNumber,
+
+                    "
+                                    >
+                                    <div class="moyasar-card-logos" id="moyasar-card-logos">
+                                        <!-- ko if: window.checkoutConfig.moyasar_payments.supported_networks.includes('mada') -->
+                                        <img
+                                            class="moyasar-card-type-logo-mada"
+                                            data-bind="attr: { 'src': require.toUrl('Moyasar_Magento2/images/mada.png') }"
+                                            alt="Mada Logo">
+                                        <!-- /ko -->
+                                        <!-- ko if: window.checkoutConfig.moyasar_payments.supported_networks.includes('visa') -->
+                                        <img
+                                            class="moyasar-card-type-logo-visa"
+                                            data-bind="attr: { 'src': require.toUrl('Moyasar_Magento2/images/visa.png') }"
+                                            alt="Visa Logo">
+                                        <!-- /ko -->
+                                        <!-- ko if: window.checkoutConfig.moyasar_payments.supported_networks.includes('mastercard') -->
+                                        <img
+                                            class="moyasar-card-type-logo-mc"
+                                            data-bind="attr: { 'src': require.toUrl('Moyasar_Magento2/images/mc.png') }"
+                                            alt="Mastercard Logo">
+                                        <!-- /ko -->
+                                        <!-- ko if: window.checkoutConfig.moyasar_payments.supported_networks.includes('amex') -->
+                                        <img
+                                            class="moyasar-card-type-logo-amex"
+                                            data-bind="attr: { 'src': require.toUrl('Moyasar_Magento2/images/amex.png') }"
+                                            alt="American Express Logo">
+                                        <!-- /ko -->
+                                    </div>
+                                </div>
+                                <div id="moyasar-card-number-error-message" class="moyasar-error-message"></div>
+                                <div class="moyasar-expiry-cvc">
+                                    <input type="text" id="moyasar-expiration-date" placeholder="MM / YY"
+                                           class="moyasar-input-small" style="margin-right: 5px">
+
+                                    <input type="text" placeholder="CVC" id="moyasar-cvc" class="moyasar-input-small"
+                                           style="margin-left: 5px;">
+
+                                </div>
+                                <div id="moyasar-cvc-error-message" class="moyasar-error-message"></div>
+                                <div id="moyasar-expiration-date-error-message" class="moyasar-error-message"></div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                    <button class="moyasar-pay-button action primary checkout"
+                            id="moyasar-form-button"
+                            disabled
+                            type="submit"
+                            data-bind="
+                        attr: { title: $t('Place Order'), 'form': getCode() + '-form' },
+                        click: placeOrder,
+                        css: { disabled: !isPlaceOrderActionAllowed() }
+                    "
+                    >
+                        <span data-bind="i18n: 'Place Order'"></span>
+                    </button>
+
+                </form>
+                <!-- /ko -->
+            </div>
+        </div>
+
+        <div class="checkout-agreements-block">
+            <!-- ko foreach: $parent.getRegion('before-place-order') -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
+            <!--/ko-->
+        </div>
+
+    </div>
+
+</div>

@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+	<default>
+		<payment>
+            <moyasar_payments>
+                <active>1</active>
+                <title>Card Payments</title>
+                <model>Moyasar\Magento2\Model\Payment\MoyasarPayments</model>
+                <schemes>mada,visa,mastercard</schemes>
+                <order_status>pending</order_status>
+                <generate_invoice>1</generate_invoice>
+                <auto_void>0</auto_void>
+                <webhook_url>{{secure_base_ur}}moyasar_magento2/order/webhook</webhook_url>
+                <webhook_secret></webhook_secret>
+                <enable_cron>0</enable_cron>
+            </moyasar_payments>
+            <moyasar_payments_stc_pay>
+                <active>1</active>
+                <title>STC Pay</title>
+                <model>Moyasar\Magento2\Model\Payment\MoyasarPaymentsStcPay</model>
+            </moyasar_payments_stc_pay>
+            <moyasar_payments_apple_pay>
+                <active>1</active>
+                <title>Apple Pay</title>
+                <model>Moyasar\Magento2\Model\Payment\MoyasarPaymentsApplePay</model>
+            </moyasar_payments_apple_pay>
+		</payment>
+	</default>
+</config>
