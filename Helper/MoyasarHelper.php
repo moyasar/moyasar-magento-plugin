@@ -19,7 +19,7 @@ use Moyasar\Magento2\Helper\Http\QuickHttp;
 
 class MoyasarHelper extends AbstractHelper
 {
-    const VERSION = '4.0.0';
+    const VERSION = '5.0.0';
 
     const XML_PATH_CREDIT_CARD_IS_ACTIVE = 'payment/moyasar_payments/active';
     const XML_PATH_APPLE_PAY_IS_ACTIVE = 'payment/moyasar_payments_apple_pay/active';
