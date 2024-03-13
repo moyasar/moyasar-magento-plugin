@@ -2,7 +2,7 @@
     "name": "moyasar-fintech/magento2",
     "description": "Magento 2 payment module that integrate with https:\\moyasar.com Gateway",
     "type": "magento2-module",
-    "version": "4.0.0",
+    "version": "5.0.0",
     "authors": [
         {
             "email": "support@moyasar.com",
@@ -14,6 +14,7 @@
         "ext-json": "*",
         "ext-curl": "*"
     },
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "Moyasar\\Magento2\\": ""
