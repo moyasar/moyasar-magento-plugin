@@ -9,7 +9,6 @@
             "name": "Moyasar Dev Team"
         }
     ],
-    "minimum-stability": "dev",
     "require": {
         "ext-json": "*",
         "ext-curl": "*"
