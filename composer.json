@@ -1,5 +1,5 @@
 {
-    "name": "moyasar/magento2",
+    "name": "moyasar-fintech/magento2",
     "description": "Magento 2 payment module that integrate with https:\\moyasar.com Gateway",
     "type": "magento2-module",
     "version": "4.0.0",
