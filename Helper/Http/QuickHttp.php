@@ -27,7 +27,9 @@ class QuickHttp
         global $wp_version;
 
         $this->curl_handler = curl_init(null);
-        $this->headers['User-Agent'] = 'Moyasar Http; Magento Plugin v' . MoyasarHelper::VERSION;
+        $client = 'Moyasar Http; Magento Plugin v' . MoyasarHelper::VERSION;
+        $this->headers['User-Agent'] = $client;
+        $this->headers['Mysr-Client'] = $client;
 
         // Default Configurations
         curl_setopt($this->curl_handler, CURLOPT_TIMEOUT, 25);

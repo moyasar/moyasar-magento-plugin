@@ -332,6 +332,9 @@ define(
                         url: window.checkoutConfig.moyasar_payments.base_url + "/v1/tokens",
                         type: "POST",
                         data: data,
+                        headers: {
+                            'Mysr-Client': window.checkoutConfig.moyasar_payments.version,
+                        },
                         success: function (response) {
                             resolve(response.id);
                         },
