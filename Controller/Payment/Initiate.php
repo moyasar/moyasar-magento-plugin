@@ -103,9 +103,9 @@ class Initiate implements ActionInterface
             $this->logger->warning('Moyasar payment failed [Order ID]: ' . $this->order->getId() . ', [Error]: .' . $e->getMessage());
             $this->order->addCommentToStatusHistory('[Error]: .' . $e->getMessage());
             $this->order->save();
+
             // Reset Cart
             $this->checkoutSession->restoreQuote();
-            $this->logger->error('Moyasar payment failed' . json_encode($e->response, true));
 
             if ( $e instanceof HttpException) {
                 $response = $e->response;
@@ -115,12 +115,10 @@ class Initiate implements ActionInterface
                }
                if ($response->isAuthenticationError()){
                      $message = 'Authentication Error';
-                     $this->logger->error('Moyasar payment failed' . $message);
                      return $resultJson->setData(['message' => $message])->setHttpResponseCode(400);
                }
                if ($response->isCardNotSupportedError()){
                      $message = 'Card Not Supported';
-                     $this->logger->error('Moyasar payment failed' . $message);
                      return $resultJson->setData(['message' => $message])->setHttpResponseCode(400);
                }
             }
