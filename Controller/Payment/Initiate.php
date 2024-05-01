@@ -13,6 +13,7 @@ use Magento\Framework\UrlInterface;
 use Magento\Sales\Api\Data\OrderAddressInterface;
 use Magento\Sales\Model\Order;
 use Moyasar\Magento2\Helper\CurrencyHelper;
+use Moyasar\Magento2\Helper\Http\Exceptions\HttpException;
 use Moyasar\Magento2\Helper\Http\QuickHttp;
 use Moyasar\Magento2\Helper\MoyasarHelper;
 use Psr\Log\LoggerInterface;
@@ -99,8 +100,32 @@ class Initiate implements ActionInterface
         try {
             $response = $this->http()->post($this->moyasarHelper->apiBaseUrl() . '/v1/payments', $this->$payloadFunction())->json();
         } catch (\Exception $e) {
-            $this->logger->warning('Moyasar payment accessed without order_id argument.');
-            return $resultJson->setData(['message' => 'Payment failed'])->setHttpResponseCode(400);
+            $this->logger->warning('Moyasar payment failed [Order ID]: ' . $this->order->getId() . ', [Error]: .' . $e->getMessage());
+            $this->order->addCommentToStatusHistory('[Error]: .' . $e->getMessage());
+            $this->order->save();
+            // Reset Cart
+            $this->checkoutSession->restoreQuote();
+            $this->logger->error('Moyasar payment failed' . json_encode($e->response, true));
+
+            if ( $e instanceof HttpException) {
+                $response = $e->response;
+               if ($response->isValidationError()){
+                     $message = $response->getValidationMessage();
+                     return $resultJson->setData(['message' => $message])->setHttpResponseCode(400);
+               }
+               if ($response->isAuthenticationError()){
+                     $message = 'Authentication Error';
+                     $this->logger->error('Moyasar payment failed' . $message);
+                     return $resultJson->setData(['message' => $message])->setHttpResponseCode(400);
+               }
+               if ($response->isCardNotSupportedError()){
+                     $message = 'Card Not Supported';
+                     $this->logger->error('Moyasar payment failed' . $message);
+                     return $resultJson->setData(['message' => $message])->setHttpResponseCode(400);
+               }
+            }
+
+            return $resultJson->setData(['message' => "Payment Failed"])->setHttpResponseCode(400);
         }
 
         $paymentId = $response['id'];
