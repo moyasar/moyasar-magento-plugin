@@ -75,7 +75,7 @@ class Stcpay implements ActionInterface
 
 
         try {
-            $payment = $this->fetchSTCPayment();
+            $payment = $this->fetchSTCPayment($order);
             $this->logger->info("Payment ID: [{$this->paymentId}], Status:  [{$payment['source']['message']}]");
 
             if ($payment['status'] != 'paid') {
@@ -123,9 +123,10 @@ class Stcpay implements ActionInterface
      * @description Submit STC Pay OTP
      * @return array
      */
-    private function fetchSTCPayment()
+    private function fetchSTCPayment($order)
     {
         return $this->http()
+            ->set_headers(['order_id' => $order->getId()])
             ->get($this->moyasarHelper->apiBaseUrl("/v1/stc_pays/{$this->otpId}/proceed"), [
                 'otp_token' => $this->otpToken,
                 'otp_value' => $this->otp

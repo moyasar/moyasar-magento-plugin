@@ -98,7 +98,7 @@ class Initiate implements ActionInterface
         $payloadFunction = $this->method . 'Payload';
 
         try {
-            $response = $this->http()->post($this->moyasarHelper->apiBaseUrl() . '/v1/payments', $this->$payloadFunction())->json();
+            $response = $this->http()->set_headers(['order_id' => $this->order->getId()])->post($this->moyasarHelper->apiBaseUrl() . '/v1/payments', $this->$payloadFunction())->json();
         } catch (\Exception $e) {
             $this->logger->warning('Moyasar payment failed [Order ID]: ' . $this->order->getId() . ', [Error]: .' . $e->getMessage());
             $this->order->addCommentToStatusHistory('[Error]: .' . $e->getMessage());

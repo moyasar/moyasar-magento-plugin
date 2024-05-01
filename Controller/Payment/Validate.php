@@ -64,7 +64,7 @@ class Validate implements ActionInterface
 
 
         try {
-            $payment = $this->fetchPayment();
+            $payment = $this->fetchPayment($order);
             $this->logger->info("Payment ID: [{$this->paymentId}], Status:  [{$payment['source']['message']}]");
 
             if ($payment['status'] != 'paid') {
@@ -96,10 +96,11 @@ class Validate implements ActionInterface
      * @description Fetch Payment
      * @return bool
      */
-    private function fetchPayment()
+    private function fetchPayment($order)
     {
         return $this->http()
             ->basic_auth($this->moyasarHelper->secretApiKey())
+            ->set_headers(['order_id' => $order->getId()])
             ->get($this->moyasarHelper->apiBaseUrl("/v1/payments/{$this->paymentId}"))
             ->json();
     }
