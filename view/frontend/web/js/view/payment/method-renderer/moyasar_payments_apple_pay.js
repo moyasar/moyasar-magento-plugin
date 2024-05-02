@@ -84,6 +84,17 @@ define(
                 const session = new window.ApplePaySession(3, applePayPaymentRequest);
 
 
+                session.oncancel = event => {
+                    self.isPlaceOrderActionAllowed(true);
+                    fullScreenLoader.stopLoader();
+                    // document.location.href = url.build('moyasar/payment/failed');
+                }
+                session.abort = event => {
+                    self.isPlaceOrderActionAllowed(true);
+                    fullScreenLoader.stopLoader();
+                    // document.location.href = url.build('moyasar/payment/failed');
+                }
+
                 // Validating Merchant
                 session.onvalidatemerchant = async event => {
                     const body = {
@@ -100,18 +111,13 @@ define(
                         success: function (merchantSession) {
                             session.completeMerchantValidation(merchantSession);
                         },
-                        error: function () {
-                            document.location.href = url.build('moyasar/payment/failed');
+                        error: function (error) {
+                            globalMessageList.addErrorMessage({message: error.responseJSON['message']});
+                            session.abort();
                         }
                     });
                 }
 
-                session.oncancel = event => {
-                    document.location.href = url.build('moyasar/payment/failed');
-                }
-                session.abort = event => {
-                    document.location.href = url.build('moyasar/payment/failed');
-                }
 
                 session.onpaymentauthorized = event => {
                     const token = event.payment.token;
@@ -125,25 +131,30 @@ define(
                                     method: 'applepay',
                                 },
                                 success: function (response) {
-                                    if (response['status'] !== 'paid') {
+                                    if ( response['status'] === 'failed'){
                                         session.completePayment({
                                             status: ApplePaySession.STATUS_FAILURE,
                                             errors: []
                                         });
-                                        document.location.href = url.build('moyasar/payment/failed');
-                                    } else {
-                                        session.completePayment({
-                                            status: ApplePaySession.STATUS_SUCCESS
-                                        });
-                                        self.redirectSuccess(response['redirect_url']);
+                                        self.isPlaceOrderActionAllowed(true);
+                                        fullScreenLoader.stopLoader();
+                                        globalMessageList.addErrorMessage({message: response['message']});
+                                        return;
                                     }
+
+                                    session.completePayment({
+                                        status: ApplePaySession.STATUS_SUCCESS
+                                    });
+                                    self.redirectSuccess(response['redirect_url']);
                                 },
-                                error: function () {
+                                error: function (error) {
                                     session.completePayment({
                                         status: ApplePaySession.STATUS_FAILURE,
                                         errors: []
                                     });
-                                    document.location.href = url.build('moyasar/payment/failed');
+                                    self.isPlaceOrderActionAllowed(true);
+                                    fullScreenLoader.stopLoader();
+                                    globalMessageList.addErrorMessage({message: error.responseJSON['message']});
                                 }
                             });
                         });

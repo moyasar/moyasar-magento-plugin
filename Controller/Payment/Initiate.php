@@ -131,7 +131,17 @@ class Initiate implements ActionInterface
 
         $responseData = [
             'status' => $response['status'],
+            'message' => $response['source']['message'] ?? '',
         ];
+
+        // If Status Failed
+        if ($response['status'] == 'failed') {
+            $this->logger->warning('Moyasar payment failed [Order ID]: ' . $this->order->getId() . ', [Error]: .' . $responseData['message']);
+            $this->order->addCommentToStatusHistory('[Error]: .' . $responseData['message']);
+            $this->order->save();
+            // Reset Cart
+            $this->checkoutSession->restoreQuote();
+        }
 
         if ($this->method == 'stcpay') {
             $responseData = array_merge($responseData, ['stcpay' => $this->stcpayResponseData($response['id'], $response['source']['transaction_url'])]);

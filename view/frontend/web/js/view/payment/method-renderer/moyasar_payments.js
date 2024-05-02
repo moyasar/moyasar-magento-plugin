@@ -339,9 +339,6 @@ define(
                             resolve(response.id);
                         },
                         error: function (error) {
-                            console.log('error')
-                            console.log(error)
-                            // document.location.href = url.build('moyasar/payment/failed');
                             self.isPlaceOrderActionAllowed(true);
                             fullScreenLoader.stopLoader();
                             let json = error.responseJSON;
@@ -370,6 +367,12 @@ define(
                     type: "POST",
                     data: data,
                     success: function (response) {
+                        if ( response['status'] === 'failed'){
+                            self.isPlaceOrderActionAllowed(true);
+                            fullScreenLoader.stopLoader();
+                            globalMessageList.addErrorMessage({message: response['message']});
+                            return;
+                        }
                         // Check if 3D Secure is required
                         if (response['required_3ds']) {
                             self.openIframe(response['3d_url'], function () {
