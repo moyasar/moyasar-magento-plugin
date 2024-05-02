@@ -15,7 +15,7 @@ class HttpException extends RuntimeException
     public function __construct($message, $response)
     {
         $this->response = $response;
-        
+
         if ($apiMessage = $this->apiErrorMessage()) {
             $status = $response->status();
             $message = "[$status] $apiMessage";
@@ -31,7 +31,10 @@ class HttpException extends RuntimeException
         }
 
         $response = $this->response->json();
-        $message = $response['message'] ?? $response['errors'] ?? null;
+        $message = $response['message'] ?? 'Unknown error';
+        if (isset($response['errors'])) {
+            $message .= ' - ' . json_encode($response['errors'], true);
+        }
 
         return is_array($message) ? implode(', ', $message) : $message;
     }

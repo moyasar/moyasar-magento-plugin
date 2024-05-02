@@ -65,6 +65,7 @@ class PaymentConfigProvider implements ConfigProviderInterface
             'domain_name' => $matches[1],
             'supported_networks' => explode(',', $this->scopeConfig->getValue('payment/moyasar_payments/schemes')),
             'methods' => explode(',', $this->scopeConfig->getValue('payment/moyasar_payments/methods')),
+            'version' => 'Moyasar Http; Magento Plugin v' . MoyasarHelper::VERSION
         ];
 
         return [

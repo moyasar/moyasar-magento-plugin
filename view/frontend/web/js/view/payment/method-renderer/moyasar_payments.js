@@ -327,17 +327,34 @@ define(
                     save_only: true,
                 };
 
-                $.ajax({
-                    url: window.checkoutConfig.moyasar_payments.base_url + "/v1/tokens",
-                    type: "POST",
-                    data: data,
-                    success: function (response) {
-                        self.startPayment(response.id);
-                    },
-                    error: function () {
-                        document.location.href = url.build('moyasar/payment/failed');
-                    }
+                return new Promise((resolve, reject) => {
+                    $.ajax({
+                        url: window.checkoutConfig.moyasar_payments.base_url + "/v1/tokens",
+                        type: "POST",
+                        data: data,
+                        headers: {
+                            'Mysr-Client': window.checkoutConfig.moyasar_payments.version,
+                        },
+                        success: function (response) {
+                            resolve(response.id);
+                        },
+                        error: function (error) {
+                            self.isPlaceOrderActionAllowed(true);
+                            fullScreenLoader.stopLoader();
+                            let json = error.responseJSON;
+                            let message = json['message'];
+                            if (json['errors']) {
+                                for (let key in json['errors']) {
+                                    message += ' ' + key + ': ' + json['errors'][key][0] + ' ';
+                                }
+                            }
+                            globalMessageList.addErrorMessage({message: message});
+                            resolve(false);
+                        }
+                    });
                 });
+
+
             },
             startPayment: function(token) {
                 const self = this;
@@ -350,6 +367,12 @@ define(
                     type: "POST",
                     data: data,
                     success: function (response) {
+                        if ( response['status'] === 'failed'){
+                            self.isPlaceOrderActionAllowed(true);
+                            fullScreenLoader.stopLoader();
+                            globalMessageList.addErrorMessage({message: response['message']});
+                            return;
+                        }
                         // Check if 3D Secure is required
                         if (response['required_3ds']) {
                             self.openIframe(response['3d_url'], function () {
@@ -360,8 +383,10 @@ define(
                             self.redirectSuccess(response['redirect_url']);
                         }
                     },
-                    error: function () {
-                        document.location.href = url.build('moyasar/payment/failed');
+                    error: function (error) {
+                        self.isPlaceOrderActionAllowed(true);
+                        fullScreenLoader.stopLoader();
+                        globalMessageList.addErrorMessage({message: error.responseJSON['message']});
                     }
                 });
             },
@@ -371,7 +396,7 @@ define(
             /**
              * Place the order when the "Place Order" button is clicked.
              */
-            placeOrder: function () {
+            placeOrder: async function () {
                 if (!this.validateForm()) {
                     return;
                 }
@@ -380,9 +405,15 @@ define(
                 this.isPlaceOrderActionAllowed(false);
                 fullScreenLoader.startLoader();
 
+                let token = await this.startToken();
+                if (!token) {
+                    return;
+                }
+
+
                 $.when(placeOrderAction(this.getData(), this.messageContainer))
                     .done(function () {
-                        self.startToken();
+                        self.startPayment(token);
 
                     })
                     .fail(function (response) {
@@ -390,6 +421,7 @@ define(
                         fullScreenLoader.stopLoader();
                         globalMessageList.addErrorMessage({message: response.message});
                     });
+
             },
         });
     }

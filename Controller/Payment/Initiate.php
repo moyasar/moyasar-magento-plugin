@@ -13,6 +13,7 @@ use Magento\Framework\UrlInterface;
 use Magento\Sales\Api\Data\OrderAddressInterface;
 use Magento\Sales\Model\Order;
 use Moyasar\Magento2\Helper\CurrencyHelper;
+use Moyasar\Magento2\Helper\Http\Exceptions\HttpException;
 use Moyasar\Magento2\Helper\Http\QuickHttp;
 use Moyasar\Magento2\Helper\MoyasarHelper;
 use Psr\Log\LoggerInterface;
@@ -97,10 +98,32 @@ class Initiate implements ActionInterface
         $payloadFunction = $this->method . 'Payload';
 
         try {
-            $response = $this->http()->post($this->moyasarHelper->apiBaseUrl() . '/v1/payments', $this->$payloadFunction())->json();
+            $response = $this->http()->set_headers(['order_id' => $this->order->getId()])->post($this->moyasarHelper->apiBaseUrl() . '/v1/payments', $this->$payloadFunction())->json();
         } catch (\Exception $e) {
-            $this->logger->warning('Moyasar payment accessed without order_id argument.');
-            return $resultJson->setData(['message' => 'Payment failed'])->setHttpResponseCode(400);
+            $this->logger->warning('Moyasar payment failed [Order ID]: ' . $this->order->getId() . ', [Error]: .' . $e->getMessage());
+            $this->order->addCommentToStatusHistory('[Error]: .' . $e->getMessage());
+            $this->order->save();
+
+            // Reset Cart
+            $this->checkoutSession->restoreQuote();
+
+            if ( $e instanceof HttpException) {
+                $response = $e->response;
+               if ($response->isValidationError()){
+                     $message = $response->getValidationMessage();
+                     return $resultJson->setData(['message' => $message])->setHttpResponseCode(400);
+               }
+               if ($response->isAuthenticationError()){
+                     $message = 'Authentication Error';
+                     return $resultJson->setData(['message' => $message])->setHttpResponseCode(400);
+               }
+               if ($response->isCardNotSupportedError()){
+                     $message = 'Card Not Supported';
+                     return $resultJson->setData(['message' => $message])->setHttpResponseCode(400);
+               }
+            }
+
+            return $resultJson->setData(['message' => "Payment Failed"])->setHttpResponseCode(400);
         }
 
         $paymentId = $response['id'];
@@ -108,7 +131,17 @@ class Initiate implements ActionInterface
 
         $responseData = [
             'status' => $response['status'],
+            'message' => $response['source']['message'] ?? '',
         ];
+
+        // If Status Failed
+        if ($response['status'] == 'failed') {
+            $this->logger->warning('Moyasar payment failed [Order ID]: ' . $this->order->getId() . ', [Error]: .' . $responseData['message']);
+            $this->order->addCommentToStatusHistory('[Error]: .' . $responseData['message']);
+            $this->order->save();
+            // Reset Cart
+            $this->checkoutSession->restoreQuote();
+        }
 
         if ($this->method == 'stcpay') {
             $responseData = array_merge($responseData, ['stcpay' => $this->stcpayResponseData($response['id'], $response['source']['transaction_url'])]);

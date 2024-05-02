@@ -171,15 +171,24 @@ define(
                                 method: 'stcpay',
                             },
                             success: function (response) {
+                                if ( response['status'] === 'failed'){
+                                    self.isPlaceOrderActionAllowed(true);
+                                    fullScreenLoader.stopLoader();
+                                    globalMessageList.addErrorMessage({message: response['message']});
+                                    return;
+                                }
                                 window.moyasar_stc_pay = response['stcpay'];
                                 fullScreenLoader.stopLoader();
                                 globalMessageList.addSuccessMessage({ message: $.mage.__('OTP has been sent.') });
 
                                 // Show OTP Input
                                 self.stcPayShowOtpInput();
+
                             },
-                            error: function () {
-                                document.location.href = url.build('moyasar/payment/failed');
+                            error: function (error) {
+                                self.isPlaceOrderActionAllowed(true);
+                                fullScreenLoader.stopLoader();
+                                globalMessageList.addErrorMessage({message: error.responseJSON['message']});
                             }
                         });
 
