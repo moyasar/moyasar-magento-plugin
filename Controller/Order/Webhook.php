@@ -63,9 +63,11 @@ class Webhook implements HttpPostActionInterface, CsrfAwareActionInterface
 
         $payment = $payload['data'];
         $paymentId = $payment['id'];
+        sleep(5); // wait for the platform update the payment status to avoid duplicate processing
         $order = $this->orderRepo->get($payment['metadata']['order_id']);
 
         if ($order->getState() != Order::STATE_PENDING_PAYMENT) {
+            $this->logger->info('[Moyasar] [Webhook] Order is not pending for payment, skipping.');
             return $this->basicResponse('Order is not pending for payment, skipping.');
         }
 
@@ -84,7 +86,7 @@ class Webhook implements HttpPostActionInterface, CsrfAwareActionInterface
                 $this->processUnMatchingInfoFail($payment, $order, $errors);
                 return $this->basicResponse('Processed payments with errors.');
             }
-
+            $this->logger->info("[Moyasar] [Webhook] Payment ID: $paymentId is successful.");
             $this->moyasarHelper->processSuccessfulOrder($order, $payment);
 
             return $this->basicResponse('Processed payment successfully.');
@@ -94,10 +96,10 @@ class Webhook implements HttpPostActionInterface, CsrfAwareActionInterface
             $orderId = $order->getRealOrderId();
             $logErrorId = bin2hex(random_bytes(6));
 
-            $this->logger->critical("[$logErrorId] Cannot verify payment (order $orderId): " . $e->getMessage());
+            $this->logger->critical("[Moyasar] [Webhook] [$logErrorId] Cannot verify payment (order $orderId): " . $e->getMessage());
 
             if ($e instanceof HttpException) {
-                $this->logger->critical("[$logErrorId] server response: " . $e->response->body());
+                $this->logger->critical("[Moyasar] [Webhook] [$logErrorId] server response: " . $e->response->body());
             }
 
             return $this->basicResponse(
