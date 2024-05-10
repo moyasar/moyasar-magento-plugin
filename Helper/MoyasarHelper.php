@@ -172,13 +172,10 @@ class MoyasarHelper extends AbstractHelper
         $order->setState(Order::STATE_PROCESSING);
 
         if ($generateInvoice) {
-            $invoice->setSendEmail(true);
             $invoice->save();
         }
-
-        $order->setSendEmail(true);
-        $this->sendConfirmationEmail($order);
         $order->save();
+        $this->sendConfirmationEmail($order);
     }
 
     private function sendConfirmationEmail($order)
