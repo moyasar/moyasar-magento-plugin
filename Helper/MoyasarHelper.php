@@ -13,9 +13,11 @@ use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderManagementInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
+use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\Service\InvoiceService;
 use Magento\Store\Model\StoreManager;
 use Moyasar\Magento2\Helper\Http\QuickHttp;
+use Psr\Log\LoggerInterface;
 
 class MoyasarHelper extends AbstractHelper
 {
@@ -36,6 +38,8 @@ class MoyasarHelper extends AbstractHelper
     protected $invoiceSender;
     protected $apiBaseUrl;
     protected $session;
+    protected $orderSender;
+    protected $logger;
 
     public function __construct(
         Context $context,
@@ -47,7 +51,9 @@ class MoyasarHelper extends AbstractHelper
         CurrencyHelper $currencyHelper,
         InvoiceService $invoiceService,
         InvoiceSender $invoiceSender,
-        Session $session
+        Session $session,
+        OrderSender $orderSender,
+        LoggerInterface  $logger
     ) {
         parent::__construct($context);
 
@@ -60,6 +66,8 @@ class MoyasarHelper extends AbstractHelper
         $this->currencyHelper = $currencyHelper;
         $this->invoiceService = $invoiceService;
         $this->invoiceSender = $invoiceSender;
+        $this->orderSender = $orderSender;
+        $this->logger = $logger;
 
         $this->apiBaseUrl = "https://api.moyasar.com";
     }
@@ -169,7 +177,25 @@ class MoyasarHelper extends AbstractHelper
         }
 
         $order->setSendEmail(true);
+        $this->sendConfirmationEmail($order);
         $order->save();
+    }
+
+    private function sendConfirmationEmail($order)
+    {
+        $this->logger->info('[Moyasar] [Email] payment method detected. Sending confirmation email...');
+        try {
+            $isSent = $this->orderSender->send($order);
+
+            if ($isSent){
+                $this->logger->info('[Moyasar] [Email] Confirmation email sent successfully.');
+            } else {
+                $this->logger->error('[Moyasar] [Email] Confirmation email was not sent.');
+            }
+
+        } catch (\Exception $e) {
+            $this->logger->error('[Moyasar] [Email] Error sending confirmation email: ' . $e->getMessage());
+        };
     }
 
     public function getOrderPayments(string $id): array
