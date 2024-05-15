@@ -21,7 +21,7 @@ use Psr\Log\LoggerInterface;
 
 class MoyasarHelper extends AbstractHelper
 {
-    const VERSION = '5.0.2';
+    const VERSION = '5.0.3';
 
     const XML_PATH_CREDIT_CARD_IS_ACTIVE = 'payment/moyasar_payments/active';
     const XML_PATH_APPLE_PAY_IS_ACTIVE = 'payment/moyasar_payments_apple_pay/active';
@@ -99,7 +99,7 @@ class MoyasarHelper extends AbstractHelper
 
     public function generateInvoice()
     {
-        $this->scopeConfig->getValue('payment/moyasar_payments/generate_invoice');
+        return $this->scopeConfig->getValue('payment/moyasar_payments/generate_invoice');
     }
 
     public function webhookSharedSecret()
@@ -172,26 +172,29 @@ class MoyasarHelper extends AbstractHelper
         $order->setState(Order::STATE_PROCESSING);
 
         if ($generateInvoice) {
+            $invoice->setSendEmail(true);
+            $this->sendConfirmationEmail($invoice, $this->invoiceSender, 'Invoice');
             $invoice->save();
         }
+        $order->setSendEmail(true);
         $order->save();
-        $this->sendConfirmationEmail($order);
+        $this->sendConfirmationEmail($order, $this->orderSender, 'Confirmation');
     }
 
-    private function sendConfirmationEmail($order)
+    private function sendConfirmationEmail($object, $method, $type)
     {
-        $this->logger->info('[Moyasar] [Email] payment method detected. Sending confirmation email...');
+        $this->logger->info("[Moyasar] [Email] [$type] payment method detected. Sending confirmation email...");
         try {
-            $isSent = $this->orderSender->send($order);
+            $isSent = $method->send($object);
 
             if ($isSent){
-                $this->logger->info('[Moyasar] [Email] Confirmation email sent successfully.');
+                $this->logger->info("[Moyasar] [Email] [$type] Confirmation email sent successfully.");
             } else {
-                $this->logger->error('[Moyasar] [Email] Confirmation email was not sent.');
+                $this->logger->info("[Moyasar] [Email] [$type] Confirmation email was not sent, maybe will be handled by cron job.");
             }
 
         } catch (\Exception $e) {
-            $this->logger->error('[Moyasar] [Email] Error sending confirmation email: ' . $e->getMessage());
+            $this->logger->error("[Moyasar] [Email] [$type] Error sending confirmation email: " . $e->getMessage());
         };
     }
 
