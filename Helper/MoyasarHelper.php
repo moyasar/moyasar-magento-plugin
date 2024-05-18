@@ -21,7 +21,7 @@ use Psr\Log\LoggerInterface;
 
 class MoyasarHelper extends AbstractHelper
 {
-    const VERSION = '5.0.3';
+    const VERSION = '5.0.4';
 
     const XML_PATH_CREDIT_CARD_IS_ACTIVE = 'payment/moyasar_payments/active';
     const XML_PATH_APPLE_PAY_IS_ACTIVE = 'payment/moyasar_payments_apple_pay/active';
@@ -173,15 +173,19 @@ class MoyasarHelper extends AbstractHelper
 
         if ($generateInvoice) {
             $invoice->setSendEmail(true);
-            $this->sendConfirmationEmail($invoice, $this->invoiceSender, 'Invoice');
             $invoice->save();
         }
         $order->setSendEmail(true);
         $order->save();
-        $this->sendConfirmationEmail($order, $this->orderSender, 'Confirmation');
+
+        // Send Emails
+        $this->sendEmail($order, $this->orderSender, 'Confirmation');
+        if ($generateInvoice){
+            $this->sendEmail($invoice, $this->invoiceSender, 'Invoice');
+        }
     }
 
-    private function sendConfirmationEmail($object, $method, $type)
+    private function sendEmail($object, $method, $type)
     {
         $this->logger->info("[Moyasar] [Email] [$type] payment method detected. Sending confirmation email...");
         try {
