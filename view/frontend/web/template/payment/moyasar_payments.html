@@ -36,6 +36,8 @@
                 padding: 10px;
                 width: 48%;
                 box-sizing: border-box;
+                text-align: inherit;
+                direction: ltr;
             }
 
             .moyasar-pay-button {
@@ -56,11 +58,13 @@
 
             .moyasar-card-number {
                 padding-right: 80px;
+                text-align: inherit;
+                direction: ltr;
             }
 
             .moyasar-card-logos {
                 position: absolute;
-                right: 10px;
+                inset-inline-end: 10px;
                 top: 50%;
                 transform: translateY(-50%);
                 display: flex;
@@ -197,7 +201,7 @@
                                            class="moyasar-input-small" style="margin-right: 5px">
 
                                     <input type="text" placeholder="CVC" id="moyasar-cvc" class="moyasar-input-small"
-                                           style="margin-left: 5px;">
+                                           style="margin-inline-end: 5px;">
 
                                 </div>
                                 <div id="moyasar-cvc-error-message" class="moyasar-error-message"></div>
