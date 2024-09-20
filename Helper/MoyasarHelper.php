@@ -21,7 +21,7 @@ use Psr\Log\LoggerInterface;
 
 class MoyasarHelper extends AbstractHelper
 {
-    const VERSION = '5.0.5';
+    const VERSION = '5.0.6';
 
     const XML_PATH_CREDIT_CARD_IS_ACTIVE = 'payment/moyasar_payments/active';
     const XML_PATH_APPLE_PAY_IS_ACTIVE = 'payment/moyasar_payments_apple_pay/active';
