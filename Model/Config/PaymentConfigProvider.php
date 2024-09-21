@@ -72,6 +72,7 @@ class PaymentConfigProvider implements ConfigProviderInterface
             $enabled_method[] = 'stcpay';
         }
 
+        $supported_networks = $this->scopeConfig->getValue('payment/moyasar_payments/schemes');
 
 
         $config = [
@@ -80,7 +81,7 @@ class PaymentConfigProvider implements ConfigProviderInterface
             'country' => $this->scopeConfig->getValue('general/country/default'),
             'store_name' => $this->getStoreName(),
             'domain_name' => $matches[1],
-            'supported_networks' => explode(',', $this->scopeConfig->getValue('payment/moyasar_payments/schemes')),
+            'supported_networks' => explode(',', $supported_networks ? $supported_networks : []),
             'methods' => $enabled_method,
             'version' => 'Moyasar Http; Magento Plugin v' . MoyasarHelper::VERSION
         ];
