@@ -9,6 +9,8 @@ use Magento\Store\Model\StoreManager;
 use Moyasar\Magento2\Helper\CurrencyHelper;
 use Moyasar\Magento2\Helper\MoyasarHelper;
 use Moyasar\Magento2\Model\Payment\MoyasarPayments;
+use Moyasar\Magento2\Model\Payment\MoyasarPaymentsApplePay;
+use Moyasar\Magento2\Model\Payment\MoyasarPaymentsStcPay;
 
 class PaymentConfigProvider implements ConfigProviderInterface
 {
@@ -56,6 +58,22 @@ class PaymentConfigProvider implements ConfigProviderInterface
     {
         $storeUrl = $this->storeManager->getStore()->getBaseUrl();
         preg_match('/^.+:\/\/([A-Za-z0-9\-\.]+)\/?.*$/', $storeUrl, $matches);
+        $enabled_method = [];
+        // Credit Card
+        if ($this->scopeConfig->getValue('payment/moyasar_payments/active')) {
+            $enabled_method[] = 'creditcard';
+        }
+        // Apple Pay
+        if ($this->scopeConfig->getValue('payment/moyasar_payments_apple_pay/active')) {
+            $enabled_method[] = 'applepay';
+        }
+        // Stc Pay
+        if ($this->scopeConfig->getValue('payment/moyasar_payments_stc_pay/active')) {
+            $enabled_method[] = 'stcpay';
+        }
+
+        $supported_networks = $this->scopeConfig->getValue('payment/moyasar_payments/schemes');
+
 
         $config = [
             'api_key' => $this->moyasarHelper->publishableApiKey(),
@@ -63,8 +81,8 @@ class PaymentConfigProvider implements ConfigProviderInterface
             'country' => $this->scopeConfig->getValue('general/country/default'),
             'store_name' => $this->getStoreName(),
             'domain_name' => $matches[1],
-            'supported_networks' => explode(',', $this->scopeConfig->getValue('payment/moyasar_payments/schemes')),
-            'methods' => explode(',', $this->scopeConfig->getValue('payment/moyasar_payments/methods')),
+            'supported_networks' => explode(',', $supported_networks ? $supported_networks : []),
+            'methods' => $enabled_method,
             'version' => 'Moyasar Http; Magento Plugin v' . MoyasarHelper::VERSION
         ];
 
