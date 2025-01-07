@@ -135,6 +135,12 @@
                         <config_path>payment/moyasar_payments_apple_pay/title</config_path>
                         <comment>Apple Pay payment title in checkout page.</comment>
                     </field>
+                    <field id="apple_store_name" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1"
+                           showInStore="1">
+                        <label>Apple Store Name</label>
+                        <config_path>payment/moyasar_payments_apple_pay/apple_store_name</config_path>
+                        <comment>This is the name displayed to the customer in the Apple Pay popup during checkout, the name should be in English. If left empty, the default store name will be used automatically.</comment>
+                    </field>
                 </group>
                 <group id="moyasar_payments_stc_pay" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="5"
                        translate="label">

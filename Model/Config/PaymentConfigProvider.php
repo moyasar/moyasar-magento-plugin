@@ -98,7 +98,7 @@ class PaymentConfigProvider implements ConfigProviderInterface
      */
     public function getStoreName()
     {
-        $store_name = $this->scopeConfig->getValue(self::XML_PATH_STORE_NAME) ?? $this->storeManager->getStore()->getName() ?? 'Store';
+        $store_name = $this->scopeConfig->getValue('payment/moyasar_payments_apple_pay/apple_store_name') ?? $this->scopeConfig->getValue(self::XML_PATH_STORE_NAME) ?? $this->storeManager->getStore()->getName() ?? 'Store';
         // Check is store english (Regex)
         if (!preg_match('/\A[\x00-\x7F]+\z/', $store_name)) {
             $store_name = 'Store';
