@@ -135,11 +135,14 @@
                         <config_path>payment/moyasar_payments_apple_pay/title</config_path>
                         <comment>Apple Pay payment title in checkout page.</comment>
                     </field>
-                    <field id="apple_store_name" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1"
+                    <field id="apple_store_name" translate="label" type="text" sortOrder="3" showInDefault="1"
+                           showInWebsite="1"
                            showInStore="1">
                         <label>Apple Store Name</label>
                         <config_path>payment/moyasar_payments_apple_pay/apple_store_name</config_path>
-                        <comment>This is the name displayed to the customer in the Apple Pay popup during checkout, the name should be in English. If left empty, the default store name will be used automatically.</comment>
+                        <comment>This is the name displayed to the customer in the Apple Pay popup during checkout, the
+                            name should be in English. If left empty, the default store name will be used automatically.
+                        </comment>
                     </field>
                 </group>
                 <group id="moyasar_payments_stc_pay" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="5"
@@ -158,6 +161,49 @@
                         <label>STC Pay Title</label>
                         <config_path>payment/moyasar_payments_stc_pay/title</config_path>
                         <comment>STC Pay payment title in checkout page.</comment>
+                    </field>
+                </group>
+                <group id="moyasar_payments_samsung_pay" showInDefault="1" showInStore="1" showInWebsite="1"
+                       sortOrder="6"
+                       translate="label">
+                    <label>Samsung Pay</label>
+                    <field id="active" showInDefault="1" showInStore="1" showInWebsite="0" sortOrder="2"
+                           translate="label" type="select">
+                        <label>Enabled</label>
+                        <config_path>payment/moyasar_payments_samsung_pay/active</config_path>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+
+                    <field id="title" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1"
+                           showInStore="1">
+                        <label>Samsung Pay Title</label>
+                        <config_path>payment/moyasar_payments_samsung_pay/title</config_path>
+                        <comment>Samsung Pay payment title in checkout page.</comment>
+                    </field>
+                    <field id="samsung_store_name" translate="label" type="text" sortOrder="3" showInDefault="1"
+                           showInWebsite="1"
+                           showInStore="1">
+                        <label>Samsung Store Name</label>
+                        <config_path>payment/moyasar_payments_samsung_pay/samsung_store_name</config_path>
+                        <comment>This is the name displayed to the customer in the Samsung Pay popup during checkout,
+                            the name should be in English. If left empty, the default store name will be used
+                            automatically.
+                        </comment>
+                    </field>
+                    <field id="samsung_service_id" translate="label" type="text" sortOrder="4" showInDefault="1"
+                           showInWebsite="1"
+                           showInStore="1">
+                        <label>Service ID</label>
+                        <config_path>payment/moyasar_payments_samsung_pay/service_id</config_path>
+                        <comment>Service id: abcdef1234567890abcdef</comment>
+                        <can_be_empty>0</can_be_empty>
+                    </field>
+                    <field id="samsung_schemes" translate="label" type="multiselect" sortOrder="5" showInDefault="1"
+                           showInWebsite="1" showInStore="0">
+                        <label>Schemes</label>
+                        <config_path>payment/moyasar_payments_samsung_pay/schemes</config_path>
+                        <source_model>Moyasar\Magento2\Model\Config\Schemes</source_model>
+                        <can_be_empty>0</can_be_empty>
                     </field>
                 </group>
             </group>

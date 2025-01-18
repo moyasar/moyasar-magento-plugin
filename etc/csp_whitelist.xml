@@ -6,6 +6,7 @@
                 <value id="moyasar-cdn" type="host">https://cdn.moyasar.com</value>
                 <value id="polyfill-io" type="host">https://polyfill.io</value>
                 <value id="apple-pay-sdk" type="host">https://applepay.cdn-apple.com</value>
+                <value id="samsung-pay-sdk" type="host">https://img.mpay.samsung.com</value>
             </values>
         </policy>
         <policy id="style-src">

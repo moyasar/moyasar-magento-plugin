@@ -84,7 +84,7 @@ class Initiate implements ActionInterface
         // check session
         if (!$this->checkoutSession->getLastRealOrderId()) {
             $this->logger->warning('Moyasar payment accessed without active order.');
-            return $resultJson->setData(['message' => 'Invalid request.']);
+            return $resultJson->setData(['message' => 'Invalid request.'])->setHttpResponseCode(422);
         }
 
         $this->token = $this->request->getPostValue('token') ?? null;
@@ -153,6 +153,10 @@ class Initiate implements ActionInterface
 
         if ($this->method == 'applepay') {
             $responseData = array_merge($responseData, $this->applepayResponseData($response));
+        }
+
+        if ($this->method == 'samsungpay') {
+            $responseData = array_merge($responseData, $this->samsungpayResponseData($response));
         }
 
         $this->moyasarHelper->processInitiateOrder($this->order, $paymentId, $this->method);
@@ -227,6 +231,16 @@ class Initiate implements ActionInterface
         return $basePayload;
     }
 
+    private function samsungpayPayload()
+    {
+        $basePayload = $this->basePayload();
+        $basePayload['source'] = [
+            'type' => 'samsungpay',
+            'token' => $this->token,
+        ];
+        return $basePayload;
+    }
+
     private function creditcardResponseData($response)
     {
         return [
@@ -237,6 +251,13 @@ class Initiate implements ActionInterface
     }
 
     private function applepayResponseData($response)
+    {
+        return [
+            'redirect_url' => $this->urlBuilder->getUrl('moyasar/payment/validate')
+        ];
+    }
+
+        private function samsungpayResponseData($response)
     {
         return [
             'redirect_url' => $this->urlBuilder->getUrl('moyasar/payment/validate')

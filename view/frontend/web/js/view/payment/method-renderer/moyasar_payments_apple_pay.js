@@ -76,7 +76,7 @@ define(
                     supportedCountries: ['SA'],
                     merchantCapabilities: ['supports3DS', 'supportsDebit', 'supportsCredit'],
                     total: {
-                        label: window.checkoutConfig.moyasar_payments.store_name,
+                        label: window.checkoutConfig.moyasar_payments.apple_store_name,
                         amount: `${data.base_grand_total}`
                     },
                 }

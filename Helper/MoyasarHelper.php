@@ -27,6 +27,9 @@ class MoyasarHelper extends AbstractHelper
     const XML_PATH_APPLE_PAY_IS_ACTIVE = 'payment/moyasar_payments_apple_pay/active';
     const XML_PATH_STC_PAY_IS_ACTIVE = 'payment/moyasar_payments_stc_pay/active';
 
+    const XML_PATH_SAMSUNG_PAY_IS_ACTIVE = 'payment/moyasar_payments_samsung_pay/active';
+
+
 
     protected $orderManagement;
     protected $_objectManager;
