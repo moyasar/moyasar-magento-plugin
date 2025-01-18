@@ -36,30 +36,14 @@ define([
         initialize: function () {
             // Call parent
             this._super();
-
-            // 1) Check if the store config includes 'samsungpay'
-            this.checkSamsungPaySupport();
-
             // 2) Attempt to create the Samsung Pay client
-            //    and only show the button if isReadyToPay() is true.
             this.initSamsungPayClient();
         },
 
         /**
-         * Show/hide payment method based on store config or other conditions.
+         * Initialize the Samsung Pay client
          */
-        checkSamsungPaySupport: function () {
-            // if (window.checkoutConfig.moyasar_payments.methods.includes('samsungpay')) {
-            //     console.log('Samsung Pay is supported in this store.');
-            //     this.isVisible(true);
-            // }
-        },
-
-        /**
-         * Initialize the Samsung Pay client in the same spirit
-         * as Apple Pay's session check. Then generate the button if supported.
-         */
-        initSamsungPayClient: async function () {
+        initSamsungPayClient: function () {
             // If SamsungPay isn't available in this browser, exit.
             if (typeof SamsungPay === 'undefined' || typeof SamsungPay.PaymentClient === 'undefined') {
                 console.warn('[Moyasar] Samsung Pay SDK not found or not supported in this browser.');
@@ -98,11 +82,11 @@ define([
                         // If yes, generate the button in #samsung-pay-container
                             this.isVisible(true);
                     } else {
-                        console.warn('Samsung Pay is not supported on this device or no cards set up.');
+                        console.warn('[Moyasar] Samsung Pay is not supported on this device or no cards set up.');
                     }
                 })
                 .catch(function (err) {
-                    console.error('Error checking Samsung Pay readiness:', err);
+                    console.error('[Moyasar] Error checking Samsung Pay readiness:', err);
                 });
         },
         /**
@@ -131,8 +115,7 @@ define([
          * (linked via onClick in createAndAddButton()).
          */
         placeOrderSamsungPay: function () {
-            console.log('Samsung Pay button clicked');
-            var self = this;
+            const self = this;
 
             // If no PaymentClient, abort
             if (!this.samsungPayClient) {
@@ -145,8 +128,6 @@ define([
             self.isPlaceOrderActionAllowed(true);
 
             this.startSamsungPayFlow();
-
-
         },
 
         /**
@@ -156,7 +137,7 @@ define([
         startSamsungPayFlow: function () {
             const self = this;
             const data = checkoutData.totals();
-            const amount = data.base_grand_total;      // e.g. '100.00'
+            const amount = data.base_grand_total;
 
             const transactionDetail = {
                 orderNumber: 'ORDER-' + new Date().getTime(),
@@ -175,7 +156,6 @@ define([
             this.samsungPayClient.loadPaymentSheet(this.samsungPaymentMethods, transactionDetail)
                 .then((credentials) => {
                     // The user authorized the payment, get the token
-                    console.log(credentials)
                     $.when(placeOrderAction(this.getData(), this.messageContainer))
                         .done(() => {
                             self.handlePaymentAuthorization(credentials);
@@ -185,10 +165,11 @@ define([
                 .catch(function (err) {
                     // The user canceled or something else failed
                     self.abortSamsungPay('Samsung Pay flow canceled or failed.', err);
+                    self.samsungPayClient.notify({status: 'CANCELED', provider: 'Moyasar'});
                 });
         },
         /**
-         * Handle the payment token from Samsung Pay (like onpaymentauthorized in Apple Pay).
+         * Handle the payment token from Samsung Pay
          */
         handlePaymentAuthorization: function (credentials) {
             const self = this;
@@ -199,7 +180,6 @@ define([
                 return;
             }
 
-            // Example: send token to your server / Moyasar
             $.ajax({
                 url: url.build('moyasar/payment/initiate'),
                 type: 'POST',
@@ -209,21 +189,21 @@ define([
                 },
                 success: function (response) {
                     if (response.status === 'failed') {
-                        // self.samsungPayClient.notify({status: 'ERRED', provider: 'Moyasar'});
                         globalMessageList.addErrorMessage({message: response.message});
                         self.isPlaceOrderActionAllowed(true);
                         fullScreenLoader.stopLoader();
+                        self.samsungPayClient.notify({status: 'ERRED', provider: 'Moyasar'});
                         return;
                     }
                     // Payment success
-                    // self.samsungPayClient.notify({status: 'CHARGED', provider: 'Moyasar'});
+                    self.samsungPayClient.notify({status: 'CHARGED', provider: 'Moyasar'});
                     self.redirectSuccess(response.redirect_url);
                 },
                 error: function (xhr) {
-                    // self.samsungPayClient.notify({status: 'ERRED', provider: 'Moyasar'});
                     globalMessageList.addErrorMessage({message: xhr.responseJSON ? xhr.responseJSON.message : 'Payment error'});
                     self.isPlaceOrderActionAllowed(true);
                     fullScreenLoader.stopLoader();
+                    self.samsungPayClient.notify({status: 'ERRED', provider: 'Moyasar'});
                 }
             });
         },

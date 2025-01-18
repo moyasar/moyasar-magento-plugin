@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <csp_whitelist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Csp:etc/csp_whitelist.xsd">
     <policies>
+        <!-- Allow scripts -->
         <policy id="script-src">
             <values>
                 <value id="moyasar-cdn" type="host">https://cdn.moyasar.com</value>
@@ -9,14 +10,26 @@
                 <value id="samsung-pay-sdk" type="host">https://img.mpay.samsung.com</value>
             </values>
         </policy>
+
+        <!-- Allow styles -->
         <policy id="style-src">
             <values>
                 <value id="moyasar-cdn" type="host">https://cdn.moyasar.com</value>
             </values>
         </policy>
+
+        <!-- Allow connections -->
         <policy id="connect-src">
             <values>
                 <value id="moyasar-api" type="host">https://*.moyasar.com</value>
+                <value id="samsungpay" type="host">https://us-online.mpay.samsung.com</value>
+            </values>
+        </policy>
+
+        <!-- Allow fonts -->
+        <policy id="font-src">
+            <values>
+                <value id="samsungpay-fonts" type="host">https://*.cloudfront.net</value>
             </values>
         </policy>
     </policies>
