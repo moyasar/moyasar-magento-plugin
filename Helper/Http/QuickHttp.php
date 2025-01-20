@@ -8,11 +8,16 @@ use Moyasar\Magento2\Helper\Http\Exceptions\ClientException;
 use Moyasar\Magento2\Helper\Http\Exceptions\ConnectionException;
 use Moyasar\Magento2\Helper\Http\Exceptions\ServerException;
 use Moyasar\Magento2\Helper\MoyasarHelper;
+use Moyasar\Magento2\Helper\MoyasarLogs;
 
 class QuickHttp
 {
     private $curl_handler;
     private $disposed = false;
+
+    // Logger
+    private $logger;
+
 
     // Config
     private $headers = [];
@@ -25,7 +30,7 @@ class QuickHttp
     public function __construct()
     {
         global $wp_version;
-
+        $this->logger = new MoyasarLogs();
         $this->curl_handler = curl_init(null);
         $client = 'Moyasar Http; Magento Plugin v' . MoyasarHelper::VERSION;
         $this->headers['User-Agent'] = $client;
@@ -80,6 +85,8 @@ class QuickHttp
             $data = json_encode($data);
             curl_setopt($this->curl_handler, CURLOPT_POSTFIELDS, $data);
         }
+        // Log the payload with url
+        $this->logger->info('Request to ' . $url . ' with payload: ' , $data);
 
         if (in_array($method, ['GET', 'HEAD'])) {
             $url = $url . $this->encode_url_params($data);
@@ -105,6 +112,9 @@ class QuickHttp
         $response = new HttpResponse($status, $headers, $body);
 
         $this->dispose();
+
+        // Log the response
+        $this->logger->info('Response from ' . $url . ' with payload: ', $response->json());
 
         if ($response->isServerError()) {
             throw new ServerException('Server error: server returned status ' . $response->status(), $response);

@@ -11,5 +11,8 @@
         <method name="moyasar_payments_apple_pay">
             <allow_multiple_address>0</allow_multiple_address>
         </method>
+        <method name="moyasar_payments_samsung_pay">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
     </methods>
 </payment>

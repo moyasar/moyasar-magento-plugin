@@ -24,6 +24,11 @@
                 <title>Apple Pay</title>
                 <model>Moyasar\Magento2\Model\Payment\MoyasarPaymentsApplePay</model>
             </moyasar_payments_apple_pay>
+             <moyasar_payments_samsung_pay>
+                <active>0</active>
+                <title>Samsung Pay</title>
+                <model>Moyasar\Magento2\Model\Payment\MoyasarPaymentsSamsungPay</model>
+            </moyasar_payments_samsung_pay>
 		</payment>
 	</default>
 </config>

@@ -7,6 +7,7 @@ use Magento\Framework\Event\ObserverInterface;
 use Magento\Sales\Model\Order;
 use Moyasar\Magento2\Model\Payment\MoyasarPayments;
 use Moyasar\Magento2\Model\Payment\MoyasarPaymentsApplePay;
+use Moyasar\Magento2\Model\Payment\MoyasarPaymentsSamsungPay;
 use Moyasar\Magento2\Model\Payment\MoyasarPaymentsStcPay;
 
 class BeforeOrderPlaceObserver implements ObserverInterface
@@ -21,6 +22,7 @@ class BeforeOrderPlaceObserver implements ObserverInterface
             $payment->getMethod() == MoyasarPayments::CODE
                 || $payment->getMethod() == MoyasarPaymentsStcPay::CODE
                 || $payment->getMethod() == MoyasarPaymentsApplePay::CODE
+                || $payment->getMethod() == MoyasarPaymentsSamsungPay::CODE
             )) {
             $order->setState(Order::STATE_PENDING_PAYMENT);
             $order->setCanSendNewEmailFlag(false);

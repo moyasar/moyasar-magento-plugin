@@ -71,8 +71,13 @@ class PaymentConfigProvider implements ConfigProviderInterface
         if ($this->scopeConfig->getValue('payment/moyasar_payments_stc_pay/active')) {
             $enabled_method[] = 'stcpay';
         }
+        // Samsung Pay
+        if ($this->scopeConfig->getValue('payment/moyasar_payments_samsung_pay/active')) {
+            $enabled_method[] = 'samsungpay';
+        }
 
         $supported_networks = $this->scopeConfig->getValue('payment/moyasar_payments/schemes');
+        $samsung_supported_networks = $this->scopeConfig->getValue('payment/moyasar_payments_samsung_pay/schemes');
 
 
         $config = [
@@ -80,8 +85,14 @@ class PaymentConfigProvider implements ConfigProviderInterface
             'base_url' => $this->moyasarHelper->apiBaseUrl(),
             'country' => $this->scopeConfig->getValue('general/country/default'),
             'store_name' => $this->getStoreName(),
+            'apple_store_name' => $this->getAppleStoreName(),
+            'samsung' => [
+                'store_name' => $this->getSamsungStoreName(),
+                'service_id' => $this->scopeConfig->getValue('payment/moyasar_payments_samsung_pay/service_id'),
+                'supported_networks' => $samsung_supported_networks ? explode(',',  $samsung_supported_networks) : []
+            ],
             'domain_name' => $matches[1],
-            'supported_networks' => explode(',', $supported_networks ? $supported_networks : []),
+            'supported_networks' => $supported_networks ? explode(',', $supported_networks ) : [],
             'methods' => $enabled_method,
             'version' => 'Moyasar Http; Magento Plugin v' . MoyasarHelper::VERSION
         ];
@@ -96,13 +107,33 @@ class PaymentConfigProvider implements ConfigProviderInterface
      *
      * @return string
      */
-    public function getStoreName()
+    public function getStoreName($name = null)
     {
-        $store_name = $this->scopeConfig->getValue(self::XML_PATH_STORE_NAME) ?? $this->storeManager->getStore()->getName() ?? 'Store';
+        $store_name = $name ?? $this->scopeConfig->getValue(self::XML_PATH_STORE_NAME) ?? $this->storeManager->getStore()->getName() ?? 'Store';
         // Check is store english (Regex)
         if (!preg_match('/\A[\x00-\x7F]+\z/', $store_name)) {
             $store_name = 'Store';
         }
         return $store_name;
+    }
+
+    /**
+     * Get Apple store name
+     *
+     * @return string
+     */
+    public function getAppleStoreName()
+    {
+        return $this->getStoreName($this->scopeConfig->getValue('payment/moyasar_payments_apple_pay/apple_store_name'));
+    }
+
+    /**
+     * Get Samsung store name
+     *
+     * @return string
+     */
+    public function getSamsungStoreName()
+    {
+        return $this->getStoreName($this->scopeConfig->getValue('payment/moyasar_payments_samsung_pay/samsung_store_name'));
     }
 }
