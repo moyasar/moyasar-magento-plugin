@@ -98,9 +98,6 @@ define([
         getSamsungPayCode: function () {
             return 'moyasar_payments_samsung_pay';
         },
-        getTitle: function () {
-            return 'Samsung Pay';
-        },
         isActive: function () {
             return true;
         },
