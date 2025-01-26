@@ -38,6 +38,8 @@ define(
                         self.setupStcValidationListeners();
                     }, 2500);
                 });
+                // Force isPlaceOrderActionAllowed to true to avoid billing address validation
+                this.isPlaceOrderActionAllowed(true);
             },
             /**
              * Stc Pay Section
