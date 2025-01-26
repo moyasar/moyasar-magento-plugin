@@ -40,6 +40,9 @@ define(
                         self.setupValidationListeners();
                     }, 2500);
                 });
+
+                // Force isPlaceOrderActionAllowed to true to avoid billing address validation
+                this.isPlaceOrderActionAllowed(true);
             },
             numericInputComputed: function (value) {
                 // Remove spaces

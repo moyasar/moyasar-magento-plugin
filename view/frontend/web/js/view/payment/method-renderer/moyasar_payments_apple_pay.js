@@ -34,6 +34,8 @@ define(
             initialize: function () {
                 this._super();
                 this.checkApplePaySupport();
+                // Force isPlaceOrderActionAllowed to true to avoid billing address validation
+                this.isPlaceOrderActionAllowed(true);
             },
             checkApplePaySupport: function () {
                 if (window.ApplePaySession && ApplePaySession.canMakePayments()) {

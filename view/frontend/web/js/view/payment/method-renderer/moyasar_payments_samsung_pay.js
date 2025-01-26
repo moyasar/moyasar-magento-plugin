@@ -38,6 +38,8 @@ define([
             this._super();
             // 2) Attempt to create the Samsung Pay client
             this.initSamsungPayClient();
+            // Force isPlaceOrderActionAllowed to true to avoid billing address validation
+            this.isPlaceOrderActionAllowed(true);
         },
 
         /**
