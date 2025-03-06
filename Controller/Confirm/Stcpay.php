@@ -11,6 +11,7 @@ use Magento\Framework\UrlInterface;
 use Magento\Sales\Model\Order;
 use Moyasar\Magento2\Helper\Http\Exceptions\ConnectionException;
 use Moyasar\Magento2\Helper\Http\Exceptions\HttpException;
+use Moyasar\Magento2\Helper\MoyasarCoupon;
 use Moyasar\Magento2\Helper\MoyasarHelper;
 use Moyasar\Magento2\Helper\PaymentHelper;
 use Psr\Log\LoggerInterface;
@@ -27,6 +28,8 @@ class Stcpay implements ActionInterface
     protected $messageManager;
     protected $logger;
 
+    protected $moyasarCoupon;
+
     /**
      * @var string
      * STC Pay Tokens
@@ -41,7 +44,8 @@ class Stcpay implements ActionInterface
         MoyasarHelper    $helper,
         UrlInterface     $urlBuilder,
         ManagerInterface $messageManager,
-        LoggerInterface  $logger
+        LoggerInterface  $logger,
+        MoyasarCoupon $moyasarCoupon
     )
     {
         $this->context = $context;
@@ -50,6 +54,7 @@ class Stcpay implements ActionInterface
         $this->urlBuilder = $urlBuilder;
         $this->messageManager = $messageManager;
         $this->logger = $logger;
+        $this->moyasarCoupon = $moyasarCoupon;
     }
 
     public function execute()
@@ -82,6 +87,8 @@ class Stcpay implements ActionInterface
                 $this->processPaymentFail($payment, $order);
                 return $this->redirectToCart();
             }
+
+            $this->moyasarCoupon->tryApplyCouponToOrder($order, $payment);
 
             $errors = $this->moyasarHelper->checkPaymentForErrors($order, $payment);
             if (count($errors) > 0) {

@@ -13,6 +13,7 @@ use Moyasar\Magento2\Helper\Http\Exceptions\ConnectionException;
 use Moyasar\Magento2\Helper\Http\Exceptions\HttpException;
 use Moyasar\Magento2\Helper\MoyasarHelper;
 use Moyasar\Magento2\Helper\PaymentHelper;
+use Moyasar\Magento2\Helper\MoyasarCoupon;
 use Psr\Log\LoggerInterface;
 
 class Validate implements ActionInterface
@@ -27,6 +28,7 @@ class Validate implements ActionInterface
     protected $http;
     protected $messageManager;
     protected $logger;
+    protected $moyasarCoupon;
 
     public function __construct(
         Context          $context,
@@ -34,7 +36,8 @@ class Validate implements ActionInterface
         MoyasarHelper    $helper,
         UrlInterface     $urlBuilder,
         ManagerInterface $messageManager,
-        LoggerInterface  $logger
+        LoggerInterface  $logger,
+        MoyasarCoupon $moyasarCoupon
     )
     {
         $this->context = $context;
@@ -43,6 +46,7 @@ class Validate implements ActionInterface
         $this->urlBuilder = $urlBuilder;
         $this->messageManager = $messageManager;
         $this->logger = $logger;
+        $this->moyasarCoupon = $moyasarCoupon;
     }
 
     public function execute()
@@ -71,6 +75,10 @@ class Validate implements ActionInterface
                 $this->processPaymentFail($payment, $order);
                 return $this->redirectToCart();
             }
+
+            $this->moyasarCoupon->tryApplyCouponToOrder($order, $payment);
+
+
 
             $errors = $this->moyasarHelper->checkPaymentForErrors($order, $payment);
             if (count($errors) > 0) {

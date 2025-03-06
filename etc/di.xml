@@ -1,9 +1,17 @@
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <type name="Magento\Framework\Console\CommandListInterface">
         <arguments>
             <argument name="commands" xsi:type="array">
-                <item name="moyasar_magento2_process_pending" xsi:type="object">Moyasar\Magento2\Console\Command\CheckPending</item>
+                <item name="moyasar_magento2_process_pending" xsi:type="object">
+                    Moyasar\Magento2\Console\Command\CheckPending
+                </item>
             </argument>
+        </arguments>
+    </type>
+    <type name="Moyasar\Magento2\Helper\MoyasarHelper">
+        <arguments>
+            <argument name="moyasarCoupon" xsi:type="object">Moyasar\Magento2\Helper\MoyasarCoupon</argument>
         </arguments>
     </type>
 </config>

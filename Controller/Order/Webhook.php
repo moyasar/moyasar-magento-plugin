@@ -16,6 +16,7 @@ use Moyasar\Magento2\Controller\ReadsJson;
 use Moyasar\Magento2\Helper\Http\Exceptions\ConnectionException;
 use Moyasar\Magento2\Helper\Http\Exceptions\HttpException;
 use Moyasar\Magento2\Helper\Http\QuickHttp;
+use Moyasar\Magento2\Helper\MoyasarCoupon;
 use Moyasar\Magento2\Helper\MoyasarHelper;
 use Psr\Log\LoggerInterface;
 
@@ -38,17 +39,21 @@ class Webhook implements HttpPostActionInterface, CsrfAwareActionInterface
     /** @var LoggerInterface */
     private $logger;
 
+    protected $moyasarCoupon;
+
     public function __construct(
         Context $context,
         MoyasarHelper $helper,
         OrderRepository $orderRepo,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        MoyasarCoupon $moyasarCoupon
     ) {
         $this->context = $context;
         $this->moyasarHelper = $helper;
         $this->url = $context->getUrl();
         $this->orderRepo = $orderRepo;
         $this->logger = $logger;
+        $this->moyasarCoupon = $moyasarCoupon;
     }
 
     public function execute()
@@ -81,6 +86,7 @@ class Webhook implements HttpPostActionInterface, CsrfAwareActionInterface
                 ->get($this->moyasarHelper->apiBaseUrl("/v1/payments/$paymentId"))
                 ->json();
 
+            $this->moyasarCoupon->tryApplyCouponToOrder($order, $payment);
             $errors = $this->moyasarHelper->checkPaymentForErrors($order, $payment);
             if (count($errors) > 0) {
                 $this->processUnMatchingInfoFail($payment, $order, $errors);
