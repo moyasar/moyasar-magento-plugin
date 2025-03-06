@@ -32,4 +32,9 @@ class MoyasarLogs
         $this->log('info', $message, $context);
     }
 
+    public function error($message, $context = [])
+    {
+        $this->log('error', $message, $context);
+    }
+
 }

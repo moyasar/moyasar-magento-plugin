@@ -10,6 +10,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\ResourceModel\Order\Collection;
+use Moyasar\Magento2\Helper\MoyasarCoupon;
 use Moyasar\Magento2\Helper\MoyasarHelper;
 use Moyasar\Magento2\Model\Payment\MoyasarPayments;
 use Moyasar\Magento2\Model\Payment\MoyasarPaymentsApplePay;
@@ -24,18 +25,22 @@ class CheckPending
     private $cachePool;
     private $logger;
 
+    protected $moyasarCoupon;
+
     public function __construct(
         Collection $orderCollection,
         OrderRepositoryInterface $orderRepo,
         MoyasarHelper $moyasarHelper,
         Pool $cachePool,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        MoyasarCoupon $moyasarCoupon
     ) {
         $this->orderCollection = $orderCollection;
         $this->orderRepo = $orderRepo;
         $this->moyasarHelper = $moyasarHelper;
         $this->cachePool = $cachePool;
         $this->logger = $logger;
+        $this->moyasarCoupon = $moyasarCoupon;
     }
 
     public function cron(): void
@@ -123,6 +128,8 @@ class CheckPending
         }
 
         $payment = $paidPayments[0];
+
+        $this->moyasarCoupon->tryApplyCouponToOrder($order, $payment);
         $errors = $this->moyasarHelper->checkPaymentForErrors($order, $payment);
         if (count($errors) > 0) {
             $this->logger->info("Order had errors " . $order->getIncrementId() . ' trying canceling...');
