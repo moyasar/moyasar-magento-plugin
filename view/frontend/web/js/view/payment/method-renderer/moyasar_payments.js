@@ -6,7 +6,6 @@ define(
         'Magento_Checkout/js/action/place-order',
         'mage/url',
         'Magento_Ui/js/model/messageList',
-        'Magento_Ui/js/modal/modal',
         'domReady!',
         'Magento_Checkout/js/view/payment/default',
         'Magento_Checkout/js/model/quote',
@@ -21,8 +20,7 @@ define(
         fullScreenLoader,
         placeOrderAction,
         url,
-        globalMessageList,
-        modal
+        globalMessageList
     ) {
         'use strict';
         return Component.extend({
@@ -292,46 +290,45 @@ define(
                     message: message
                 });
             },
-
             /**
-             * Open  IFrame
+             * Open IFrame with Native JS Modal
              */
-            openIframe: function (link, callback) {
-                const iframe = $('#3d-secure-iframe');
-                const modalPopup = $('#3d-secure-popup');
-                const popupOptions = {
-                    type: 'popup',
-                    responsive: true,
-                    innerScroll: true,
-                    buttons: []
-                };
+             openIframeCustom: function (link, callback) {
+                const modal = document.getElementById('mysr-3d-secure-popup');
+                const iframe = document.getElementById('mysr-3d-secure-iframe');
+                let interval;
+                // Show modal
+                modal.style.display = 'flex';
+                iframe.src = link;
 
-                // Initialize the modal
-                iframe.attr('src', link);
-                modal(popupOptions, modalPopup);
 
-                modalPopup.modal('openModal');
-                fullScreenLoader.stopLoader();
-
-                // Watch iframe url if changed
-                const interval = setInterval(function () {
-                    try{
-                        var location = iframe.get(0).contentWindow?.location;
-                        var href = location?.href;
+                // Listen for iframe location change
+                interval = setInterval(function () {
+                    try {
+                        const location = iframe.contentWindow.location;
+                        const href = location.href;
                         if (href && href.includes('payment')) {
                             clearInterval(interval);
-                            modalPopup.modal('closeModal');
-                            callback();
+                            closeModal();
+                            if (typeof callback === 'function') callback();
                         }
-                    }catch (e){
-
+                    } catch (e) {
+                        console.error('[Moysar] Error accessing iframe content:', e);
                     }
-                }, 50)
-                // Watch popup close
-                modalPopup.on('modalclosed', function () {
+                }, 50);
+
+                function closeModal() {
+                    modal.style.display = 'none';
+                    iframe.src = 'about:blank';
                     clearInterval(interval);
-                    callback();
-                });
+                    if (typeof callback === 'function') callback();
+                }
+
+
+                modal.onclick = function(e) {
+                    if (e.target === modal) closeModal();
+                };
+
             },
             /**
              * Start the payment process.
@@ -401,10 +398,18 @@ define(
                         }
                         // Check if 3D Secure is required
                         if (response['required_3ds']) {
-                            self.openIframe(response['3d_url'], function () {
-                                fullScreenLoader.startLoader();
-                                self.redirectSuccess(response['redirect_url']);
-                            });
+
+                            try {
+                                 self.openIframeCustom(response['3d_url'], function () {
+                                    fullScreenLoader.startLoader();
+                                    self.redirectSuccess(response['redirect_url']);
+                                });
+                            }catch (e){
+                                // Fallback to redirect if modal fails
+                                console.error('Error opening 3D Secure IFrame:', e);
+                                window.location.href = response['3d_url'];
+                            }
+
                         } else {
                             self.redirectSuccess(response['redirect_url']);
                         }
