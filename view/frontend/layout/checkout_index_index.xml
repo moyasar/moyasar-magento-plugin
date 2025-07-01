@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <page layout="1column" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
-        <script src="https://applepay.cdn-apple.com/jsapi/v1/apple-pay-sdk.js" src_type="url"/>
+        <script src="https://applepay.cdn-apple.com/jsapi/1.latest/apple-pay-sdk.js" src_type="url"/>
         <script src="https://img.mpay.samsung.com/gsmpi/sdk/samsungpay_web_sdk.js" src_type="url"/>
 
     </head>
