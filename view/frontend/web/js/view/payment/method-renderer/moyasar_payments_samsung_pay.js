@@ -142,6 +142,7 @@ define([
                 orderNumber: 'ORDER-' + new Date().getTime(),
                 merchant: {
                     name: window.checkoutConfig.moyasar_payments.samsung.store_name,
+                    countryCode: window.checkoutConfig.moyasar_payments.country || 'SA',
                     url: window.location.hostname
                 },
                 amount: {

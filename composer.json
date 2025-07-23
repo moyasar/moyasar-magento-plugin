@@ -2,7 +2,7 @@
     "name": "moyasar-fintech/magento2",
     "description": "Magento 2 payment module that integrate with https:\\\\moyasar.com Gateway",
     "type": "magento2-module",
-    "version": "5.2.0",
+    "version": "5.2.1",
     "authors": [
         {
             "email": "support@moyasar.com",
