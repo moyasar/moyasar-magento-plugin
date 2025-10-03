@@ -21,7 +21,7 @@ use Psr\Log\LoggerInterface;
 
 class MoyasarHelper extends AbstractHelper
 {
-    const VERSION = '5.2.1';
+    const VERSION = '5.2.2';
 
     const XML_PATH_CREDIT_CARD_IS_ACTIVE = 'payment/moyasar_payments/active';
     const XML_PATH_APPLE_PAY_IS_ACTIVE = 'payment/moyasar_payments_apple_pay/active';
@@ -144,6 +144,7 @@ class MoyasarHelper extends AbstractHelper
         $orderPayment->setAdditionalInformation('moyasar_payment_id', $paymentId);
         $orderPayment->setAdditionalInformation('moyasar_payment_method', $method);
         $orderPayment->save();
+
         $order->setState(Order::STATE_PENDING_PAYMENT);
         $order->addStatusHistoryComment("Payment initiated with Moyasar. Payment ID: $paymentId, Method: $method", Order::STATE_PENDING_PAYMENT);
         $order->save();
