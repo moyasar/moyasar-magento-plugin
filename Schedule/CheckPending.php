@@ -157,7 +157,7 @@ class CheckPending
     {
         $query = $this->orderCollection
             ->getSelect()
-            ->join(['pp' => 'sales_order_payment'], 'main_table.entity_id = pp.parent_id')
+            ->join(['pp' => 'sales_order_payment'], 'main_table.entity_id = pp.parent_id', [])
             ->where('updated_at >= ?', $this->date()->sub(DateInterval::createFromDateString('360 hour'))->format('Y-m-d H:i:s'))
             ->where('updated_at <= ?', $this->date()->sub(DateInterval::createFromDateString('5 minutes'))->format('Y-m-d H:i:s'))
             ->where('main_table.state in (?)', ['new', 'pending_payment'])
