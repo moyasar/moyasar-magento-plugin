@@ -75,9 +75,13 @@ class Webhook implements HttpPostActionInterface, CsrfAwareActionInterface
             $this->logger->info('[Moyasar] [Webhook] Order is not pending for payment, skipping.');
             return $this->basicResponse('Order is not pending for payment, skipping.');
         }
-
+        // Print
         if (! in_array($payment['status'], ['paid', 'authorized', 'captured'])) {
-            return $this->basicResponse('Payment is not a success, it will be taken care by cron job.');
+            $this->processUnMatchingInfoFail($payment, $order, []);
+            $this->logger->info('[Moyasar] [Webhook] ' .  $payment['metadata']['order_id'] .' Payment is not a success.');
+            $order->addCommentToStatusHistory('[Webhook] Payment is not a success: ' . $paymentId, Order::STATE_CANCELED);
+            $order->save();
+            return $this->basicResponse('Payment is not a success.');
         }
 
         try {
