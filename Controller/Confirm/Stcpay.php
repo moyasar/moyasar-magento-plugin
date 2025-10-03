@@ -60,11 +60,14 @@ class Stcpay implements ActionInterface
     public function execute()
     {
         $order = $this->lastOrder();
+        $pid = $this->context->getRequest()->getParam('pid') ?? null;
+        $method = $this->context->getRequest()->getParam('m') ?? null;
+
         if (!$order) {
             $this->logger->warning('Moyasar validate payment accessed without active order.');
             return $this->redirectToCart();
         }
-        $this->setUpPaymentData($order);
+        $this->setUpPaymentData($order, $pid, $method);
 
         $isValid = $this->validateRequest();
         if (!$isValid){

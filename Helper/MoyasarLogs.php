@@ -37,4 +37,9 @@ class MoyasarLogs
         $this->log('error', $message, $context);
     }
 
+    public function warning($message, $context = [])
+    {
+        $this->log('warning', $message, $context);
+    }
+
 }

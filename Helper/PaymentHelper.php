@@ -20,10 +20,11 @@ trait PaymentHelper
      */
     protected $method;
 
-    private function setUpPaymentData($order){
+    private function setUpPaymentData($order, $payment_id, $method){
         $payment = $order->getPayment();
-        $this->paymentId = $payment->getAdditionalInformation('moyasar_payment_id');
-        $this->method = $payment->getAdditionalInformation('moyasar_payment_method');
+        $this->logger->info('[Moyasar PaymentHelper] Setting up payment data for order ' . $order->getIncrementId() . ' with payment ID ' . $payment_id . ' and method ' . $method);
+        $this->paymentId = $payment->getAdditionalInformation('moyasar_payment_id') ?? $payment_id;
+        $this->method = $payment->getAdditionalInformation('moyasar_payment_method') ?? $method;
         $this->checkoutSession->setLastRealOrderId($order->getIncrementId());
     }
 
