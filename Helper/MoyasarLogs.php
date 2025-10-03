@@ -21,10 +21,11 @@ class MoyasarLogs
 
         // Define the full file path for the log file
         $filePath = BP . '/var/log/' . 'moyasar.log';
+        $time = date('Y-m-d H:i:s');
 
 
         // Additionally, log directly to the custom file
-        error_log($message . '-' . json_encode($context) . PHP_EOL, 3, $filePath);
+        error_log( '[' . $time . '] - ' . $message . '-' . json_encode($context) . PHP_EOL, 3, $filePath);
     }
 
     public function info($message, $context = [])
@@ -35,6 +36,11 @@ class MoyasarLogs
     public function error($message, $context = [])
     {
         $this->log('error', $message, $context);
+    }
+
+    public function warning($message, $context = [])
+    {
+        $this->log('warning', $message, $context);
     }
 
 }

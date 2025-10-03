@@ -246,21 +246,21 @@ class Initiate implements ActionInterface
         return [
             'required_3ds' => $response['status'] == 'initiated',
             '3d_url' => $response['source']['transaction_url'] ?? '',
-            'redirect_url' => $this->urlBuilder->getUrl('moyasar/payment/validate')
+            'redirect_url' => $this->urlBuilder->getUrl('moyasar/payment/validate') . '?pid=' . $response['id'] . '&m=' . $this->method
         ];
     }
 
     private function applepayResponseData($response)
     {
         return [
-            'redirect_url' => $this->urlBuilder->getUrl('moyasar/payment/validate')
+            'redirect_url' => $this->urlBuilder->getUrl('moyasar/payment/validate') . '?pid=' . $response['id'] . '&m=' . $this->method
         ];
     }
 
         private function samsungpayResponseData($response)
     {
         return [
-            'redirect_url' => $this->urlBuilder->getUrl('moyasar/payment/validate')
+            'redirect_url' => $this->urlBuilder->getUrl('moyasar/payment/validate') . '?pid=' . $response['id'] . '&m=' . $this->method
         ];
     }
 

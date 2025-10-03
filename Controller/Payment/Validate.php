@@ -12,9 +12,11 @@ use Magento\Sales\Model\Order;
 use Moyasar\Magento2\Helper\Http\Exceptions\ConnectionException;
 use Moyasar\Magento2\Helper\Http\Exceptions\HttpException;
 use Moyasar\Magento2\Helper\MoyasarHelper;
+use Moyasar\Magento2\Helper\MoyasarLogs;
 use Moyasar\Magento2\Helper\PaymentHelper;
 use Moyasar\Magento2\Helper\MoyasarCoupon;
 use Psr\Log\LoggerInterface;
+
 
 class Validate implements ActionInterface
 {
@@ -45,19 +47,21 @@ class Validate implements ActionInterface
         $this->moyasarHelper = $helper;
         $this->urlBuilder = $urlBuilder;
         $this->messageManager = $messageManager;
-        $this->logger = $logger;
         $this->moyasarCoupon = $moyasarCoupon;
+        $this->logger = new MoyasarLogs();;
     }
 
     public function execute()
     {
         $order = $this->lastOrder();
+        $pid = $this->context->getRequest()->getParam('pid') ?? null;
+        $method = $this->context->getRequest()->getParam('m') ?? null;
 
         if (!$order) {
             $this->logger->warning('Moyasar validate payment accessed without active order.');
             return $this->redirectToCart();
         }
-        $this->setUpPaymentData($order);
+        $this->setUpPaymentData($order, $pid, $method);
 
 
         if ($order->getState() == Order::STATE_PROCESSING){
@@ -69,7 +73,7 @@ class Validate implements ActionInterface
 
         try {
             $payment = $this->fetchPayment($order);
-            $this->logger->info("Payment ID: [{$this->paymentId}], Status:  [{$payment['source']['message']}]");
+            $this->logger->info("Payment ID: [{$this->paymentId}], Status:  [{$payment['source']['message']}]", $payment);
 
             if ($payment['status'] != 'paid') {
                 $this->processPaymentFail($payment, $order);
