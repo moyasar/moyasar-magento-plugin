@@ -12,6 +12,7 @@ use Magento\Sales\Model\Order;
 use Magento\Sales\Model\ResourceModel\Order\Collection;
 use Moyasar\Magento2\Helper\MoyasarCoupon;
 use Moyasar\Magento2\Helper\MoyasarHelper;
+use Moyasar\Magento2\Helper\MoyasarLogs;
 use Moyasar\Magento2\Model\Payment\MoyasarPayments;
 use Moyasar\Magento2\Model\Payment\MoyasarPaymentsApplePay;
 use Moyasar\Magento2\Model\Payment\MoyasarPaymentsStcPay;
@@ -39,7 +40,7 @@ class CheckPending
         $this->orderRepo = $orderRepo;
         $this->moyasarHelper = $moyasarHelper;
         $this->cachePool = $cachePool;
-        $this->logger = $logger;
+        $this->logger = new MoyasarLogs();;
         $this->moyasarCoupon = $moyasarCoupon;
     }
 
@@ -54,7 +55,7 @@ class CheckPending
                 continue;
             }
 
-            $this->logger->info('Checking pending order payments ' . $order->getIncrementId() . '...');
+            $this->logger->info('[CronJob] Checking pending order payments ' . $order->getIncrementId() . '...');
 
             try {
                 $this->processPayment($order);
@@ -76,7 +77,7 @@ class CheckPending
         // Allow cancel of order
         $order->setState(Order::STATE_PAYMENT_REVIEW);
 
-        $this->logger->info("Processing pending order " . $order->getIncrementId());
+        $this->logger->info("[CronJob] Processing pending order " . $order->getIncrementId());
 
         $apiPayments = $this->moyasarHelper->getOrderPayments($order->getId());
         usort($apiPayments, function ($a, $b) {
@@ -84,12 +85,12 @@ class CheckPending
         });
 
         if (count($apiPayments) == 0) {
-            $this->logger->info("No payments for order " . $order->getIncrementId() . ' trying canceling...');
+            $this->logger->info("[CronJob] No payments for order " . $order->getIncrementId() . ' trying canceling...');
 
             try {
-                $order->registerCancellation('Order was canceled because there were no payment attempts within 15 minutes.', false);
+                $order->registerCancellation('[CronJob] Order was canceled because there were no payment attempts within 15 minutes.', false);
             } catch (LocalizedException $e) {
-                $order->addCommentToStatusHistory('Order cannot be canceled automatically, order must be canceled manually.');
+                $order->addCommentToStatusHistory('[CronJob] Order cannot be canceled automatically, order must be canceled manually.');
             }
 
             $this->orderRepo->save($order);
@@ -145,7 +146,7 @@ class CheckPending
         }
 
         $this->moyasarHelper->processSuccessfulOrder($order, $payment);
-        $this->logger->info("Processed order " . $order->getIncrementId());
+        $this->logger->info("[CronJob] Processed order " . $order->getIncrementId());
     }
 
     /**
@@ -159,7 +160,6 @@ class CheckPending
             ->where('updated_at >= ?', $this->date()->sub(DateInterval::createFromDateString('360 hour'))->format('Y-m-d H:i:s'))
             ->where('updated_at <= ?', $this->date()->sub(DateInterval::createFromDateString('5 minutes'))->format('Y-m-d H:i:s'))
             ->where('main_table.state in (?)', ['new', 'pending_payment'])
-            ->where('main_table.status = ?', 'pending')
             ->where('pp.method in (?)', [MoyasarPayments::CODE, MoyasarPaymentsApplePay::CODE, MoyasarPaymentsStcPay::CODE]);
 
         return $this->orderCollection->load($query)->getItems();
