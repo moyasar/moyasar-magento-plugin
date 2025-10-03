@@ -15,6 +15,7 @@ use Moyasar\Magento2\Helper\MoyasarHelper;
 use Moyasar\Magento2\Helper\MoyasarLogs;
 use Moyasar\Magento2\Model\Payment\MoyasarPayments;
 use Moyasar\Magento2\Model\Payment\MoyasarPaymentsApplePay;
+use Moyasar\Magento2\Model\Payment\MoyasarPaymentsSamsungPay;
 use Moyasar\Magento2\Model\Payment\MoyasarPaymentsStcPay;
 use Psr\Log\LoggerInterface;
 
@@ -160,7 +161,7 @@ class CheckPending
             ->where('updated_at >= ?', $this->date()->sub(DateInterval::createFromDateString('360 hour'))->format('Y-m-d H:i:s'))
             ->where('updated_at <= ?', $this->date()->sub(DateInterval::createFromDateString('5 minutes'))->format('Y-m-d H:i:s'))
             ->where('main_table.state in (?)', ['new', 'pending_payment'])
-            ->where('pp.method in (?)', [MoyasarPayments::CODE, MoyasarPaymentsApplePay::CODE, MoyasarPaymentsStcPay::CODE]);
+            ->where('pp.method in (?)', [MoyasarPayments::CODE, MoyasarPaymentsApplePay::CODE, MoyasarPaymentsStcPay::CODE, MoyasarPaymentsSamsungPay::CODE]);
 
         return $this->orderCollection->load($query)->getItems();
     }
