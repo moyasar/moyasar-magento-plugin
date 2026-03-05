@@ -102,6 +102,14 @@ class Stcpay implements ActionInterface
             $this->moyasarHelper->processSuccessfulOrder($order, $payment);
             $this->logger->info("Payment [{$this->paymentId}] is successful, redirecting user to checkout/onepage/success: ");
 
+            // Deactivate quote since we restored it in Initiate
+            $quoteId = $order->getQuoteId();
+            $quote = $this->checkoutSession->getQuote()->load($quoteId);
+            if ($quote->getId()) {
+                $quote->setIsActive(0);
+                $quote->save();
+            }
+
             return $this->redirectToSuccess();
         } catch (LocalizedException $e) {
             $this->messageManager->addErrorMessage($e->getMessage());

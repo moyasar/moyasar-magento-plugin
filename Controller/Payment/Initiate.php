@@ -145,6 +145,9 @@ class Initiate implements ActionInterface
 
         if ($this->method == 'stcpay') {
             $responseData = array_merge($responseData, ['stcpay' => $this->stcpayResponseData($response['id'], $response['source']['transaction_url'])]);
+            
+            // Restore cart in case the user navigates back while entering OTP
+            $this->checkoutSession->restoreQuote();
         }
 
         if ($this->method == 'creditcard') {
