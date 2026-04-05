@@ -136,7 +136,7 @@ define([
         startSamsungPayFlow: function () {
             const self = this;
             const data = checkoutData.totals();
-            const amount = data.base_grand_total;
+            const amount = Number(data.base_grand_total);
 
             const transactionDetail = {
                 orderNumber: 'ORDER-' + new Date().getTime(),

@@ -6,12 +6,20 @@ class CurrencyHelper
 {
     public static function amountToMinor($amount, $currency): int
     {
-        return round($amount * (10 ** static::fractionFor($currency)));
+        $currency = strtoupper($currency);
+        $fraction = static::fractionFor($currency);
+        $factor = bcpow('10', (string) $fraction);
+
+        return (int) bcmul((string) $amount, $factor, 0);
     }
 
     public static function amountToMajor($amount, $currency): float
     {
-        return floatval($amount) / (10 ** static::fractionFor($currency));
+        $currency = strtoupper($currency);
+        $fraction = static::fractionFor($currency);
+        $factor = bcpow('10', (string) $fraction);
+
+        return (float) bcdiv((string) $amount, $factor, $fraction);
     }
 
     public static function fractionFor($currency): int
@@ -55,7 +63,7 @@ class CurrencyHelper
             'KRW' => 0,
             'KWD' => 3,
             'LAK' => 0,
-            'LBP' => 0,
+            'LBP' => 2,
             'LUF' => 0,
             'LYD' => 3,
             'MGA' => 0,
