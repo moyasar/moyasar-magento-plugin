@@ -192,8 +192,11 @@ class Initiate implements ActionInterface
         }
 
         return [
-            'amount' => CurrencyHelper::amountToMinor($this->order->getGrandTotal(), $this->order->getBaseCurrencyCode()), // $order->getGrandTotal() * 100
-            'currency' => $this->order->getOrderCurrencyCode(),
+            'amount' => CurrencyHelper::amountToMinor(
+                $this->order->getBaseGrandTotal(),
+                $this->order->getBaseCurrencyCode()
+            ),
+            'currency' => $this->order->getBaseCurrencyCode(),
             'description' => 'Order #' . $this->order->getRealOrderId(),
             'publishable_api_key' => $this->moyasarHelper->publishableApiKey(),
             'callback_url' => $this->context->getUrl()->getUrl() . '/payment',

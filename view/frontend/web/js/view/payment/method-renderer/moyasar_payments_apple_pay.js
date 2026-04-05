@@ -79,7 +79,7 @@ define(
                     merchantCapabilities: ['supports3DS', 'supportsDebit', 'supportsCredit'],
                     total: {
                         label: window.checkoutConfig.moyasar_payments.apple_store_name,
-                        amount: `${data.base_grand_total}`
+                        amount: String(Number(data.base_grand_total))
                     },
                 }
                 // Starting the Apple Pay Session
