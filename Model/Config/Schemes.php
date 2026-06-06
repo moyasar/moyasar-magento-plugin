@@ -13,6 +13,7 @@ class Schemes implements OptionSourceInterface
             ['value' => 'amex', 'label' => 'American Express'],
             ['value' => 'visa', 'label' => 'Visa'],
             ['value' => 'mastercard', 'label' => 'Mastercard'],
+            ['value' => 'unionpay', 'label' => 'UnionPay'],
         ];
     }
 }
