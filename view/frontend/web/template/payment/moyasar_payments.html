@@ -206,6 +206,12 @@
                                             data-bind="attr: { 'src': require.toUrl('Moyasar_Magento2/images/amex.png') }"
                                             alt="American Express Logo">
                                         <!-- /ko -->
+                                        <!-- ko if: window.checkoutConfig.moyasar_payments.supported_networks.includes('unionpay') -->
+                                        <img
+                                            class="moyasar-card-type-logo-unionpay"
+                                            data-bind="attr: { 'src': require.toUrl('Moyasar_Magento2/images/unionpay.svg') }"
+                                            alt="UnionPay Logo">
+                                        <!-- /ko -->
                                     </div>
                                 </div>
                                 <div id="moyasar-card-number-error-message" class="moyasar-error-message"></div>
