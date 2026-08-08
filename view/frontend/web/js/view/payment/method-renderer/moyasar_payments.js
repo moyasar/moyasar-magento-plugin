@@ -293,42 +293,56 @@ define(
             /**
              * Open IFrame with Native JS Modal
              */
-             openIframeCustom: function (link, callback) {
+            openIframeCustom: function (link, callback) {
                 const modal = document.getElementById('mysr-3d-secure-popup');
                 const iframe = document.getElementById('mysr-3d-secure-iframe');
-                let interval;
-                // Show modal
-                modal.style.display = 'flex';
-                iframe.src = link;
+                let completed = false;
 
+                // Stop the full-screen loader started in placeOrder so the OTP
+                // page is visible and interactive inside the modal.
+                fullScreenLoader.stopLoader();
 
-                // Listen for iframe location change
-                interval = setInterval(function () {
-                    try {
-                        const location = iframe.contentWindow.location;
-                        const href = location.href;
-                        if (href && href.includes('payment')) {
-                            clearInterval(interval);
-                            closeModal();
-                            if (typeof callback === 'function') callback();
-                        }
-                    } catch (e) {
-                        console.error('[Moysar] Error accessing iframe content:', e);
-                    }
-                }, 50);
-
-                function closeModal() {
+                function finish() {
+                    if (completed) return;
+                    completed = true;
+                    iframe.removeEventListener('load', onIframeLoad);
                     modal.style.display = 'none';
                     iframe.src = 'about:blank';
-                    clearInterval(interval);
                     if (typeof callback === 'function') callback();
                 }
 
+                // The iframe navigates through the bank's cross-origin ACS/OTP
+                // pages before landing back on our same-origin callback URL
+                // (which contains "payment"). Reading location.href throws a
+                // SecurityError while cross-origin, so we only attempt the read
+                // once per navigation (on the load event) and swallow the
+                // expected cross-origin error silently instead of polling every
+                // 50ms and flooding the console.
+                function onIframeLoad() {
+                    if (completed) return;
+                    try {
+                        const href = iframe.contentWindow.location.href;
+                        if (href && href.includes('payment')) {
+                            finish();
+                        }
+                    } catch (e) {
+                        // Expected while the iframe is on a cross-origin
+                        // ACS/OTP page. Nothing to do until it returns to our
+                        // same-origin callback page.
+                    }
+                }
 
-                modal.onclick = function(e) {
-                    if (e.target === modal) closeModal();
+                iframe.addEventListener('load', onIframeLoad);
+
+                // Clicking the backdrop cancels the modal; the validate
+                // controller resolves the real payment status server-side.
+                modal.onclick = function (e) {
+                    if (e.target === modal) finish();
                 };
 
+                // Show modal and load the 3D Secure / OTP page.
+                modal.style.display = 'flex';
+                iframe.src = link;
             },
             /**
              * Start the payment process.
