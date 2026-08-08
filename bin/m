@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Helper script to execute Magento CLI commands inside the Docker phpfpm container
+
+if [ $# -eq 0 ]; then
+    echo "Usage: ./bin/m <magento-command>"
+    echo "Example: ./bin/m cache:clean"
+    exit 1
+fi
+
+docker compose exec phpfpm bash -c "cd /var/www/html && php bin/magento $*"

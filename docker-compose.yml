@@ -1,0 +1,56 @@
+services:
+  app:
+    image: markoshust/magento-nginx:1.24-0
+    ports:
+      - "8080:8000"
+      - "8443:8443"
+    volumes:
+      - appdata:/var/www/html
+      - sockdata:/sock
+    depends_on:
+      - phpfpm
+
+  phpfpm:
+    image: markoshust/magento-php:8.3-fpm-3
+    volumes:
+      - appdata:/var/www/html
+      - sockdata:/sock
+      - ~/.composer:/var/www/.composer:cached
+      - .:/mnt/plugin
+    environment:
+      - PHP_MEMORY_LIMIT=2G
+      - UPLOAD_MAX_FILESIZE=64M
+    depends_on:
+      - db
+      - opensearch
+      - redis
+
+  db:
+    image: mariadb:10.6
+    command: --max_allowed_packet=64M --optimizer_use_condition_selectivity=1 --optimizer_switch="rowid_filter=off"
+    environment:
+      - MYSQL_ROOT_PASSWORD=magento
+      - MYSQL_DATABASE=magento
+      - MYSQL_USER=magento
+      - MYSQL_PASSWORD=magento
+    volumes:
+      - dbdata:/var/lib/mysql
+
+  opensearch:
+    image: markoshust/magento-opensearch:2.12-0
+    environment:
+      - "OPENSEARCH_INITIAL_ADMIN_PASSWORD=StrongPassword123!"
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.type=single-node"
+      - "cluster.routing.allocation.disk.threshold_enabled=false"
+      - "plugins.security.disabled=true"
+    ports:
+      - "9200:9200"
+
+  redis:
+    image: redis:7.2-alpine
+
+volumes:
+  appdata:
+  sockdata:
+  dbdata:

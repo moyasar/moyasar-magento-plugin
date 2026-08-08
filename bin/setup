@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+set -e
+
+echo "================================================="
+echo "  Moyasar Magento 2 Docker Setup & Testing Environment"
+echo "================================================="
+
+echo "1. Starting Docker containers..."
+docker compose up -d
+
+echo ""
+echo "2. Waiting for MariaDB database..."
+sleep 15
+
+# Check if Magento is installed in volume
+if ! docker compose exec phpfpm test -f /var/www/html/bin/magento; then
+    echo "Downloading Magento 2 Community Edition via Composer..."
+    docker compose exec phpfpm bash -c "cd /var/www/html && composer create-project --no-install --repository-url=https://repo.magento.com/ magento/project-community-edition . && composer install"
+else
+    echo "Magento 2 codebase already exists in docker volume."
+fi
+
+echo ""
+echo "3. Waiting for OpenSearch to be reachable..."
+until docker compose exec phpfpm curl -s http://opensearch:9200 | grep -q "tagline"; do
+    printf "."
+    sleep 3
+done
+echo " OpenSearch is ready!"
+
+echo ""
+echo "4. Installing Magento 2..."
+docker compose exec phpfpm bash -c "cd /var/www/html && php bin/magento setup:install \
+    --base-url=https://localhost:8443/ \
+    --base-url-secure=https://localhost:8443/ \
+    --use-secure=1 --use-secure-admin=1 \
+    --db-host=db \
+    --db-name=magento \
+    --db-user=magento \
+    --db-password=magento \
+    --admin-firstname=Admin \
+    --admin-lastname=Admin \
+    --admin-email=admin@example.com \
+    --admin-user=admin \
+    --admin-password=Admin123! \
+    --language=en_US \
+    --currency=USD \
+    --timezone=America/Chicago \
+    --use-rewrites=1 \
+    --backend-frontname=admin \
+    --search-engine=opensearch \
+    --opensearch-host=opensearch \
+    --opensearch-port=9200 \
+    --opensearch-index-prefix=magento2 \
+    --opensearch-enable-auth=0 \
+    --opensearch-timeout=15"
+
+echo ""
+echo "5. Linking Moyasar Plugin & Configuring Nginx..."
+docker compose exec phpfpm bash -c "cd /var/www/html && cp nginx.conf.sample nginx.conf 2>/dev/null || true"
+docker compose restart app
+docker compose exec phpfpm bash -c "mkdir -p /var/www/html/app/code/Moyasar/Magento2 && rm -rf /var/www/html/app/code/Moyasar/Magento2/* && ln -s /mnt/plugin/* /var/www/html/app/code/Moyasar/Magento2/ 2>/dev/null || true"
+
+echo ""
+echo "6. Enabling Moyasar Module & Local Dev Optimizations..."
+docker compose exec phpfpm bash -c "cd /var/www/html && php bin/magento module:enable Moyasar_Magento2"
+docker compose exec phpfpm bash -c "cd /var/www/html && php bin/magento module:disable Magento_TwoFactorAuth Magento_AdminAdobeImsTwoFactorAuth 2>/dev/null || true"
+docker compose exec phpfpm bash -c "cd /var/www/html && php bin/magento setup:upgrade"
+docker compose exec phpfpm bash -c "cd /var/www/html && php bin/magento setup:di:compile"
+docker compose exec phpfpm bash -c "cd /var/www/html && php bin/magento config:set system/smtp/disable 1"
+docker compose exec phpfpm bash -c "cd /var/www/html && php bin/magento config:set sales_email/general/async_sending 1"
+docker compose exec phpfpm bash -c "cd /var/www/html && php bin/magento cache:clean"
+
+echo ""
+echo "7. Creating Test Sample Product..."
+./bin/create-sample-product || true
+
+echo ""
+echo "================================================="
+echo "  Setup Complete! 🎉"
+echo "================================================="
+echo "Storefront URL:  https://localhost:8443/"
+echo "Admin Panel:     https://localhost:8443/admin/"
+echo "Admin Username:  admin"
+echo "Admin Password:  Admin123!"
+echo ""
+echo "To run magento commands: ./bin/m <command>"
+echo "To shut down docker:     docker compose down"
+echo "================================================="

@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Helper script to create a sample product in Magento 2 for local testing
+
+cat << 'EOF' > create_sample.php
+<?php
+use Magento\Framework\App\Bootstrap;
+require __DIR__ . '/app/bootstrap.php';
+
+$bootstrap = Bootstrap::create(BP, $_SERVER);
+$objectManager = $bootstrap->getObjectManager();
+
+$state = $objectManager->get('Magento\Framework\App\State');
+try {
+    $state->setAreaCode('adminhtml');
+} catch (\Exception $e) {
+    // Area code already set
+}
+
+$productFactory = $objectManager->get('\Magento\Catalog\Api\Data\ProductInterfaceFactory');
+$productRepository = $objectManager->get('\Magento\Catalog\Api\ProductRepositoryInterface');
+
+$sku = 'moyasar-test-item';
+
+try {
+    $product = $productRepository->get($sku);
+    echo "Updating existing product '$sku' with website & category assignment...\n";
+} catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+    $product = $productFactory->create();
+    $product->setSku($sku);
+}
+
+$product->setName('Moyasar Test Item');
+$product->setAttributeSetId(4);
+$product->setStatus(1); // Enabled
+$product->setVisibility(4); // Catalog, Search
+$product->setTypeId('simple');
+$product->setPrice(100.00);
+$product->setWebsiteIds([1]); // Assign to Main Website
+$product->setCategoryIds([2]); // Assign to Default Category
+$product->setStockData([
+    'use_config_manage_stock' => 0,
+    'manage_stock' => 1,
+    'is_in_stock' => 1,
+    'qty' => 999
+]);
+
+try {
+    $productRepository->save($product);
+    echo "Sample product created/updated successfully! SKU: $sku (Price: 100.00 SAR)\n";
+    echo "Product Direct URL: https://localhost:8443/moyasar-test-item.html\n";
+} catch (\Exception $e) {
+    echo "Error creating/updating product: " . $e->getMessage() . "\n";
+}
+EOF
+
+docker compose exec phpfpm bash -c "cp /mnt/plugin/create_sample.php /var/www/html/ && cd /var/www/html && php create_sample.php && php bin/magento indexer:reindex && php bin/magento cache:clean"
+rm -f create_sample.php
