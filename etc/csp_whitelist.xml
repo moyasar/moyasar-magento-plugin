@@ -26,6 +26,15 @@
             </values>
         </policy>
 
+        <!-- Allow frames -->
+        <policy id="frame-src">
+            <values>
+                <value id="moyasar-api" type="host">https://*.moyasar.com</value>
+                <value id="samsungpay" type="host">https://*.mpay.samsung.com</value>
+                <value id="samsungpay-us" type="host">https://us-online.mpay.samsung.com</value>
+            </values>
+        </policy>
+
         <!-- Allow fonts -->
         <policy id="font-src">
             <values>
