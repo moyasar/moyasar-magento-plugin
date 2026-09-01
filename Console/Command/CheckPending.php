@@ -19,8 +19,9 @@ class CheckPending extends Command
         $this->setDescription('Process payments for orders with pending status');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         ObjectManager::getInstance()->get(\Moyasar\Magento2\Schedule\CheckPending::class)->cron();
+        return 0;
     }
 }

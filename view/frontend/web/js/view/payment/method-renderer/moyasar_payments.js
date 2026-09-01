@@ -114,6 +114,9 @@ define(
                 if (/^3[47]/.test(input)) {
                     detected = 'amex';
                 }
+                if (/^(62|60|81)/.test(input)) {
+                    detected = 'unionpay';
+                }
                 if (madaStarts.includes(input)) {
                     // if starts with following
                     detected = 'mada';

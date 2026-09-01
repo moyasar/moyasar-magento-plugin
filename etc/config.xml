@@ -6,7 +6,7 @@
                 <active>1</active>
                 <title>Card Payments</title>
                 <model>Moyasar\Magento2\Model\Payment\MoyasarPayments</model>
-                <schemes>mada,visa,mastercard</schemes>
+                <schemes>mada,visa,mastercard,unionpay</schemes>
                 <order_status>pending</order_status>
                 <generate_invoice>1</generate_invoice>
                 <auto_void>0</auto_void>
