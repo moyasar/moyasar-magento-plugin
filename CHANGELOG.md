@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed card brand logos overlapping card numbers in RTL mode on the credit card form.
 - Added Samsung Pay (`*.mpay.samsung.com`, `us-online.mpay.samsung.com`) and Moyasar API domains to Content Security Policy (`frame-src`) whitelist.
 
 ## 5.2.5 - 2026-08-05
