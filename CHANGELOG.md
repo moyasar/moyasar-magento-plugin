@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support UnionPay payment method
+- Samsung Pay: Support RTL layout and Arabic localization for the payment button.
 
 ### Fixed
 

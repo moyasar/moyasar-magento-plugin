@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -e
+
+# Extract version from composer.json
+VERSION=$(python3 -c "import json; print(json.load(open('composer.json'))['version'])" 2>/dev/null || grep '"version"' composer.json | cut -d '"' -f 4)
+
+if [ -z "$VERSION" ]; then
+    echo "Error: Could not read version from composer.json"
+    exit 1
+fi
+
+TAG_NAME="v${VERSION}"
+
+echo "Extracted version: ${VERSION}"
+echo "Target Tag: ${TAG_NAME}"
+
+# Check for uncommitted changes
+if [ -n "$(git status --porcelain)" ]; then
+    echo "Error: Working directory has uncommitted changes. Please commit or stash them first."
+    exit 1
+fi
+
+# Check if tag already exists locally or remotely
+if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+    echo "Error: Tag ${TAG_NAME} already exists locally."
+    exit 1
+fi
+
+if git ls-remote --tags origin | grep -q "refs/tags/${TAG_NAME}$"; then
+    echo "Error: Tag ${TAG_NAME} already exists on remote origin."
+    exit 1
+fi
+
+# Create annotated tag
+echo "Creating tag ${TAG_NAME}..."
+git tag -a "${TAG_NAME}" -m "Release ${TAG_NAME}"
+
+# Push tag to remote
+echo "Pushing tag ${TAG_NAME} to origin..."
+git push origin "${TAG_NAME}"
+
+# Create GitHub Release if gh CLI is available
+if command -v gh >/dev/null 2>&1; then
+    echo "Creating GitHub Release via gh CLI..."
+    gh release create "${TAG_NAME}" --title "${TAG_NAME}" --generate-notes
+else
+    echo "Tag ${TAG_NAME} created and pushed to origin successfully!"
+fi

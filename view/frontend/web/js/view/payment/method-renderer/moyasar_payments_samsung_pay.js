@@ -108,6 +108,13 @@ define([
                 'method': this.getCode()
             };
         },
+        getLocale: function () {
+            return window.checkoutConfig.locale;
+        },
+        isRtl: function () {
+            const locale = (this.getLocale() || '').toLowerCase();
+            return locale.startsWith('ar') || $('html').attr('dir') === 'rtl' || $('body').hasClass('rtl') || document.dir === 'rtl';
+        },
 
         /**
          * Called when the user clicks the Samsung Pay button
