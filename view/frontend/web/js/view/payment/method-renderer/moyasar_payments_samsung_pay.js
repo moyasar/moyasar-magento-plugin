@@ -82,7 +82,7 @@ define([
                 .then((response) => {
                     if (response.result) {
                         // If yes, generate the button in #samsung-pay-container
-                            this.isVisible(true);
+                        this.isVisible(true);
                     } else {
                         console.warn('[Moyasar] Samsung Pay is not supported on this device or no cards set up.');
                     }
@@ -125,7 +125,7 @@ define([
 
             // If no PaymentClient, abort
             if (!this.samsungPayClient) {
-                globalMessageList.addErrorMessage({message: 'Samsung Pay is not initialized properly.'});
+                globalMessageList.addErrorMessage({ message: 'Samsung Pay is not initialized properly.' });
                 return;
             }
 
@@ -172,7 +172,7 @@ define([
                 .catch(function (err) {
                     // The user canceled or something else failed
                     self.abortSamsungPay('Samsung Pay flow canceled or failed.', err);
-                    self.samsungPayClient.notify({status: 'CANCELED', provider: 'Moyasar'});
+                    self.samsungPayClient.notify({ status: 'CANCELED', provider: 'Moyasar' });
                 });
         },
         /**
@@ -196,21 +196,21 @@ define([
                 },
                 success: function (response) {
                     if (response.status === 'failed') {
-                        globalMessageList.addErrorMessage({message: response.message});
+                        globalMessageList.addErrorMessage({ message: response.message });
                         self.isPlaceOrderActionAllowed(true);
                         fullScreenLoader.stopLoader();
-                        self.samsungPayClient.notify({status: 'ERRED', provider: 'Moyasar'});
+                        self.samsungPayClient.notify({ status: 'ERRED', provider: 'Moyasar' });
                         return;
                     }
                     // Payment success
-                    self.samsungPayClient.notify({status: 'CHARGED', provider: 'Moyasar'});
+                    self.samsungPayClient.notify({ status: 'CHARGED', provider: 'Moyasar' });
                     self.redirectSuccess(response.redirect_url);
                 },
                 error: function (xhr) {
-                    globalMessageList.addErrorMessage({message: xhr.responseJSON ? xhr.responseJSON.message : 'Payment error'});
+                    globalMessageList.addErrorMessage({ message: xhr.responseJSON ? xhr.responseJSON.message : 'Payment error' });
                     self.isPlaceOrderActionAllowed(true);
                     fullScreenLoader.stopLoader();
-                    self.samsungPayClient.notify({status: 'ERRED', provider: 'Moyasar'});
+                    self.samsungPayClient.notify({ status: 'ERRED', provider: 'Moyasar' });
                 }
             });
         },
@@ -223,7 +223,7 @@ define([
             this.isPlaceOrderActionAllowed(true);
 
             console.error(msg, error || '');
-            globalMessageList.addErrorMessage({message: msg});
+            globalMessageList.addErrorMessage({ message: msg });
         },
 
         /**
